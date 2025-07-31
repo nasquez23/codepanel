@@ -58,7 +58,7 @@ export default function Features() {
             </span>
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Built specifically for students, CodeClimb provides all the tools
+            Built specifically for students, CodePanel provides all the tools
             you need to learn through peer collaboration and feedback.
           </p>
         </div>
