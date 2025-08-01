@@ -1,11 +1,14 @@
 package com.codepanel.models;
 
 import com.codepanel.models.base.BaseEntity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
+@Entity
+@Table(name = "submission_reviews")
 public class SubmissionReview extends BaseEntity {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assignment_submission_id", nullable = false)
