@@ -1,11 +1,18 @@
 "use client";
 
-import { CodeXml } from "lucide-react";
+import { useAuth } from "@/contexts/auth-context";
+import { CodeXml, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { Button } from "./ui/button";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
+  const { user, isAuthenticated, logout, isLoading } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+  };
 
   return (
     <header className="bg-white/50 backdrop-blur-sm border-b border-blue-100 sticky top-0 z-50">
@@ -47,20 +54,26 @@ export default function Header() {
             </Link>
           </nav>
 
-          <div className="hidden md:flex items-center space-x-4">
-            <Link
-              href="/login"
-              className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer whitespace-nowrap"
-            >
-              Sign In
-            </Link>
-            <Link
-              href="/register"
-              className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-2 rounded-full hover:from-blue-600 hover:to-purple-700 transition-all cursor-pointer whitespace-nowrap"
-            >
-              Get Started
-            </Link>
-          </div>
+          {isLoading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : isAuthenticated ? (
+            <Button onClick={handleLogout}>Logout</Button>
+          ) : (
+            <div className="hidden md:flex items-center space-x-4">
+              <Link
+                href="/login"
+                className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer whitespace-nowrap"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/register"
+                className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-2 rounded-full hover:from-blue-600 hover:to-purple-700 transition-all cursor-pointer whitespace-nowrap"
+              >
+                Get Started
+              </Link>
+            </div>
+          )}
 
           <button
             className="md:hidden w-6 h-6 flex items-center justify-center cursor-pointer"
