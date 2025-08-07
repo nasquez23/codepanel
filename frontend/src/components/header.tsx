@@ -8,7 +8,7 @@ import { Button } from "./ui/button";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
-  const { user, isAuthenticated, logout, isLoading } = useAuth();
+  const { isAuthenticated, logout, isLoading } = useAuth();
 
   const handleLogout = async () => {
     await logout();
@@ -57,7 +57,9 @@ export default function Header() {
           {isLoading ? (
             <Loader2 className="w-4 h-4 animate-spin" />
           ) : isAuthenticated ? (
-            <Button onClick={handleLogout}>Logout</Button>
+            <Button variant="primary" onClick={handleLogout}>
+              Logout
+            </Button>
           ) : (
             <div className="hidden md:flex items-center space-x-4">
               <Link
@@ -66,12 +68,14 @@ export default function Header() {
               >
                 Sign In
               </Link>
-              <Link
-                href="/register"
-                className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-2 rounded-full hover:from-blue-600 hover:to-purple-700 transition-all cursor-pointer whitespace-nowrap"
-              >
-                Get Started
-              </Link>
+              <Button variant="primary" asChild>
+                <Link
+                  href="/register"
+                  // className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-2 rounded-full hover:from-blue-600 hover:to-purple-700 transition-all cursor-pointer whitespace-nowrap"
+                >
+                  Get Started
+                </Link>
+              </Button>
             </div>
           )}
 
