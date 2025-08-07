@@ -6,11 +6,11 @@ import {
   useEffect,
   useState,
   ReactNode,
+  useLayoutEffect,
 } from "react";
-import { poster } from "../services/api";
+import { axiosInstance, poster } from "../services/api";
 import { decodeJwt, isTokenExpired } from "../lib/jwt";
 import {
-  AccessTokenData,
   AuthContextType,
   AuthTokens,
   LoginCredentials,
@@ -18,7 +18,9 @@ import {
   User,
 } from "../types/auth";
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(
+  undefined
+);
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -56,6 +58,54 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return () => clearInterval(interval);
   }, [accessToken]);
 
+  useLayoutEffect(() => {
+    const authInterceptor = axiosInstance.interceptors.request.use((config) => {
+      config.headers.Authorization = accessToken
+        ? `Bearer ${accessToken}`
+        : config.headers.Authorization;
+
+      return config;
+    });
+
+    return () => {
+      axiosInstance.interceptors.request.eject(authInterceptor);
+    };
+  }, [accessToken]);
+
+  useLayoutEffect(() => {
+    const refreshInterceptor = axiosInstance.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        const originalRequest = error.config;
+
+        if (
+          originalRequest._retry ||
+          originalRequest.url === "/api/auth/login"
+        ) {
+          return Promise.reject(error);
+        }
+
+        if (error.response.status === 401) {
+          originalRequest._retry = true;
+
+          try {
+            await refreshAuth();
+            originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+            return axiosInstance(originalRequest);
+          } catch (refreshError) {
+            console.error("Token refresh failed:", refreshError);
+          }
+        }
+
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      axiosInstance.interceptors.response.eject(refreshInterceptor);
+    };
+  }, []);
+
   const login = async (credentials: LoginCredentials): Promise<void> => {
     try {
       setIsLoading(true);
@@ -65,30 +115,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         credentials
       );
 
-      const { data: tokens } = response;
+      const { data: responseData } = response;
 
-      const payload = decodeJwt(tokens.accessToken);
+      const payload = decodeJwt(responseData.accessToken);
 
       if (!payload) {
         throw new Error("Invalid token received");
       }
 
       const userInfo: User = {
-        id: tokens.userId,
-        email: tokens.email,
-        firstName: tokens.firstName,
-        lastName: tokens.lastName,
-        role: tokens.role,
-      };
-
-      const tokenData: AccessTokenData = {
-        accessToken: tokens.accessToken,
-        expiresIn: tokens.expiresIn,
-        familyId: tokens.familyId,
+        id: responseData.userId,
+        email: responseData.email,
+        firstName: responseData.firstName,
+        lastName: responseData.lastName,
+        role: responseData.role,
       };
 
       setUser(userInfo);
-      setAccessToken(tokens.accessToken);
+      setAccessToken(responseData.accessToken);
     } catch (error) {
       console.error("Login failed:", error);
       throw error;
@@ -106,29 +150,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         credentials
       );
 
-      const { data: tokens } = response;
+      const { data: responseData } = response;
 
-      const payload = decodeJwt(tokens.accessToken);
+      const payload = decodeJwt(responseData.accessToken);
       if (!payload) {
         throw new Error("Invalid token received");
       }
 
       const userInfo: User = {
-        id: tokens.userId,
-        email: tokens.email,
-        firstName: tokens.firstName,
-        lastName: tokens.lastName,
-        role: tokens.role,
-      };
-
-      const tokenData: AccessTokenData = {
-        accessToken: tokens.accessToken,
-        expiresIn: tokens.expiresIn,
-        familyId: tokens.familyId,
+        id: responseData.userId,
+        email: responseData.email,
+        firstName: responseData.firstName,
+        lastName: responseData.lastName,
+        role: responseData.role,
       };
 
       setUser(userInfo);
-      setAccessToken(tokens.accessToken);
+      setAccessToken(responseData.accessToken);
     } catch (error) {
       console.error("Registration failed:", error);
       throw error;
@@ -139,11 +177,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = async (): Promise<void> => {
     try {
-      await poster(
-        "/api/auth/logout",
-        {},
-        { accessToken: accessToken || undefined }
-      );
+      await poster("/api/auth/logout", {});
     } catch (error) {
       console.error("Logout request failed:", error);
     } finally {
@@ -156,29 +190,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const response = await poster<{}, AuthTokens>("/api/auth/refresh", {});
 
-      const { data: tokens } = response;
+      const { data: responseData } = response;
 
-      const payload = decodeJwt(tokens.accessToken);
+      const payload = decodeJwt(responseData.accessToken);
       if (!payload) {
         throw new Error("Invalid token received");
       }
 
       const userInfo: User = {
-        id: tokens.userId,
-        email: tokens.email,
-        firstName: tokens.firstName,
-        lastName: tokens.lastName,
-        role: tokens.role,
-      };
-
-      const tokenData: AccessTokenData = {
-        accessToken: tokens.accessToken,
-        expiresIn: tokens.expiresIn,
-        familyId: tokens.familyId,
+        id: responseData.userId,
+        email: responseData.email,
+        firstName: responseData.firstName,
+        lastName: responseData.lastName,
+        role: responseData.role,
       };
 
       setUser(userInfo);
-      setAccessToken(tokens.accessToken);
+      setAccessToken(responseData.accessToken);
     } catch (error) {
       console.error("Token refresh failed:", error);
       await logout();
@@ -197,12 +225,4 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
-
-export const useAuth = (): AuthContextType => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
 };

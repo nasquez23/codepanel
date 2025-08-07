@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
-import { useAuth } from "@/contexts/auth-context";
+import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
 
 export default function RegisterView() {
@@ -145,8 +145,12 @@ export default function RegisterView() {
                 onChange={handleChange}
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 bg-white"
               >
-                <option value="STUDENT">👨‍🎓 Student - I want to submit code for review</option>
-                <option value="INSTRUCTOR">👨‍🏫 Instructor - I want to review student code</option>
+                <option value="STUDENT">
+                  👨‍🎓 Student - I want to submit code for review
+                </option>
+                <option value="INSTRUCTOR">
+                  👨‍🏫 Instructor - I want to review student code
+                </option>
               </select>
             </div>
 

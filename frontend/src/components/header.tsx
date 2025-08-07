@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@/contexts/auth-context";
+import { useAuth } from "@/hooks/use-auth";
 import { CodeXml, Loader2, Menu } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
