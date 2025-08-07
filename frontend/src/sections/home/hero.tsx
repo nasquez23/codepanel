@@ -19,23 +19,24 @@ export default function Hero() {
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="grid lg:grid-cols-2 gap-12 items-center min-h-[80vh]">
           <div className="max-w-2xl">
-            <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
-              Master Code Through
+            <h1 className="text-3xl lg:text-5xl font-bold text-gray-900 leading-tight mb-6">
+              Collaborate, Learn, and
               <span className="block bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Peer Review
+                Code Together
               </span>
             </h1>
-            <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-              Join thousands of students learning to write better code through
-              collaborative peer reviews. Get feedback, share knowledge, and
-              climb your way to coding excellence.
+            <p className="text-lg text-gray-600 mb-8 leading-relaxed">
+              Join a growing community of students and instructors solving real
+              programming challenges. Post your questions, share your code, get
+              feedback — or take on assignments and sharpen your skills through
+              peer and expert reviews.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link
                 href="/register"
                 className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-4 rounded-full text-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all cursor-pointer text-center whitespace-nowrap"
               >
-                Start Reviewing Code
+                Get Started
               </Link>
               <Link
                 href="#how-it-works"
@@ -44,7 +45,7 @@ export default function Hero() {
                 Learn How It Works
               </Link>
             </div>
-            <div className="flex items-center space-x-8 mt-12">
+            {/* <div className="flex items-center space-x-8 mt-12">
               <div className="text-center">
                 <div className="text-3xl font-bold text-blue-600">15K+</div>
                 <div className="text-gray-500 text-sm">Students</div>
@@ -57,7 +58,7 @@ export default function Hero() {
                 <div className="text-3xl font-bold text-green-600">98%</div>
                 <div className="text-gray-500 text-sm">Satisfaction</div>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

@@ -1,49 +1,49 @@
 import {
-  CodeXml,
-  MessageCircleReply,
-  ShieldCheck,
-  Trophy,
-  User,
+  ChartNoAxesColumn,
+  FileText,
+  MessageCircleCode,
+  MessagesSquare,
   Users,
+  UserStar,
 } from "lucide-react";
 
 export default function Features() {
   const features = [
     {
-      icon: <User />,
-      title: "Peer-to-Peer Learning",
+      icon: <MessagesSquare />,
+      title: "Problem Solving Hub",
       description:
-        "Connect with fellow students to review code and share knowledge in a collaborative environment designed for learning.",
+        "Students can post coding problems and challenges to get help from peers and instructors in real-time.",
     },
     {
-      icon: <CodeXml />,
-      title: "Smart Code Analysis",
+      icon: <UserStar />,
+      title: "Expert Guidance",
       description:
-        "Our intelligent system highlights potential issues and suggests improvements to help you learn better coding practices.",
+        "Connect with experienced instructors who provide professional insights and detailed explanations.",
     },
     {
-      icon: <MessageCircleReply />,
-      title: "Constructive Feedback",
+      icon: <FileText />,
+      title: "Assignment Management",
       description:
-        "Receive detailed, helpful feedback on your code with specific suggestions for improvement and best practices.",
+        "Instructors can create and distribute assignments while tracking student submissions efficiently.",
     },
     {
-      icon: <Trophy />,
-      title: "Achievement System",
+      icon: <MessageCircleCode />,
+      title: "Submission Reviews",
       description:
-        "Track your progress with badges and achievements as you help others and improve your own coding skills.",
+        "Comprehensive review system where instructors can evaluate student work and provide detailed feedback.",
     },
     {
       icon: <Users />,
-      title: "Study Groups",
+      title: "Collaborative Learning",
       description:
-        "Join or create study groups with classmates to collaborate on projects and learn together.",
+        "Foster a community where students learn from each other through shared problems and solutions.",
     },
     {
-      icon: <ShieldCheck />,
-      title: "Safe Environment",
+      icon: <ChartNoAxesColumn />,
+      title: "Progress Tracking",
       description:
-        "Learn in a supportive, moderated environment where constructive feedback is encouraged and respected.",
+        "Monitor student progress and assignment completion with detailed analytics and insights.",
     },
   ];
 
@@ -52,14 +52,14 @@ export default function Features() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
-            Everything You Need to
+            Everything You Need for
             <span className="block bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Excel at Code Reviews
+              Collaborative Learning
             </span>
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Built specifically for students, CodePanel provides all the tools
-            you need to learn through peer collaboration and feedback.
+            Connects students with instructors and peers through problem-solving
+            and assignment management in one unified platform.
           </p>
         </div>
 

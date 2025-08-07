@@ -8,30 +8,30 @@ export default function HowItWorks() {
   const steps = [
     {
       step: "01",
-      title: "Submit Your Code",
+      title: "Post Your Problem",
       description:
-        "Upload your code project or assignment and add context about what you're looking for feedback on.",
+        "Students can share coding challenges, bugs, or questions with detailed descriptions and code snippets.",
       image: HowItWorksStep1.src,
     },
     {
       step: "02",
-      title: "Get Matched with Peers",
+      title: "Get Expert Help",
       description:
-        "Our smart matching system connects you with other students at similar skill levels for meaningful reviews.",
+        "Instructors and experienced peers provide solutions, explanations, and guidance to help you learn.",
       image: HowItWorksStep2.src,
     },
     {
       step: "03",
-      title: "Review and Learn",
+      title: "Submit Assignments",
       description:
-        "Participate in constructive code reviews, giving and receiving feedback to improve together.",
+        "Complete and submit assignments created by instructors through our streamlined submission system.",
       image: HowItWorksStep3.src,
     },
     {
       step: "04",
-      title: "Track Progress",
+      title: "Receive Feedback",
       description:
-        "Monitor your improvement over time with detailed analytics and achievement badges.",
+        "Get detailed reviews from instructors on your submissions with personalized improvement suggestions.",
       image: HowItWorksStep4.src,
     },
   ];
@@ -46,12 +46,12 @@ export default function HowItWorks() {
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
             How CodePanel
             <span className="block bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Works for You
+              Connects Learners
             </span>
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Getting started with peer code reviews is simple. Follow these four
-            steps to begin your coding journey.
+            From posting problems to submitting assignments, our platform makes
+            collaborative learning simple and effective.
           </p>
         </div>
 

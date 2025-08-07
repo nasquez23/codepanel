@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/contexts/auth-context";
-import { CodeXml, Loader2 } from "lucide-react";
+import { CodeXml, Loader2, Menu } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "./ui/button";
@@ -79,7 +79,7 @@ export default function Header() {
             className="md:hidden w-6 h-6 flex items-center justify-center cursor-pointer"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
-            <i className="ri-menu-line text-gray-600 text-xl"></i>
+            <Menu />
           </button>
         </div>
 
