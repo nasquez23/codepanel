@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import HeroImage from "@/assets/hero.jpg";
 
@@ -40,6 +42,12 @@ export default function Hero() {
               </Link>
               <Link
                 href="#how-it-works"
+                onClick={() => {
+                  const howItWorks = document.getElementById("how-it-works");
+                  if (howItWorks) {
+                    howItWorks.scrollIntoView({ behavior: "smooth" });
+                  }
+                }}
                 className="border-2 border-blue-200 text-blue-600 px-8 py-4 rounded-full text-lg font-semibold hover:bg-blue-50 transition-all cursor-pointer text-center whitespace-nowrap"
               >
                 Learn How It Works

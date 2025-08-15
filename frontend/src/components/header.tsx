@@ -29,6 +29,12 @@ export default function Header() {
 
           <nav className="hidden md:flex items-center space-x-8">
             <Link
+              href="/problems"
+              className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer whitespace-nowrap"
+            >
+              Problems
+            </Link>
+            <Link
               href="#features"
               className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer whitespace-nowrap"
             >
@@ -36,6 +42,12 @@ export default function Header() {
             </Link>
             <Link
               href="#how-it-works"
+              onClick={() => {
+                const howItWorks = document.getElementById("how-it-works");
+                if (howItWorks) {
+                  howItWorks.scrollIntoView({ behavior: "smooth" });
+                }
+              }}
               className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer whitespace-nowrap"
             >
               How it Works
@@ -69,12 +81,7 @@ export default function Header() {
                 Sign In
               </Link>
               <Button variant="primary" asChild>
-                <Link
-                  href="/register"
-                  // className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-2 rounded-full hover:from-blue-600 hover:to-purple-700 transition-all cursor-pointer whitespace-nowrap"
-                >
-                  Get Started
-                </Link>
+                <Link href="/register">Get Started</Link>
               </Button>
             </div>
           )}
@@ -90,6 +97,12 @@ export default function Header() {
         {isMenuOpen && (
           <div className="md:hidden border-t border-blue-100 py-4">
             <div className="flex flex-col space-y-4">
+              <Link
+                href="/problems"
+                className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
+              >
+                Problems
+              </Link>
               <Link
                 href="#features"
                 className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
