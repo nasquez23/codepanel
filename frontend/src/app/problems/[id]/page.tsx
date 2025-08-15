@@ -8,8 +8,11 @@ interface ProblemPostPageProps {
   params: { id: string };
 }
 
-export default function ProblemPostPage({ params }: ProblemPostPageProps) {
-  return <ProblemsDetailsView id={params.id} />;
+export default async function ProblemPostPage({
+  params,
+}: ProblemPostPageProps) {
+  const { id } = await params;
+  return <ProblemsDetailsView id={id} />;
 }
 
 export function generateMetadata(): Metadata {

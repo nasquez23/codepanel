@@ -3,6 +3,7 @@ package com.codepanel.services;
 import com.codepanel.models.ProblemPost;
 import com.codepanel.models.User;
 import com.codepanel.models.dto.CreateProblemPostRequest;
+import com.codepanel.models.dto.UpdateProblemPostRequest;
 import com.codepanel.models.dto.ProblemPostResponse;
 import com.codepanel.repositories.ProblemPostRepository;
 import org.springframework.data.domain.Page;
@@ -48,6 +49,23 @@ public class ProblemPostService {
     public Page<ProblemPostResponse> getProblemPostsByUser(User user, Pageable pageable) {
         Page<ProblemPost> problemPosts = problemPostRepository.findByUserOrderByCreatedAtDesc(user, pageable);
         return problemPosts.map(this::mapToResponse);
+    }
+
+    public ProblemPostResponse updateProblemPost(UUID id, UpdateProblemPostRequest request, User currentUser) {
+        ProblemPost problemPost = problemPostRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Problem post not found"));
+
+        if (!problemPost.getUser().getId().equals(currentUser.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only edit your own posts");
+        }
+
+        problemPost.setTitle(request.getTitle());
+        problemPost.setDescription(request.getDescription());
+        problemPost.setCode(request.getCode());
+        problemPost.setLanguage(request.getLanguage());
+
+        ProblemPost updatedPost = problemPostRepository.save(problemPost);
+        return mapToResponse(updatedPost);
     }
 
     public void deleteProblemPost(UUID id, User currentUser) {

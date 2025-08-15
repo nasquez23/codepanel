@@ -3,6 +3,7 @@ package com.codepanel.controllers;
 
 import com.codepanel.models.User;
 import com.codepanel.models.dto.CreateProblemPostRequest;
+import com.codepanel.models.dto.UpdateProblemPostRequest;
 import com.codepanel.models.dto.ProblemPostResponse;
 import com.codepanel.services.ProblemPostService;
 import jakarta.validation.Valid;
@@ -64,6 +65,15 @@ public class ProblemPostController {
         
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<ProblemPostResponse> response = problemPostService.getProblemPostsByUser(currentUser, pageable);
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ProblemPostResponse> updateProblemPost(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateProblemPostRequest request,
+            @AuthenticationPrincipal User currentUser) {
+        ProblemPostResponse response = problemPostService.updateProblemPost(id, request, currentUser);
         return ResponseEntity.ok(response);
     }
 

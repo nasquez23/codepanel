@@ -23,6 +23,13 @@ export interface CreateProblemPostRequest {
   language: ProgrammingLanguage;
 }
 
+export interface UpdateProblemPostRequest {
+  title: string;
+  description: string;
+  code?: string;
+  language: ProgrammingLanguage;
+}
+
 export interface ProblemPostResponse {
   content: ProblemPost[];
   pageable: {

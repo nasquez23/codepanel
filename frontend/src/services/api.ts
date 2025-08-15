@@ -26,6 +26,13 @@ export const patcher = async <D = any, R = any>(
   return await axiosInstance.patch(path, data);
 };
 
+export const putter = async <D = any, R = any>(
+  path: string,
+  data?: D
+): Promise<AxiosResponse<R>> => {
+  return await axiosInstance.put(path, data);
+};
+
 export const deleter = async <D = any, R = any>(
   path: string
 ): Promise<AxiosResponse<R>> => {

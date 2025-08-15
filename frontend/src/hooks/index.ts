@@ -1,12 +1,12 @@
-// Auth hooks
+
 export { useAuth } from "./use-auth";
 
-// Problem Posts hooks
 export { 
   useProblemPosts,
   useProblemPost,
   useMyProblemPosts,
   useCreateProblemPost,
+  useUpdateProblemPost,
   useDeleteProblemPost,
   usePrefetchProblemPost,
   problemPostKeys

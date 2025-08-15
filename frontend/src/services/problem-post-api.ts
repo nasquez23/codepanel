@@ -1,9 +1,10 @@
 import {
   CreateProblemPostRequest,
+  UpdateProblemPostRequest,
   ProblemPost,
   ProblemPostResponse,
 } from "../types/problem-post";
-import { poster, fetcher, deleter } from "./api";
+import { poster, fetcher, deleter, putter } from "./api";
 
 export const getAllProblemPosts = async (
   page: number = 0,
@@ -45,6 +46,17 @@ export const getMyProblemPosts = async (
   });
 
   return fetcher<ProblemPostResponse>(`/api/problem-posts/my-posts?${params}`);
+};
+
+export const updateProblemPost = async (
+  id: string,
+  data: UpdateProblemPostRequest
+): Promise<ProblemPost> => {
+  const response = await putter<UpdateProblemPostRequest, ProblemPost>(
+    `/api/problem-posts/${id}`,
+    data
+  );
+  return response.data;
 };
 
 export const deleteProblemPost = async (id: string): Promise<void> => {

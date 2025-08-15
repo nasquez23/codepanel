@@ -1,13 +1,16 @@
 "use client";
 
+import { useState } from "react";
 import { useProblemPostDetails } from "@/hooks/use-problem-post-details";
 import { useDeleteProblemPost } from "@/hooks/use-problem-posts";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { ProgrammingLanguageDisplayNames } from "@/types/problem-post";
-import { User, Clock, Code, Trash2, ArrowLeft } from "lucide-react";
+import { User, Clock, Code, Trash2, ArrowLeft, Edit } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import EditProblemPostDialog from "@/components/edit-problem-post-dialog";
+import DeleteConfirmationDialog from "@/components/delete-confirmation-dialog";
 
 interface ProblemPostDetailsProps {
   id: string;
@@ -18,20 +21,18 @@ export default function ProblemPostDetails({ id }: ProblemPostDetailsProps) {
   const { user } = useAuth();
   const deleteMutation = useDeleteProblemPost();
   const router = useRouter();
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  const handleDelete = async () => {
-    if (!window.confirm("Are you sure you want to delete this problem post?")) {
-      return;
-    }
-
+  const handleDelete = () => {
     deleteMutation.mutate(id, {
       onSuccess: () => {
+        setShowDeleteDialog(false);
         router.push("/problems");
       },
       onError: (error) => {
         console.error("Error deleting problem post:", error);
-        alert("Failed to delete problem post. Please try again.");
-      }
+      },
     });
   };
 
@@ -70,15 +71,15 @@ export default function ProblemPostDetails({ id }: ProblemPostDetailsProps) {
     );
   }
 
-  const canDelete = user && (
-    user.id === problemPost.author.id || 
-    user.role === "ADMIN" || 
-    user.role === "INSTRUCTOR"
-  );
+  const canEdit = user && user.id === problemPost.author.id;
+  const canDelete =
+    user &&
+    (user.id === problemPost.author.id ||
+      user.role === "ADMIN" ||
+      user.role === "INSTRUCTOR");
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      {/* Navigation */}
       <div className="mb-6">
         <Link href="/problems">
           <Button variant="outline" size="sm">
@@ -88,15 +89,13 @@ export default function ProblemPostDetails({ id }: ProblemPostDetailsProps) {
         </Link>
       </div>
 
-      {/* Problem Post */}
       <div className="bg-white rounded-lg shadow-lg p-8">
-        {/* Header */}
         <div className="flex justify-between items-start mb-6">
           <div className="flex-1">
             <h1 className="text-3xl font-bold text-gray-900 mb-4">
               {problemPost.title}
             </h1>
-            
+
             <div className="flex items-center gap-6 text-gray-600">
               <div className="flex items-center gap-2">
                 <User className="w-5 h-5" />
@@ -105,12 +104,12 @@ export default function ProblemPostDetails({ id }: ProblemPostDetailsProps) {
                 </span>
                 <span className="text-sm">({problemPost.author.email})</span>
               </div>
-              
+
               <div className="flex items-center gap-2">
                 <Clock className="w-5 h-5" />
                 <span>{formatDate(problemPost.createdAt)}</span>
               </div>
-              
+
               <div className="flex items-center gap-2">
                 <Code className="w-5 h-5" />
                 <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
@@ -120,20 +119,31 @@ export default function ProblemPostDetails({ id }: ProblemPostDetailsProps) {
             </div>
           </div>
 
-          {canDelete && (
-            <Button
-              variant="outline"
-              onClick={handleDelete}
-              disabled={deleteMutation.isPending}
-              className="text-red-600 hover:text-red-700 hover:bg-red-50"
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Delete
-            </Button>
-          )}
+          <div className="flex gap-2">
+            {canEdit && (
+              <Button
+                variant="outline"
+                onClick={() => setShowEditDialog(true)}
+                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+              >
+                <Edit className="w-4 h-4 mr-2" />
+                Edit
+              </Button>
+            )}
+
+            {canDelete && (
+              <Button
+                variant="outline"
+                onClick={() => setShowDeleteDialog(true)}
+                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete
+              </Button>
+            )}
+          </div>
         </div>
 
-        {/* Description */}
         <div className="mb-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-3">
             Problem Description
@@ -145,12 +155,9 @@ export default function ProblemPostDetails({ id }: ProblemPostDetailsProps) {
           </div>
         </div>
 
-        {/* Code */}
         {problemPost.code && (
           <div className="mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">
-              Code
-            </h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-3">Code</h2>
             <div className="bg-gray-100 rounded-lg p-6 overflow-x-auto">
               <pre className="text-sm text-gray-800">
                 <code>{problemPost.code}</code>
@@ -159,7 +166,6 @@ export default function ProblemPostDetails({ id }: ProblemPostDetailsProps) {
           </div>
         )}
 
-        {/* Actions */}
         <div className="border-t pt-6">
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-500">
@@ -167,11 +173,9 @@ export default function ProblemPostDetails({ id }: ProblemPostDetailsProps) {
                 <span>Last updated: {formatDate(problemPost.updatedAt)}</span>
               )}
             </div>
-            
+
             <div className="flex gap-3">
-              <Button variant="outline">
-                Share Problem
-              </Button>
+              <Button variant="outline">Share Problem</Button>
               {/* Future: Add comment/reply functionality */}
               <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
                 Help with Solution
@@ -180,6 +184,24 @@ export default function ProblemPostDetails({ id }: ProblemPostDetailsProps) {
           </div>
         </div>
       </div>
+
+      {canEdit && problemPost && (
+        <EditProblemPostDialog
+          problemPost={problemPost}
+          open={showEditDialog}
+          onOpenChange={setShowEditDialog}
+        />
+      )}
+
+      {canDelete && problemPost && (
+        <DeleteConfirmationDialog
+          open={showDeleteDialog}
+          onOpenChange={setShowDeleteDialog}
+          onConfirm={handleDelete}
+          isLoading={deleteMutation.isPending}
+          description={`Are you sure you want to delete "${problemPost.title}"? This action cannot be undone.`}
+        />
+      )}
     </div>
   );
 }

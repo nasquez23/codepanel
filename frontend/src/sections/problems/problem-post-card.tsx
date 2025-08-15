@@ -1,11 +1,17 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { ProblemPost, ProgrammingLanguageDisplayNames } from "@/types/problem-post";
+import {
+  ProblemPost,
+  ProgrammingLanguageDisplayNames,
+} from "@/types/problem-post";
 import { Button } from "@/components/ui/button";
-import { User, Clock, Code, Trash2 } from "lucide-react";
+import { User, Clock, Code, Trash2, Edit } from "lucide-react";
 import { useDeleteProblemPost } from "@/hooks/use-problem-posts";
 import { useAuth } from "@/hooks/use-auth";
+import EditProblemPostDialog from "@/components/edit-problem-post-dialog";
+import DeleteConfirmationDialog from "@/components/delete-confirmation-dialog";
 
 interface ProblemPostCardProps {
   problemPost: ProblemPost;
@@ -14,17 +20,17 @@ interface ProblemPostCardProps {
 export default function ProblemPostCard({ problemPost }: ProblemPostCardProps) {
   const { user } = useAuth();
   const deleteMutation = useDeleteProblemPost();
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  const handleDelete = async () => {
-    if (!window.confirm("Are you sure you want to delete this problem post?")) {
-      return;
-    }
-
+  const handleDelete = () => {
     deleteMutation.mutate(problemPost.id, {
+      onSuccess: () => {
+        setShowDeleteDialog(false);
+      },
       onError: (error) => {
         console.error("Error deleting problem post:", error);
-        alert("Failed to delete problem post. Please try again.");
-      }
+      },
     });
   };
 
@@ -39,11 +45,12 @@ export default function ProblemPostCard({ problemPost }: ProblemPostCardProps) {
     });
   };
 
-  const canDelete = user && (
-    user.id === problemPost.author.id || 
-    user.role === "ADMIN" || 
-    user.role === "INSTRUCTOR"
-  );
+  const canEdit = user && user.id === problemPost.author.id;
+  const canDelete =
+    user &&
+    (user.id === problemPost.author.id ||
+      user.role === "ADMIN" ||
+      user.role === "INSTRUCTOR");
 
   return (
     <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6 hover:shadow-lg transition-shadow">
@@ -54,18 +61,20 @@ export default function ProblemPostCard({ problemPost }: ProblemPostCardProps) {
               {problemPost.title}
             </h3>
           </Link>
-          
+
           <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
             <div className="flex items-center gap-1">
               <User className="w-4 h-4" />
-              <span>{problemPost.author.firstName} {problemPost.author.lastName}</span>
+              <span>
+                {problemPost.author.firstName} {problemPost.author.lastName}
+              </span>
             </div>
-            
+
             <div className="flex items-center gap-1">
               <Clock className="w-4 h-4" />
               <span>{formatDate(problemPost.createdAt)}</span>
             </div>
-            
+
             <div className="flex items-center gap-1">
               <Code className="w-4 h-4" />
               <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
@@ -75,17 +84,29 @@ export default function ProblemPostCard({ problemPost }: ProblemPostCardProps) {
           </div>
         </div>
 
-        {canDelete && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleDelete}
-            disabled={deleteMutation.isPending}
-            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-          >
-            <Trash2 className="w-4 h-4" />
-          </Button>
-        )}
+        <div className="flex gap-2">
+          {canEdit && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowEditDialog(true)}
+              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+            >
+              <Edit className="w-4 h-4" />
+            </Button>
+          )}
+
+          {canDelete && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowDeleteDialog(true)}
+              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
       </div>
 
       <p className="text-gray-700 mb-4 line-clamp-3">
@@ -95,9 +116,7 @@ export default function ProblemPostCard({ problemPost }: ProblemPostCardProps) {
       {problemPost.code && (
         <div className="bg-gray-100 rounded-md p-4 mb-4">
           <pre className="text-sm text-gray-800 overflow-x-auto whitespace-pre-wrap">
-            <code className="line-clamp-4">
-              {problemPost.code}
-            </code>
+            <code className="line-clamp-4">{problemPost.code}</code>
           </pre>
         </div>
       )}
@@ -109,6 +128,24 @@ export default function ProblemPostCard({ problemPost }: ProblemPostCardProps) {
           </Button>
         </Link>
       </div>
+
+      {canEdit && (
+        <EditProblemPostDialog
+          problemPost={problemPost}
+          open={showEditDialog}
+          onOpenChange={setShowEditDialog}
+        />
+      )}
+
+      {canDelete && (
+        <DeleteConfirmationDialog
+          open={showDeleteDialog}
+          onOpenChange={setShowDeleteDialog}
+          onConfirm={handleDelete}
+          isLoading={deleteMutation.isPending}
+          description={`Are you sure you want to delete "${problemPost.title}"? This action cannot be undone.`}
+        />
+      )}
     </div>
   );
 }
