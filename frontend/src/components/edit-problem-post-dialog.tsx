@@ -25,6 +25,7 @@ import {
   UpdateProblemPostRequest,
 } from "@/types/problem-post";
 import { useUpdateProblemPost } from "@/hooks/use-problem-posts";
+import CodeEditor from "./code-editor";
 
 interface EditProblemPostDialogProps {
   problemPost: ProblemPost;
@@ -209,19 +210,26 @@ export default function EditProblemPostDialog({
           <div>
             <label
               htmlFor="edit-code"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-sm font-medium text-gray-700 mb-2"
             >
               Your Code (Optional)
             </label>
-            <Textarea
-              id="edit-code"
-              value={formData.code}
-              onChange={(e) => handleInputChange("code", e.target.value)}
-              placeholder="Paste your code here (if applicable)..."
-              className={`min-h-[150px] font-mono text-sm ${
-                errors.code ? "border-red-500" : ""
-              }`}
-            />
+
+            {formData.language ? (
+              <CodeEditor
+                code={formData.code}
+                language={formData.language as ProgrammingLanguage}
+                onChange={(value) => handleInputChange("code", value || "")}
+              />
+            ) : (
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                <p className="text-gray-500 text-sm">
+                  Please select a programming language first to enable the code
+                  editor
+                </p>
+              </div>
+            )}
+
             {errors.code && (
               <p className="mt-1 text-sm text-red-600">{errors.code}</p>
             )}

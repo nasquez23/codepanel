@@ -11,6 +11,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import EditProblemPostDialog from "@/components/edit-problem-post-dialog";
 import DeleteConfirmationDialog from "@/components/delete-confirmation-dialog";
+import CodeBlock from "@/components/code-block";
 
 interface ProblemPostDetailsProps {
   id: string;
@@ -158,11 +159,11 @@ export default function ProblemPostDetails({ id }: ProblemPostDetailsProps) {
         {problemPost.code && (
           <div className="mb-8">
             <h2 className="text-xl font-semibold text-gray-900 mb-3">Code</h2>
-            <div className="bg-gray-100 rounded-lg p-6 overflow-x-auto">
-              <pre className="text-sm text-gray-800">
-                <code>{problemPost.code}</code>
-              </pre>
-            </div>
+            <CodeBlock
+              code={problemPost.code}
+              language={problemPost.language}
+              showCopyButton={true}
+            />
           </div>
         )}
 

@@ -12,6 +12,8 @@ import { useDeleteProblemPost } from "@/hooks/use-problem-posts";
 import { useAuth } from "@/hooks/use-auth";
 import EditProblemPostDialog from "@/components/edit-problem-post-dialog";
 import DeleteConfirmationDialog from "@/components/delete-confirmation-dialog";
+import { VSCodeStyleCodeBlock } from "@/components/simple-code-block";
+import CodeBlock from "@/components/code-block";
 
 interface ProblemPostCardProps {
   problemPost: ProblemPost;
@@ -114,10 +116,13 @@ export default function ProblemPostCard({ problemPost }: ProblemPostCardProps) {
       </p>
 
       {problemPost.code && (
-        <div className="bg-gray-100 rounded-md p-4 mb-4">
-          <pre className="text-sm text-gray-800 overflow-x-auto whitespace-pre-wrap">
-            <code className="line-clamp-4">{problemPost.code}</code>
-          </pre>
+        <div className="mb-4">
+          <CodeBlock
+            code={problemPost.code}
+            language={problemPost.language}
+            maxHeight="200px"
+            showCopyButton={false}
+          />
         </div>
       )}
 

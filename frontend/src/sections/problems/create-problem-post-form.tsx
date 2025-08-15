@@ -5,16 +5,21 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
-import { ProgrammingLanguage, ProgrammingLanguageDisplayNames } from "@/types/problem-post";
+import {
+  ProgrammingLanguage,
+  ProgrammingLanguageDisplayNames,
+} from "@/types/problem-post";
 import { useCreateProblemPost } from "@/hooks/use-problem-posts";
 import { useAuth } from "@/hooks/use-auth";
+import CodeBlock from "@/components/code-block";
+import CodeEditor from "@/components/code-editor";
 
 export default function CreateProblemPostForm() {
   const [formData, setFormData] = useState({
@@ -30,15 +35,14 @@ export default function CreateProblemPostForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!isAuthenticated) {
       router.push("/login");
       return;
     }
 
-    // Validate form
     const newErrors: Record<string, string> = {};
-    
+
     if (!formData.title.trim()) {
       newErrors.title = "Title is required";
     } else if (formData.title.length < 5) {
@@ -69,38 +73,40 @@ export default function CreateProblemPostForm() {
       return;
     }
 
-    createMutation.mutate({
-      title: formData.title.trim(),
-      description: formData.description.trim(),
-      code: formData.code.trim() || undefined,
-      language: formData.language as ProgrammingLanguage,
-    }, {
-      onSuccess: () => {
-        // Reset form
-        setFormData({
-          title: "",
-          description: "",
-          code: "",
-          language: "",
-        });
-        
-        // Redirect to problems list
-        router.push("/problems");
+    createMutation.mutate(
+      {
+        title: formData.title.trim(),
+        description: formData.description.trim(),
+        code: formData.code.trim() || undefined,
+        language: formData.language as ProgrammingLanguage,
       },
-      onError: (error: any) => {
-        console.error("Error creating problem post:", error);
-        setErrors({
-          submit: error.response?.data?.message || "Failed to create problem post. Please try again.",
-        });
+      {
+        onSuccess: () => {
+          setFormData({
+            title: "",
+            description: "",
+            code: "",
+            language: "",
+          });
+
+          router.push("/problems");
+        },
+        onError: (error: any) => {
+          console.error("Error creating problem post:", error);
+          setErrors({
+            submit:
+              error.response?.data?.message ||
+              "Failed to create problem post. Please try again.",
+          });
+        },
       }
-    });
+    );
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: "" }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
@@ -111,13 +117,16 @@ export default function CreateProblemPostForm() {
           Post a Coding Problem
         </h1>
         <p className="text-gray-600 mb-8">
-          Share your coding challenge with the community and get help from peers and instructors.
+          Share your coding challenge with the community and get help from peers
+          and instructors.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Title */}
           <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="title"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Problem Title <span className="text-red-500">*</span>
             </label>
             <Input
@@ -133,24 +142,30 @@ export default function CreateProblemPostForm() {
             )}
           </div>
 
-          {/* Programming Language */}
           <div>
-            <label htmlFor="language" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="language"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Programming Language <span className="text-red-500">*</span>
             </label>
             <Select
               value={formData.language}
               onValueChange={(value) => handleInputChange("language", value)}
             >
-              <SelectTrigger className={errors.language ? "border-red-500" : ""}>
+              <SelectTrigger
+                className={errors.language ? "border-red-500" : ""}
+              >
                 <SelectValue placeholder="Select a programming language" />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(ProgrammingLanguageDisplayNames).map(([key, displayName]) => (
-                  <SelectItem key={key} value={key}>
-                    {displayName}
-                  </SelectItem>
-                ))}
+                {Object.entries(ProgrammingLanguageDisplayNames).map(
+                  ([key, displayName]) => (
+                    <SelectItem key={key} value={key}>
+                      {displayName}
+                    </SelectItem>
+                  )
+                )}
               </SelectContent>
             </Select>
             {errors.language && (
@@ -158,9 +173,11 @@ export default function CreateProblemPostForm() {
             )}
           </div>
 
-          {/* Description */}
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="description"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Problem Description <span className="text-red-500">*</span>
             </label>
             <Textarea
@@ -168,38 +185,49 @@ export default function CreateProblemPostForm() {
               value={formData.description}
               onChange={(e) => handleInputChange("description", e.target.value)}
               placeholder="Describe your problem in detail. What are you trying to achieve? What issues are you facing? Include any error messages or specific requirements."
-              className={`min-h-[120px] ${errors.description ? "border-red-500" : ""}`}
+              className={`min-h-[120px] ${
+                errors.description ? "border-red-500" : ""
+              }`}
             />
             {errors.description && (
               <p className="mt-1 text-sm text-red-600">{errors.description}</p>
             )}
           </div>
 
-          {/* Code */}
           <div>
-            <label htmlFor="code" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="code"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Your Code (Optional)
             </label>
-            <Textarea
-              id="code"
-              value={formData.code}
-              onChange={(e) => handleInputChange("code", e.target.value)}
-              placeholder="Paste your code here (if applicable)..."
-              className={`min-h-[200px] font-mono text-sm ${errors.code ? "border-red-500" : ""}`}
-            />
+
+            {formData.language ? (
+              <CodeEditor
+                code={formData.code}
+                language={formData.language as ProgrammingLanguage}
+                onChange={(value) => handleInputChange("code", value || "")}
+              />
+            ) : (
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                <p className="text-gray-500 text-sm">
+                  Please select a programming language first to enable the code
+                  editor
+                </p>
+              </div>
+            )}
+
             {errors.code && (
               <p className="mt-1 text-sm text-red-600">{errors.code}</p>
             )}
           </div>
 
-          {/* Submit Error */}
           {errors.submit && (
             <div className="bg-red-50 border border-red-200 rounded-md p-4">
               <p className="text-sm text-red-600">{errors.submit}</p>
             </div>
           )}
 
-          {/* Action Buttons */}
           <div className="flex gap-4 pt-4">
             <Button
               type="submit"
