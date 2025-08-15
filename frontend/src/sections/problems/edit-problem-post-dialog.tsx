@@ -25,7 +25,7 @@ import {
   UpdateProblemPostRequest,
 } from "@/types/problem-post";
 import { useUpdateProblemPost } from "@/hooks/use-problem-posts";
-import CodeEditor from "./code-editor";
+import CodeEditor from "../../components/code-editor";
 
 interface EditProblemPostDialogProps {
   problemPost: ProblemPost;

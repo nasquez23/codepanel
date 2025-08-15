@@ -9,7 +9,7 @@ import { ProgrammingLanguageDisplayNames } from "@/types/problem-post";
 import { User, Clock, Code, Trash2, ArrowLeft, Edit } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import EditProblemPostDialog from "@/components/edit-problem-post-dialog";
+import EditProblemPostDialog from "./edit-problem-post-dialog";
 import DeleteConfirmationDialog from "@/components/delete-confirmation-dialog";
 import CodeBlock from "@/components/code-block";
 

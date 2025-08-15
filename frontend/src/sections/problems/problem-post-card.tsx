@@ -10,9 +10,8 @@ import { Button } from "@/components/ui/button";
 import { User, Clock, Code, Trash2, Edit } from "lucide-react";
 import { useDeleteProblemPost } from "@/hooks/use-problem-posts";
 import { useAuth } from "@/hooks/use-auth";
-import EditProblemPostDialog from "@/components/edit-problem-post-dialog";
+import EditProblemPostDialog from "./edit-problem-post-dialog";
 import DeleteConfirmationDialog from "@/components/delete-confirmation-dialog";
-import { VSCodeStyleCodeBlock } from "@/components/simple-code-block";
 import CodeBlock from "@/components/code-block";
 
 interface ProblemPostCardProps {
