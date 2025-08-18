@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import EditProblemPostDialog from "./edit-problem-post-dialog";
 import DeleteConfirmationDialog from "@/components/delete-confirmation-dialog";
 import CodeBlock from "@/components/code-block";
+import CommentsList from "@/components/comments/comments-list";
 
 interface ProblemPostDetailsProps {
   id: string;
@@ -177,13 +178,16 @@ export default function ProblemPostDetails({ id }: ProblemPostDetailsProps) {
 
             <div className="flex gap-3">
               <Button variant="outline">Share Problem</Button>
-              {/* Future: Add comment/reply functionality */}
               <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
                 Help with Solution
               </Button>
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="mt-8 bg-white rounded-lg shadow-lg p-8">
+        <CommentsList problemPostId={id} />
       </div>
 
       {canEdit && problemPost && (

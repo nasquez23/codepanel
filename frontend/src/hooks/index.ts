@@ -18,3 +18,16 @@ export {
 } from "./use-problem-post-details";
 
 export { useProblemPostsOptimistic } from "./use-problem-posts-optimistic";
+
+export { 
+  useComments,
+  useComment,
+  useCreateComment,
+  useUpdateComment,
+  useDeleteComment,
+  useLikeComment,
+  useDislikeComment,
+  useCommentCount,
+  useMyComments,
+  commentKeys
+} from "./use-comments";

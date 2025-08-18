@@ -36,7 +36,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/problem-posts").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/problem-posts/*").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/problem-posts/**").permitAll()
                         .requestMatchers("/api/problem-posts/**").authenticated()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
