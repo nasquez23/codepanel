@@ -15,11 +15,13 @@ import { CreateCommentRequest, UpdateCommentRequest } from "@/types/comment";
 export const commentKeys = {
   all: ["comments"] as const,
   lists: () => [...commentKeys.all, "list"] as const,
-  list: (problemPostId: string) => [...commentKeys.lists(), problemPostId] as const,
+  list: (problemPostId: string) =>
+    [...commentKeys.lists(), problemPostId] as const,
   details: () => [...commentKeys.all, "detail"] as const,
   detail: (id: string) => [...commentKeys.details(), id] as const,
   counts: () => [...commentKeys.all, "count"] as const,
-  count: (problemPostId: string) => [...commentKeys.counts(), problemPostId] as const,
+  count: (problemPostId: string) =>
+    [...commentKeys.counts(), problemPostId] as const,
   myComments: () => [...commentKeys.all, "my-comments"] as const,
 };
 
@@ -28,13 +30,15 @@ export const useComments = (
   page: number = 0,
   size: number = 10,
   sortBy: string = "createdAt",
-  sortDir: string = "desc"
+  sortDir: string = "desc",
+  enabled: boolean = true
 ) => {
   return useQuery({
     queryKey: [...commentKeys.list(problemPostId), page, size, sortBy, sortDir],
     queryFn: () => getComments(problemPostId, page, size, sortBy, sortDir),
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    gcTime: 1000 * 60 * 10, // 10 minutes
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
+    enabled,
   });
 };
 
@@ -49,13 +53,22 @@ export const useComment = (commentId: string, problemPostId: string) => {
 
 export const useCreateComment = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: ({ problemPostId, data }: { problemPostId: string; data: CreateCommentRequest }) =>
-      createComment(problemPostId, data),
+    mutationFn: ({
+      problemPostId,
+      data,
+    }: {
+      problemPostId: string;
+      data: CreateCommentRequest;
+    }) => createComment(problemPostId, data),
     onSuccess: (newComment, { problemPostId }) => {
-      queryClient.invalidateQueries({ queryKey: commentKeys.list(problemPostId) });
-      queryClient.invalidateQueries({ queryKey: commentKeys.count(problemPostId) });
+      queryClient.invalidateQueries({
+        queryKey: commentKeys.list(problemPostId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: commentKeys.count(problemPostId),
+      });
       queryClient.invalidateQueries({ queryKey: commentKeys.myComments() });
       queryClient.setQueryData(commentKeys.detail(newComment.id), newComment);
     },
@@ -67,7 +80,7 @@ export const useCreateComment = () => {
 
 export const useUpdateComment = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: ({
       commentId,
@@ -79,9 +92,14 @@ export const useUpdateComment = () => {
       data: UpdateCommentRequest;
     }) => updateComment(commentId, problemPostId, data),
     onSuccess: (updatedComment, { problemPostId }) => {
-      queryClient.invalidateQueries({ queryKey: commentKeys.list(problemPostId) });
+      queryClient.invalidateQueries({
+        queryKey: commentKeys.list(problemPostId),
+      });
       queryClient.invalidateQueries({ queryKey: commentKeys.myComments() });
-      queryClient.setQueryData(commentKeys.detail(updatedComment.id), updatedComment);
+      queryClient.setQueryData(
+        commentKeys.detail(updatedComment.id),
+        updatedComment
+      );
     },
     onError: (error) => {
       console.error("Error updating comment:", error);
@@ -91,13 +109,22 @@ export const useUpdateComment = () => {
 
 export const useDeleteComment = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: ({ commentId, problemPostId }: { commentId: string; problemPostId: string }) =>
-      deleteComment(commentId, problemPostId),
+    mutationFn: ({
+      commentId,
+      problemPostId,
+    }: {
+      commentId: string;
+      problemPostId: string;
+    }) => deleteComment(commentId, problemPostId),
     onSuccess: (_, { problemPostId, commentId }) => {
-      queryClient.invalidateQueries({ queryKey: commentKeys.list(problemPostId) });
-      queryClient.invalidateQueries({ queryKey: commentKeys.count(problemPostId) });
+      queryClient.invalidateQueries({
+        queryKey: commentKeys.list(problemPostId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: commentKeys.count(problemPostId),
+      });
       queryClient.invalidateQueries({ queryKey: commentKeys.myComments() });
       queryClient.removeQueries({ queryKey: commentKeys.detail(commentId) });
     },
@@ -109,13 +136,23 @@ export const useDeleteComment = () => {
 
 export const useLikeComment = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: ({ commentId, problemPostId }: { commentId: string; problemPostId: string }) =>
-      likeComment(commentId, problemPostId),
+    mutationFn: ({
+      commentId,
+      problemPostId,
+    }: {
+      commentId: string;
+      problemPostId: string;
+    }) => likeComment(commentId, problemPostId),
     onSuccess: (updatedComment, { problemPostId }) => {
-      queryClient.invalidateQueries({ queryKey: commentKeys.list(problemPostId) });
-      queryClient.setQueryData(commentKeys.detail(updatedComment.id), updatedComment);
+      queryClient.invalidateQueries({
+        queryKey: commentKeys.list(problemPostId),
+      });
+      queryClient.setQueryData(
+        commentKeys.detail(updatedComment.id),
+        updatedComment
+      );
     },
     onError: (error) => {
       console.error("Error liking comment:", error);
@@ -125,13 +162,23 @@ export const useLikeComment = () => {
 
 export const useDislikeComment = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: ({ commentId, problemPostId }: { commentId: string; problemPostId: string }) =>
-      dislikeComment(commentId, problemPostId),
+    mutationFn: ({
+      commentId,
+      problemPostId,
+    }: {
+      commentId: string;
+      problemPostId: string;
+    }) => dislikeComment(commentId, problemPostId),
     onSuccess: (updatedComment, { problemPostId }) => {
-      queryClient.invalidateQueries({ queryKey: commentKeys.list(problemPostId) });
-      queryClient.setQueryData(commentKeys.detail(updatedComment.id), updatedComment);
+      queryClient.invalidateQueries({
+        queryKey: commentKeys.list(problemPostId),
+      });
+      queryClient.setQueryData(
+        commentKeys.detail(updatedComment.id),
+        updatedComment
+      );
     },
     onError: (error) => {
       console.error("Error disliking comment:", error);

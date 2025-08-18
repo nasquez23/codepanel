@@ -1,5 +1,6 @@
 package com.codepanel.models.dto;
 
+import com.codepanel.models.enums.ReactionType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,6 +22,7 @@ public class CommentResponse {
     private UserInfo author;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private ReactionType userReaction;
 
     @Getter
     @Setter

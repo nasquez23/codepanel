@@ -4,6 +4,7 @@ import com.codepanel.models.User;
 import com.codepanel.models.dto.CommentResponse;
 import com.codepanel.models.dto.CreateCommentRequest;
 import com.codepanel.models.dto.UpdateCommentRequest;
+import com.codepanel.models.enums.ReactionType;
 import com.codepanel.services.CommentService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -42,19 +43,22 @@ public class CommentController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir) {
+            @RequestParam(defaultValue = "desc") String sortDir,
+            @AuthenticationPrincipal User currentUser) {
         
         Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ? 
             Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
         
-        Page<CommentResponse> response = commentService.getCommentsByProblemPost(problemPostId, pageable);
+        Page<CommentResponse> response = commentService.getCommentsByProblemPost(problemPostId, pageable, currentUser);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{commentId}")
-    public ResponseEntity<CommentResponse> getComment(@PathVariable UUID commentId) {
-        CommentResponse response = commentService.getCommentById(commentId);
+    public ResponseEntity<CommentResponse> getComment(
+            @PathVariable UUID commentId,
+            @AuthenticationPrincipal User currentUser) {
+        CommentResponse response = commentService.getCommentById(commentId, currentUser);
         return ResponseEntity.ok(response);
     }
 
@@ -82,7 +86,7 @@ public class CommentController {
             @PathVariable UUID problemPostId,
             @PathVariable UUID commentId,
             @AuthenticationPrincipal User currentUser) {
-        CommentResponse response = commentService.likeComment(commentId, currentUser);
+        CommentResponse response = commentService.toggleReaction(commentId, ReactionType.LIKE, currentUser);
         return ResponseEntity.ok(response);
     }
 
@@ -91,7 +95,7 @@ public class CommentController {
             @PathVariable UUID problemPostId,
             @PathVariable UUID commentId,
             @AuthenticationPrincipal User currentUser) {
-        CommentResponse response = commentService.dislikeComment(commentId, currentUser);
+        CommentResponse response = commentService.toggleReaction(commentId, ReactionType.DISLIKE, currentUser);
         return ResponseEntity.ok(response);
     }
 
@@ -125,7 +129,7 @@ class MyCommentsController {
             Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
         
-        Page<CommentResponse> response = commentService.getCommentsByUser(currentUser, pageable);
+        Page<CommentResponse> response = commentService.getCommentsByUser(currentUser, pageable, currentUser);
         return ResponseEntity.ok(response);
     }
 }

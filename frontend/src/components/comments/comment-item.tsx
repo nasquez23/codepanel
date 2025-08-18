@@ -86,7 +86,6 @@ export default function CommentItem({
 
   return (
     <div className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-      {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
@@ -130,33 +129,38 @@ export default function CommentItem({
         )}
       </div>
 
-      {/* Content */}
       <div className="mb-4">
         <p className="text-gray-800 whitespace-pre-wrap">{comment.comment}</p>
       </div>
 
-      {/* Code */}
       {comment.code && (
         <div className="mb-4">
           <CodeBlock
             code={comment.code}
-            language={ProgrammingLanguage.JAVASCRIPT} // Default to JS, you might want to store language per comment
+            language={ProgrammingLanguage.JAVASCRIPT}
             maxHeight="300px"
             className="border"
           />
         </div>
       )}
 
-      {/* Actions */}
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"
           size="sm"
           onClick={handleLike}
           disabled={likeMutation.isPending}
-          className="flex items-center gap-1 text-gray-600 hover:text-green-600"
+          className={`flex items-center gap-1 transition-colors ${
+            comment.userReaction === "LIKE"
+              ? "text-green-600 bg-green-50"
+              : "text-gray-600 hover:text-green-600"
+          }`}
         >
-          <ThumbsUp className="h-4 w-4" />
+          <ThumbsUp
+            className={`h-4 w-4 ${
+              comment.userReaction === "LIKE" ? "fill-current" : ""
+            }`}
+          />
           <span>{comment.likes}</span>
         </Button>
 
@@ -165,9 +169,17 @@ export default function CommentItem({
           size="sm"
           onClick={handleDislike}
           disabled={dislikeMutation.isPending}
-          className="flex items-center gap-1 text-gray-600 hover:text-red-600"
+          className={`flex items-center gap-1 transition-colors ${
+            comment.userReaction === "DISLIKE"
+              ? "text-red-600 bg-red-50"
+              : "text-gray-600 hover:text-red-600"
+          }`}
         >
-          <ThumbsDown className="h-4 w-4" />
+          <ThumbsDown
+            className={`h-4 w-4 ${
+              comment.userReaction === "DISLIKE" ? "fill-current" : ""
+            }`}
+          />
           <span>{comment.dislikes}</span>
         </Button>
 
@@ -181,7 +193,6 @@ export default function CommentItem({
         </Button>
       </div>
 
-      {/* Delete Dialog */}
       <DeleteConfirmationDialog
         open={showDeleteDialog}
         onOpenChange={setShowDeleteDialog}

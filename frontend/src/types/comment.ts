@@ -7,6 +7,7 @@ export interface Comment {
   author: UserInfo;
   createdAt: string;
   updatedAt: string;
+  userReaction?: 'LIKE' | 'DISLIKE' | null;
 }
 
 export interface UserInfo {

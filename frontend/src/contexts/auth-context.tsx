@@ -60,9 +60,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useLayoutEffect(() => {
     const authInterceptor = axiosInstance.interceptors.request.use((config) => {
-      config.headers.Authorization = accessToken
-        ? `Bearer ${accessToken}`
-        : config.headers.Authorization;
+      if (accessToken) {
+        config.headers.Authorization = `Bearer ${accessToken}`;
+      }
 
       return config;
     });
@@ -90,7 +90,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
           try {
             await refreshAuth();
-            originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+            delete originalRequest.headers.Authorization;
             return axiosInstance(originalRequest);
           } catch (refreshError) {
             console.error("Token refresh failed:", refreshError);

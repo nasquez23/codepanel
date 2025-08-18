@@ -1,19 +1,24 @@
 package com.codepanel.services;
 
+import com.codepanel.models.CommentReaction;
 import com.codepanel.models.ProblemPost;
 import com.codepanel.models.ProblemPostComment;
 import com.codepanel.models.User;
 import com.codepanel.models.dto.CommentResponse;
 import com.codepanel.models.dto.CreateCommentRequest;
 import com.codepanel.models.dto.UpdateCommentRequest;
+import com.codepanel.models.enums.ReactionType;
+import com.codepanel.repositories.CommentReactionRepository;
 import com.codepanel.repositories.ProblemPostCommentRepository;
 import com.codepanel.repositories.ProblemPostRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -21,11 +26,14 @@ public class CommentService {
 
     private final ProblemPostCommentRepository commentRepository;
     private final ProblemPostRepository problemPostRepository;
+    private final CommentReactionRepository reactionRepository;
 
     public CommentService(ProblemPostCommentRepository commentRepository, 
-                         ProblemPostRepository problemPostRepository) {
+                         ProblemPostRepository problemPostRepository,
+                         CommentReactionRepository reactionRepository) {
         this.commentRepository = commentRepository;
         this.problemPostRepository = problemPostRepository;
+        this.reactionRepository = reactionRepository;
     }
 
     public CommentResponse createComment(UUID problemPostId, CreateCommentRequest request, User currentUser) {
@@ -41,26 +49,26 @@ public class CommentService {
         comment.setDislikes(0);
 
         ProblemPostComment savedComment = commentRepository.save(comment);
-        return mapToResponse(savedComment);
+        return mapToResponse(savedComment, currentUser);
     }
 
-    public Page<CommentResponse> getCommentsByProblemPost(UUID problemPostId, Pageable pageable) {
+    public Page<CommentResponse> getCommentsByProblemPost(UUID problemPostId, Pageable pageable, User currentUser) {
         ProblemPost problemPost = problemPostRepository.findById(problemPostId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Problem post not found"));
 
         Page<ProblemPostComment> comments = commentRepository.findByProblemPostOrderByCreatedAtDesc(problemPost, pageable);
-        return comments.map(this::mapToResponse);
+        return comments.map(comment -> mapToResponse(comment, currentUser));
     }
 
-    public Page<CommentResponse> getCommentsByUser(User user, Pageable pageable) {
+    public Page<CommentResponse> getCommentsByUser(User user, Pageable pageable, User currentUser) {
         Page<ProblemPostComment> comments = commentRepository.findByUserOrderByCreatedAtDesc(user, pageable);
-        return comments.map(this::mapToResponse);
+        return comments.map(comment -> mapToResponse(comment, currentUser));
     }
 
-    public CommentResponse getCommentById(UUID commentId) {
+    public CommentResponse getCommentById(UUID commentId, User currentUser) {
         ProblemPostComment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
-        return mapToResponse(comment);
+        return mapToResponse(comment, currentUser);
     }
 
     public CommentResponse updateComment(UUID commentId, UpdateCommentRequest request, User currentUser) {
@@ -75,7 +83,7 @@ public class CommentService {
         comment.setCode(request.getCode());
 
         ProblemPostComment updatedComment = commentRepository.save(comment);
-        return mapToResponse(updatedComment);
+        return mapToResponse(updatedComment, currentUser);
     }
 
     public void deleteComment(UUID commentId, User currentUser) {
@@ -89,34 +97,63 @@ public class CommentService {
         commentRepository.delete(comment);
     }
 
-    public CommentResponse likeComment(UUID commentId, User currentUser) {
+    @Transactional
+    public CommentResponse toggleReaction(UUID commentId, ReactionType reactionType, User currentUser) {
         ProblemPostComment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
 
-        comment.setLikes(comment.getLikes() + 1);
-        ProblemPostComment updatedComment = commentRepository.save(comment);
-        return mapToResponse(updatedComment);
+        Optional<CommentReaction> existingReaction = reactionRepository.findByCommentAndUser(comment, currentUser);
+
+        if (existingReaction.isPresent()) {
+            CommentReaction reaction = existingReaction.get();
+            if (reaction.getReactionType() == reactionType) {
+                reactionRepository.delete(reaction);
+                updateCommentCounts(comment);
+            } else {
+                reaction.setReactionType(reactionType);
+                reactionRepository.save(reaction);
+                updateCommentCounts(comment);
+            }
+        } else {            
+            CommentReaction newReaction = new CommentReaction();
+            newReaction.setComment(comment);
+            newReaction.setUser(currentUser);
+            newReaction.setReactionType(reactionType);
+            reactionRepository.save(newReaction);
+            updateCommentCounts(comment);
+        }
+
+        comment = commentRepository.findById(commentId).orElseThrow();
+        return mapToResponse(comment, currentUser);
     }
 
-    public CommentResponse dislikeComment(UUID commentId, User currentUser) {
-        ProblemPostComment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
-
-        comment.setDislikes(comment.getDislikes() + 1);
-        ProblemPostComment updatedComment = commentRepository.save(comment);
-        return mapToResponse(updatedComment);
+    private void updateCommentCounts(ProblemPostComment comment) {
+        Long likes = reactionRepository.countByCommentIdAndReactionType(comment.getId(), ReactionType.LIKE);
+        Long dislikes = reactionRepository.countByCommentIdAndReactionType(comment.getId(), ReactionType.DISLIKE);
+        
+        comment.setLikes(likes.intValue());
+        comment.setDislikes(dislikes.intValue());
+        commentRepository.save(comment);
     }
 
     public Long getCommentCount(UUID problemPostId) {
         return commentRepository.countByProblemPostId(problemPostId);
     }
 
-    private CommentResponse mapToResponse(ProblemPostComment comment) {
+    private CommentResponse mapToResponse(ProblemPostComment comment, User currentUser) {
         CommentResponse.UserInfo userInfo = new CommentResponse.UserInfo();
         userInfo.setId(comment.getUser().getId());
         userInfo.setFirstName(comment.getUser().getFirstName());
         userInfo.setLastName(comment.getUser().getLastName());
         userInfo.setEmail(comment.getUser().getEmail());
+
+        ReactionType userReaction = null;
+        if (currentUser != null) {
+            Optional<CommentReaction> reaction = reactionRepository.findByCommentAndUser(comment, currentUser);
+            if (reaction.isPresent()) {
+                userReaction = reaction.get().getReactionType();
+            }
+        }
 
         CommentResponse response = new CommentResponse();
         response.setId(comment.getId());
@@ -127,6 +164,7 @@ public class CommentService {
         response.setAuthor(userInfo);
         response.setCreatedAt(comment.getCreatedAt());
         response.setUpdatedAt(comment.getUpdatedAt());
+        response.setUserReaction(userReaction);
 
         return response;
     }
