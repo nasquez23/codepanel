@@ -265,10 +265,10 @@ function PendingReviewCard({ submission }: { submission: any }) {
           {/* Assignment Info */}
           <div className="ml-6">
             <Link 
-              href={`/assignments/${submission.assignmentId}`}
+              href={`/assignments/${submission.assignment.id}`}
               className="font-medium text-blue-600 hover:text-blue-800"
             >
-              {submission.assignmentTitle}
+              {submission.assignment.title}
             </Link>
             <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
               <Clock className="w-4 h-4" />

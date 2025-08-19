@@ -9,10 +9,8 @@ interface SubmissionsPageProps {
   };
 }
 
-export default async function SubmissionsPage({
-  params,
-}: SubmissionsPageProps) {
-  const { id } = await params;
+export default function SubmissionsPage({ params }: SubmissionsPageProps) {
+  const { id } = params;
   const { data: assignment } = useAssignment(id);
 
   return (

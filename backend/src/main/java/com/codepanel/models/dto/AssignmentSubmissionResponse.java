@@ -1,5 +1,6 @@
 package com.codepanel.models.dto;
 
+import com.codepanel.models.enums.ProgrammingLanguage;
 import com.codepanel.models.enums.SubmissionStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,15 +16,31 @@ import java.util.UUID;
 @AllArgsConstructor
 public class AssignmentSubmissionResponse {
     private UUID id;
-    private UUID assignmentId;
-    private String assignmentTitle;
+    private AssignmentInfo assignment;
     private String code;
     private SubmissionStatus status;
     private Integer grade;
     private UserInfo student;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private LocalDateTime submittedAt;
     private SubmissionReviewResponse review;
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class AssignmentInfo {
+        private UUID id;
+        private String title;
+        private String description;
+        private ProgrammingLanguage language;
+        private UserInfo instructor;
+        private LocalDateTime dueDate;
+        private Boolean isActive;
+        private LocalDateTime createdAt;
+        private LocalDateTime updatedAt;
+    }
 
     @Getter
     @Setter

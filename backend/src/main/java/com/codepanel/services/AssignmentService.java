@@ -282,10 +282,26 @@ public class AssignmentService {
         studentInfo.setLastName(submission.getStudent().getLastName());
         studentInfo.setEmail(submission.getStudent().getEmail());
 
+        AssignmentSubmissionResponse.UserInfo instructorInfo = new AssignmentSubmissionResponse.UserInfo();
+        instructorInfo.setId(submission.getAssignment().getInstructor().getId());
+        instructorInfo.setFirstName(submission.getAssignment().getInstructor().getFirstName());
+        instructorInfo.setLastName(submission.getAssignment().getInstructor().getLastName());
+        instructorInfo.setEmail(submission.getAssignment().getInstructor().getEmail());
+
+        AssignmentSubmissionResponse.AssignmentInfo assignmentInfo = new AssignmentSubmissionResponse.AssignmentInfo();
+        assignmentInfo.setId(submission.getAssignment().getId());
+        assignmentInfo.setTitle(submission.getAssignment().getTitle());
+        assignmentInfo.setDescription(submission.getAssignment().getDescription());
+        assignmentInfo.setLanguage(submission.getAssignment().getLanguage());
+        assignmentInfo.setInstructor(instructorInfo);
+        assignmentInfo.setDueDate(submission.getAssignment().getDueDate());
+        assignmentInfo.setIsActive(submission.getAssignment().getIsActive());
+        assignmentInfo.setCreatedAt(submission.getAssignment().getCreatedAt());
+        assignmentInfo.setUpdatedAt(submission.getAssignment().getUpdatedAt());
+
         AssignmentSubmissionResponse.SubmissionReviewResponse reviewResponse = null;
-        Optional<SubmissionReview> review = reviewRepository.findByAssignmentSubmission(submission);
-        if (review.isPresent()) {
-            SubmissionReview r = review.get();
+        if (submission.getReview() != null) {
+            SubmissionReview r = submission.getReview();
             AssignmentSubmissionResponse.UserInfo reviewerInfo = new AssignmentSubmissionResponse.UserInfo();
             reviewerInfo.setId(r.getReviewer().getId());
             reviewerInfo.setFirstName(r.getReviewer().getFirstName());
@@ -303,14 +319,14 @@ public class AssignmentService {
 
         AssignmentSubmissionResponse response = new AssignmentSubmissionResponse();
         response.setId(submission.getId());
-        response.setAssignmentId(submission.getAssignment().getId());
-        response.setAssignmentTitle(submission.getAssignment().getTitle());
+        response.setAssignment(assignmentInfo);
         response.setCode(submission.getCode());
         response.setStatus(submission.getStatus());
         response.setGrade(submission.getGrade());
         response.setStudent(studentInfo);
         response.setCreatedAt(submission.getCreatedAt());
         response.setUpdatedAt(submission.getUpdatedAt());
+        response.setSubmittedAt(submission.getCreatedAt());
         response.setReview(reviewResponse);
 
         return response;

@@ -109,10 +109,10 @@ function SubmissionCard({ submission }: { submission: AssignmentSubmission }) {
         <div className="flex-1">
           {/* Assignment Title */}
           <Link 
-            href={`/assignments/${submission.assignmentId}`}
+            href={`/assignments/${submission.assignment.id}`}
             className="text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors"
           >
-            {submission.assignmentTitle}
+            {submission.assignment.title}
           </Link>
 
           {/* Status and Grade Row */}

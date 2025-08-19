@@ -34,14 +34,14 @@ export interface UpdateAssignmentRequest {
 
 export interface AssignmentSubmission {
   id: string;
-  assignmentId: string;
-  assignmentTitle: string;
+  assignment: Assignment;
   code: string;
   status: SubmissionStatus;
   grade?: number;
   student: UserInfo;
   createdAt: string;
   updatedAt: string;
+  submittedAt: string;
   review?: SubmissionReview;
 }
 

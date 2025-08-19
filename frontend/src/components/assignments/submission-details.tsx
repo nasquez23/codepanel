@@ -31,7 +31,6 @@ export default function SubmissionDetails({ id }: SubmissionDetailsProps) {
   const { user } = useAuth();
   const { data: submission, isLoading, error } = useSubmission(id);
   const createReviewMutation = useReviewSubmission();
-  console.log(submission);
 
   const [reviewForm, setReviewForm] = useState({
     comment: "",
@@ -42,8 +41,8 @@ export default function SubmissionDetails({ id }: SubmissionDetailsProps) {
   const isSubmissionOwner = user?.id === submission?.student.id;
   const canReview =
     isInstructor &&
-    submission?.status === "PENDING_REVIEW";
-    // user?.id === submission?.assignment?.instructor.id;
+    submission?.status === "PENDING_REVIEW" &&
+    user?.id === submission?.assignment.instructor.id;
 
   const handleReviewSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -159,10 +158,10 @@ export default function SubmissionDetails({ id }: SubmissionDetailsProps) {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FileText className="size-5" />
-              {/* {submission.assignment.title} */}
+              {submission.assignment.title}
             </CardTitle>
             <CardDescription>
-              {/* {submission.assignment.description} */}
+              {submission.assignment.description}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -170,23 +169,23 @@ export default function SubmissionDetails({ id }: SubmissionDetailsProps) {
               <div className="flex items-center gap-2">
                 <User className="size-4 text-gray-500" />
                 <span>
-                  Instructor: {/* {submission.assignment?.instructor.firstName}{" "} */}
-                  {/* {submission.assignment?.instructor.lastName} */}
+                  Instructor: {submission.assignment?.instructor.firstName}{" "}
+                  {submission.assignment?.instructor.lastName}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <CalendarDays className="size-4 text-gray-500" />
                 <span>
                   Due:{" "}
-                  {/* {submission.assignment?.dueDate
+                  {submission.assignment?.dueDate
                     ? formatDate(submission.assignment?.dueDate)
-                    : "No due date"} */}
+                    : "No due date"}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-gray-500">Language:</span>
                 <Badge variant="secondary">
-                  {/* {submission.assignment.language} */}
+                  {submission.assignment.language}
                 </Badge>
               </div>
             </div>
@@ -202,10 +201,12 @@ export default function SubmissionDetails({ id }: SubmissionDetailsProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mb-4">
+            <div className="flex flex-col md:flex-row gap-10 text-sm mb-4">
               <div className="flex items-center gap-2">
                 <Clock className="size-4 text-gray-500" />
-                <span>Submitted: {/* {formatDate(submission.submittedAt)} */}</span>
+                <span>
+                  Submitted: {formatDate(submission.createdAt.toString())}
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-gray-500">Status:</span>
@@ -227,8 +228,7 @@ export default function SubmissionDetails({ id }: SubmissionDetailsProps) {
               <h3 className="text-lg font-semibold mb-3">Submitted Code</h3>
               <CodeBlock
                 code={submission.code}
-                language={ProgrammingLanguage.JAVASCRIPT}
-                // language={submission.assignment.language.toLowerCase()}
+                language={submission.assignment.language.toLowerCase() as any}
               />
             </div>
           </CardContent>
@@ -292,7 +292,9 @@ export default function SubmissionDetails({ id }: SubmissionDetailsProps) {
             <CardContent>
               <form onSubmit={handleReviewSubmit} className="space-y-4">
                 <div>
-                  <Label htmlFor="score">Score (0-100)</Label>
+                  <Label htmlFor="score" className="mb-2">
+                    Score (0-100)
+                  </Label>
                   <Input
                     id="score"
                     type="number"
@@ -310,7 +312,9 @@ export default function SubmissionDetails({ id }: SubmissionDetailsProps) {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="comment">Comments</Label>
+                  <Label htmlFor="comment" className="mb-2">
+                    Comments
+                  </Label>
                   <Textarea
                     id="comment"
                     value={reviewForm.comment}
