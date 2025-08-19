@@ -5,10 +5,12 @@ import { CodeXml, Loader2, Menu } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "./ui/button";
+import { usePathname } from "next/navigation";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
   const { isAuthenticated, logout, isLoading } = useAuth();
+  const isHomePage = usePathname() === "/";
 
   const handleLogout = async () => {
     await logout();
@@ -18,16 +20,44 @@ export default function Header() {
     <header className="bg-white/50 backdrop-blur-sm border-b border-blue-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center space-x-2">
+          <Link href="/" className="flex items-center space-x-2">
             <div className="size-9 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
               <CodeXml className="text-white text-lg" />
             </div>
             <span className="text-xl font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               CodePanel
             </span>
-          </div>
+          </Link>
 
           <nav className="hidden md:flex items-center space-x-8">
+            {isHomePage && (
+              <>
+                <Link
+                  href="#features"
+                  onClick={() => {
+                    const features = document.getElementById("features");
+                    if (features) {
+                      features.scrollIntoView({ behavior: "smooth" });
+                    }
+                  }}
+                  className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer whitespace-nowrap"
+                >
+                  Features
+                </Link>
+                <Link
+                  href="#how-it-works"
+                  onClick={() => {
+                    const howItWorks = document.getElementById("how-it-works");
+                    if (howItWorks) {
+                      howItWorks.scrollIntoView({ behavior: "smooth" });
+                    }
+                  }}
+                  className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer whitespace-nowrap"
+                >
+                  How it Works
+                </Link>
+              </>
+            )}
             <Link
               href="/problems"
               className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer whitespace-nowrap"
@@ -35,28 +65,10 @@ export default function Header() {
               Problems
             </Link>
             <Link
-              href="#features"
+              href="/assignments"
               className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer whitespace-nowrap"
             >
-              Features
-            </Link>
-            <Link
-              href="#how-it-works"
-              onClick={() => {
-                const howItWorks = document.getElementById("how-it-works");
-                if (howItWorks) {
-                  howItWorks.scrollIntoView({ behavior: "smooth" });
-                }
-              }}
-              className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer whitespace-nowrap"
-            >
-              How it Works
-            </Link>
-            <Link
-              href="/reviews"
-              className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer whitespace-nowrap"
-            >
-              Reviews
+              Assignments
             </Link>
             <Link
               href="/dashboard"
@@ -102,6 +114,12 @@ export default function Header() {
                 className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
               >
                 Problems
+              </Link>
+              <Link
+                href="/assignments"
+                className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
+              >
+                Assignments
               </Link>
               <Link
                 href="#features"

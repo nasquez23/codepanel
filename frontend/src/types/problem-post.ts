@@ -1,3 +1,5 @@
+import { PaginatedResponse, UserInfo } from "./shared";
+
 export interface ProblemPost {
   id: string;
   title: string;
@@ -7,13 +9,6 @@ export interface ProblemPost {
   author: UserInfo;
   createdAt: string;
   updatedAt: string;
-}
-
-export interface UserInfo {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
 }
 
 export interface CreateProblemPostRequest {
@@ -30,44 +25,17 @@ export interface UpdateProblemPostRequest {
   language: ProgrammingLanguage;
 }
 
-export interface ProblemPostResponse {
-  content: ProblemPost[];
-  pageable: {
-    sort: {
-      empty: boolean;
-      sorted: boolean;
-      unsorted: boolean;
-    };
-    offset: number;
-    pageSize: number;
-    pageNumber: number;
-    paged: boolean;
-    unpaged: boolean;
-  };
-  last: boolean;
-  totalPages: number;
-  totalElements: number;
-  size: number;
-  number: number;
-  sort: {
-    empty: boolean;
-    sorted: boolean;
-    unsorted: boolean;
-  };
-  first: boolean;
-  numberOfElements: number;
-  empty: boolean;
-}
+export type ProblemPostResponse = PaginatedResponse<ProblemPost>;
 
 export enum ProgrammingLanguage {
   JAVA = "JAVA",
-  JAVASCRIPT = "JAVASCRIPT", 
+  JAVASCRIPT = "JAVASCRIPT",
   PYTHON = "PYTHON",
   TYPESCRIPT = "TYPESCRIPT",
   C = "C",
   CPP = "CPP",
   CSHARP = "CSHARP",
-  PHP = "PHP"
+  PHP = "PHP",
 }
 
 export const ProgrammingLanguageDisplayNames = {
@@ -78,5 +46,5 @@ export const ProgrammingLanguageDisplayNames = {
   [ProgrammingLanguage.C]: "C",
   [ProgrammingLanguage.CPP]: "C++",
   [ProgrammingLanguage.CSHARP]: "C#",
-  [ProgrammingLanguage.PHP]: "PHP"
+  [ProgrammingLanguage.PHP]: "PHP",
 };

@@ -28,4 +28,7 @@ public class AssignmentSubmission extends BaseEntity {
     private SubmissionStatus status;
 
     private Integer grade;
+
+    @OneToOne(mappedBy = "assignmentSubmission", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private SubmissionReview review;
 }

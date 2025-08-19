@@ -1,3 +1,5 @@
+import { PaginatedResponse, UserInfo } from "./shared";
+
 export interface Comment {
   id: string;
   comment: string;
@@ -7,14 +9,7 @@ export interface Comment {
   author: UserInfo;
   createdAt: string;
   updatedAt: string;
-  userReaction?: 'LIKE' | 'DISLIKE' | null;
-}
-
-export interface UserInfo {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
+  userReaction?: "LIKE" | "DISLIKE" | null;
 }
 
 export interface CreateCommentRequest {
@@ -27,31 +22,4 @@ export interface UpdateCommentRequest {
   code?: string;
 }
 
-export interface CommentResponse {
-  content: Comment[];
-  pageable: {
-    pageNumber: number;
-    pageSize: number;
-    sort: {
-      empty: boolean;
-      sorted: boolean;
-      unsorted: boolean;
-    };
-    offset: number;
-    paged: boolean;
-    unpaged: boolean;
-  };
-  totalElements: number;
-  totalPages: number;
-  last: boolean;
-  size: number;
-  number: number;
-  sort: {
-    empty: boolean;
-    sorted: boolean;
-    unsorted: boolean;
-  };
-  first: boolean;
-  numberOfElements: number;
-  empty: boolean;
-}
+export type CommentResponse = PaginatedResponse<Comment>;
