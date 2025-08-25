@@ -37,6 +37,9 @@ public class User extends BaseEntity implements UserDetails {
     @Column(nullable = false)
     private Role role;
 
+    @Column(name = "profile_picture_url")
+    private String profilePictureUrl;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));

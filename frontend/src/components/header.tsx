@@ -76,6 +76,14 @@ export default function Header() {
             >
               Dashboard
             </Link>
+            {isAuthenticated && (
+              <Link
+                href="/profile"
+                className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer whitespace-nowrap"
+              >
+                Profile
+              </Link>
+            )}
           </nav>
 
           {isLoading ? (
@@ -145,6 +153,14 @@ export default function Header() {
               >
                 Dashboard
               </Link>
+              {isAuthenticated && (
+                <Link
+                  href="/profile"
+                  className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
+                >
+                  Profile
+                </Link>
+              )}
               <div className="flex flex-col space-y-2 pt-4">
                 <Link
                   href="/login"

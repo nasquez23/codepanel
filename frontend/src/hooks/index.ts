@@ -46,3 +46,11 @@ export {
   usePendingReviews,
   assignmentKeys,
 } from "./use-assignments";
+
+export {
+  useProfile,
+  useUpdateProfile,
+  useUploadProfilePicture,
+  useRemoveProfilePicture,
+  profileKeys,
+} from "./use-profile";
