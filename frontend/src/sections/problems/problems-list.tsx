@@ -1,26 +1,72 @@
 "use client";
 
-import { useState } from "react";
-import { useProblemPosts } from "@/hooks/use-problem-posts";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import { useProblemPosts, useSearchProblemPosts } from "@/hooks/use-problem-posts";
 import ProblemPostCard from "./problem-post-card";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth";
+import SearchInput from "@/components/search/search-input";
+import SearchFilters from "@/components/search/search-filters";
 
 export default function ProblemsList() {
+  const searchParams = useSearchParams();
+  const initialQuery = searchParams.get("q") || "";
+  const initialLanguage = searchParams.get("language") || undefined;
+  
   const [currentPage, setCurrentPage] = useState(0);
+  const [query, setQuery] = useState(initialQuery);
+  const [language, setLanguage] = useState<string | undefined>(initialLanguage);
+  const [sortBy, setSortBy] = useState("createdAt");
+  const [sortDir, setSortDir] = useState("desc");
+  const [debouncedQuery, setDebouncedQuery] = useState(query);
   const { isAuthenticated } = useAuth();
 
   const pageSize = 10;
   
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(query);
+      setCurrentPage(0);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [language, sortBy, sortDir]);
+
+  const hasActiveSearch = !!(debouncedQuery.trim() || language);
+
+  // Use search hook when there's a search query or language filter, otherwise use regular fetch
+  const searchResults = useSearchProblemPosts(
+    debouncedQuery,
+    language,
+    currentPage,
+    pageSize,
+    sortBy,
+    sortDir,
+    hasActiveSearch
+  );
+
+  const regularResults = useProblemPosts(
+    currentPage,
+    pageSize,
+    sortBy,
+    sortDir
+  );
+
+  // Use search results if searching, otherwise use regular results
   const {
     data: response,
     isLoading,
     isError,
     error,
     refetch
-  } = useProblemPosts(currentPage, pageSize);
+  } = hasActiveSearch ? searchResults : regularResults;
 
   const problemPosts = response?.content || [];
   const totalPages = response?.totalPages || 0;
@@ -31,6 +77,20 @@ export default function ProblemsList() {
       setCurrentPage(newPage);
     }
   };
+
+  const handleClearSearch = () => {
+    setQuery("");
+    setLanguage(undefined);
+    setSortBy("createdAt");
+    setSortDir("desc");
+    setCurrentPage(0);
+  };
+
+  const sortOptions = [
+    { value: "createdAt", label: "Created Date" },
+    { value: "updatedAt", label: "Updated Date" },
+    { value: "title", label: "Title" },
+  ];
 
   if (isLoading) {
     return (
@@ -56,15 +116,18 @@ export default function ProblemsList() {
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
             Problem Posts
           </h1>
           <p className="text-gray-600 mt-2">
-            {totalElements > 0 
+            {hasActiveSearch && totalElements > 0 
+              ? `${totalElements} result${totalElements === 1 ? '' : 's'} found`
+              : !hasActiveSearch && totalElements > 0 
               ? `${totalElements} problem${totalElements === 1 ? '' : 's'} from the community`
+              : hasActiveSearch 
+              ? "No results found"
               : "No problems posted yet"
             }
           </p>
@@ -80,7 +143,27 @@ export default function ProblemsList() {
         )}
       </div>
 
-      {/* Problem Posts */}
+      <div className="flex flex-col sm:flex-row gap-4 mb-8">
+        <div className="flex-1">
+          <SearchInput
+            placeholder="Search by title, description, or author..."
+            value={query}
+            onChange={setQuery}
+            onClear={handleClearSearch}
+          />
+        </div>
+        
+        <SearchFilters
+          language={language}
+          onLanguageChange={setLanguage}
+          sortBy={sortBy}
+          onSortByChange={setSortBy}
+          sortDir={sortDir}
+          onSortDirChange={setSortDir}
+          sortOptions={sortOptions}
+        />
+      </div>
+
       {problemPosts.length > 0 ? (
         <div className="space-y-6">
           {problemPosts.map((problemPost) => (
@@ -92,35 +175,47 @@ export default function ProblemsList() {
         </div>
       ) : (
         <div className="text-center py-12">
-          <p className="text-gray-500 text-lg mb-4">
-            No problem posts yet.
-          </p>
-          {isAuthenticated ? (
+          {hasActiveSearch ? (
             <div>
-              <p className="text-gray-600 mb-6">
-                Be the first to share a coding challenge with the community!
+              <p className="text-gray-500 text-lg mb-4">
+                No problem posts match your search criteria.
               </p>
-              <Link href="/problems/create">
-                <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Post Your First Problem
-                </Button>
-              </Link>
+              <Button variant="outline" onClick={handleClearSearch}>
+                Clear search
+              </Button>
             </div>
           ) : (
             <div>
-              <p className="text-gray-600 mb-6">
-                Sign in to post your first coding problem.
+              <p className="text-gray-500 text-lg mb-4">
+                No problem posts yet.
               </p>
-              <Link href="/login">
-                <Button>Sign In</Button>
-              </Link>
+              {isAuthenticated ? (
+                <div>
+                  <p className="text-gray-600 mb-6">
+                    Be the first to share a coding challenge with the community!
+                  </p>
+                  <Link href="/problems/create">
+                    <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Post Your First Problem
+                    </Button>
+                  </Link>
+                </div>
+              ) : (
+                <div>
+                  <p className="text-gray-600 mb-6">
+                    Sign in to post your first coding problem.
+                  </p>
+                  <Link href="/login">
+                    <Button>Sign In</Button>
+                  </Link>
+                </div>
+              )}
             </div>
           )}
         </div>
       )}
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex justify-center items-center gap-4 mt-12">
           <Button

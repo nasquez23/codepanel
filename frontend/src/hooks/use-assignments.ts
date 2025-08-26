@@ -12,6 +12,7 @@ import {
   getSubmission,
   reviewSubmission,
   getPendingReviews,
+  searchAssignments,
 } from "@/services/assignment-api";
 import {
   CreateAssignmentRequest,
@@ -36,9 +37,21 @@ export const assignmentKeys = {
     [...assignmentKeys.submissions(), "my-submissions"] as const,
   pendingReviews: () =>
     [...assignmentKeys.submissions(), "pending-reviews"] as const,
+  search: () => [...assignmentKeys.all, "search"] as const,
+  searchList: (
+    query?: string,
+    language?: string,
+    page?: number,
+    size?: number,
+    sortBy?: string,
+    sortDir?: string
+  ) =>
+    [
+      ...assignmentKeys.search(),
+      { query, language, page, size, sortBy, sortDir },
+    ] as const,
 };
 
-// Assignment hooks
 export const useAssignments = (
   page: number = 0,
   size: number = 10,
@@ -149,7 +162,7 @@ export const useSubmitAssignment = () => {
     onSuccess: (newSubmission) => {
       queryClient.invalidateQueries({ queryKey: assignmentKeys.lists() });
       queryClient.invalidateQueries({
-        queryKey: assignmentKeys.detail(newSubmission.assignmentId),
+        queryKey: assignmentKeys.detail(newSubmission.assignment.id),
       });
       queryClient.invalidateQueries({
         queryKey: assignmentKeys.mySubmissions(),
@@ -222,5 +235,31 @@ export const usePendingReviews = (page: number = 0, size: number = 10) => {
     queryFn: () => getPendingReviews(page, size),
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 10,
+  });
+};
+
+export const useSearchAssignments = (
+  query?: string,
+  language?: string,
+  page: number = 0,
+  size: number = 10,
+  sortBy: string = "dueDate",
+  sortDir: string = "asc",
+  enabled: boolean = true
+) => {
+  return useQuery({
+    queryKey: assignmentKeys.searchList(
+      query,
+      language,
+      page,
+      size,
+      sortBy,
+      sortDir
+    ),
+    queryFn: () =>
+      searchAssignments(query, language, page, size, sortBy, sortDir),
+    enabled: enabled && !!(query?.trim() || language),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 };

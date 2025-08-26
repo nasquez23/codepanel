@@ -11,6 +11,7 @@ import {
   getProblemPostById,
   getMyProblemPosts,
   deleteProblemPost,
+  searchProblemPosts,
 } from "@/services/problem-post-api";
 
 export const problemPostKeys = {
@@ -23,6 +24,9 @@ export const problemPostKeys = {
   myPosts: () => [...problemPostKeys.all, "my-posts"] as const,
   myPostsList: (page: number, size: number) =>
     [...problemPostKeys.myPosts(), { page, size }] as const,
+  search: () => [...problemPostKeys.all, "search"] as const,
+  searchList: (query?: string, language?: string, page?: number, size?: number, sortBy?: string, sortDir?: string) =>
+    [...problemPostKeys.search(), { query, language, page, size, sortBy, sortDir }] as const,
 };
 
 export const useProblemPosts = (
@@ -141,7 +145,7 @@ export const useDeleteProblemPost = () => {
 
 export const usePrefetchProblemPost = () => {
   const queryClient = useQueryClient();
-
+  
   return (id: string) => {
     queryClient.prefetchQuery({
       queryKey: problemPostKeys.detail(id),
@@ -149,4 +153,22 @@ export const usePrefetchProblemPost = () => {
       staleTime: 5 * 60 * 1000,
     });
   };
+};
+
+export const useSearchProblemPosts = (
+  query?: string,
+  language?: string,
+  page: number = 0,
+  size: number = 10,
+  sortBy: string = "createdAt",
+  sortDir: string = "desc",
+  enabled: boolean = true
+) => {
+  return useQuery({
+    queryKey: problemPostKeys.searchList(query, language, page, size, sortBy, sortDir),
+    queryFn: () => searchProblemPosts(query, language, page, size, sortBy, sortDir),
+    enabled: enabled && !!(query?.trim() || language),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
 };

@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 import com.codepanel.models.Assignment;
 import com.codepanel.models.User;
+import com.codepanel.models.enums.ProgrammingLanguage;
 
 public interface AssignmentRepository extends JpaRepository<Assignment, UUID> {
     
@@ -47,4 +48,20 @@ public interface AssignmentRepository extends JpaRepository<Assignment, UUID> {
      */
     @Query("SELECT COUNT(s) > 0 FROM AssignmentSubmission s WHERE s.assignment.id = :assignmentId AND s.student.id = :studentId")
     Boolean hasUserSubmitted(@Param("assignmentId") UUID assignmentId, @Param("studentId") UUID studentId);
+    
+    /**
+     * Search assignments by title, description, or instructor name
+     */
+    @Query("SELECT a FROM Assignment a JOIN FETCH a.instructor i WHERE " +
+           "a.isActive = true AND " +
+           "(:query IS NULL OR :query = '' OR " +
+           "LOWER(a.title) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+           "LOWER(a.description) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+           "LOWER(CONCAT(i.firstName, ' ', i.lastName)) LIKE LOWER(CONCAT('%', :query, '%'))) AND " +
+           "(:language IS NULL OR a.language = :language)")
+    Page<Assignment> searchAssignments(
+        @Param("query") String query,
+        @Param("language") ProgrammingLanguage language,
+        Pageable pageable
+    );
 }

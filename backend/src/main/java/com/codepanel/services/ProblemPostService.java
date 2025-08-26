@@ -5,6 +5,7 @@ import com.codepanel.models.User;
 import com.codepanel.models.dto.CreateProblemPostRequest;
 import com.codepanel.models.dto.UpdateProblemPostRequest;
 import com.codepanel.models.dto.ProblemPostResponse;
+import com.codepanel.models.enums.ProgrammingLanguage;
 import com.codepanel.repositories.ProblemPostRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -48,6 +49,11 @@ public class ProblemPostService {
 
     public Page<ProblemPostResponse> getProblemPostsByUser(User user, Pageable pageable) {
         Page<ProblemPost> problemPosts = problemPostRepository.findByUserOrderByCreatedAtDesc(user, pageable);
+        return problemPosts.map(this::mapToResponse);
+    }
+
+    public Page<ProblemPostResponse> searchProblemPosts(String query, ProgrammingLanguage language, Pageable pageable) {
+        Page<ProblemPost> problemPosts = problemPostRepository.searchProblemPosts(query, language, pageable);
         return problemPosts.map(this::mapToResponse);
     }
 

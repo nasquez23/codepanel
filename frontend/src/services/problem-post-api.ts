@@ -62,3 +62,29 @@ export const updateProblemPost = async (
 export const deleteProblemPost = async (id: string): Promise<void> => {
   await deleter(`/api/problem-posts/${id}`);
 };
+
+export const searchProblemPosts = async (
+  query?: string,
+  language?: string,
+  page: number = 0,
+  size: number = 10,
+  sortBy: string = "createdAt",
+  sortDir: string = "desc"
+): Promise<ProblemPostResponse> => {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    size: size.toString(),
+    sortBy,
+    sortDir,
+  });
+
+  if (query && query.trim()) {
+    params.append("query", query.trim());
+  }
+  
+  if (language) {
+    params.append("language", language);
+  }
+
+  return fetcher<ProblemPostResponse>(`/api/problem-posts/search?${params}`);
+};

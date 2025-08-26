@@ -8,6 +8,7 @@ export {
   useUpdateProblemPost,
   useDeleteProblemPost,
   usePrefetchProblemPost,
+  useSearchProblemPosts,
   problemPostKeys,
 } from "./use-problem-posts";
 
@@ -44,6 +45,7 @@ export {
   useSubmission,
   useReviewSubmission,
   usePendingReviews,
+  useSearchAssignments,
   assignmentKeys,
 } from "./use-assignments";
 

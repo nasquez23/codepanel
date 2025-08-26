@@ -6,6 +6,7 @@ import com.codepanel.models.dto.AssignmentSubmissionResponse;
 import com.codepanel.models.dto.CreateAssignmentRequest;
 import com.codepanel.models.dto.CreateSubmissionRequest;
 import com.codepanel.models.dto.UpdateAssignmentRequest;
+import com.codepanel.models.enums.ProgrammingLanguage;
 import com.codepanel.services.AssignmentService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -61,6 +62,24 @@ public class AssignmentController {
         
         Pageable pageable = PageRequest.of(page, size);
         Page<AssignmentResponse> response = assignmentService.getMyAssignments(currentUser, pageable);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<Page<AssignmentResponse>> searchAssignments(
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false) ProgrammingLanguage language,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "dueDate") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir,
+            @AuthenticationPrincipal(errorOnInvalidType = false) User currentUser) {
+        
+        Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ? 
+            Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        
+        Page<AssignmentResponse> response = assignmentService.searchAssignments(query, language, pageable, currentUser);
         return ResponseEntity.ok(response);
     }
 

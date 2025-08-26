@@ -10,6 +10,7 @@ import com.codepanel.models.dto.CreateAssignmentRequest;
 import com.codepanel.models.dto.CreateReviewRequest;
 import com.codepanel.models.dto.CreateSubmissionRequest;
 import com.codepanel.models.dto.UpdateAssignmentRequest;
+import com.codepanel.models.enums.ProgrammingLanguage;
 import com.codepanel.models.enums.Role;
 import com.codepanel.models.enums.SubmissionStatus;
 import com.codepanel.repositories.AssignmentRepository;
@@ -72,6 +73,12 @@ public class AssignmentService {
 
         Page<Assignment> assignments = assignmentRepository.findByInstructorOrderByCreatedAtDesc(instructor, pageable);
         return assignments.map(assignment -> mapToAssignmentResponse(assignment, instructor));
+    }
+
+    @Transactional(readOnly = true)
+    public Page<AssignmentResponse> searchAssignments(String query, ProgrammingLanguage language, Pageable pageable, User currentUser) {
+        Page<Assignment> assignments = assignmentRepository.searchAssignments(query, language, pageable);
+        return assignments.map(assignment -> mapToAssignmentResponse(assignment, currentUser));
     }
 
     @Transactional(readOnly = true)

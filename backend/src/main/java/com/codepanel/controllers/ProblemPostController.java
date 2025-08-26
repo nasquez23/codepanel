@@ -5,6 +5,7 @@ import com.codepanel.models.User;
 import com.codepanel.models.dto.CreateProblemPostRequest;
 import com.codepanel.models.dto.UpdateProblemPostRequest;
 import com.codepanel.models.dto.ProblemPostResponse;
+import com.codepanel.models.enums.ProgrammingLanguage;
 import com.codepanel.services.ProblemPostService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -65,6 +66,23 @@ public class ProblemPostController {
         
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<ProblemPostResponse> response = problemPostService.getProblemPostsByUser(currentUser, pageable);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<Page<ProblemPostResponse>> searchProblemPosts(
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false) ProgrammingLanguage language,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+        
+        Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ? 
+            Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        
+        Page<ProblemPostResponse> response = problemPostService.searchProblemPosts(query, language, pageable);
         return ResponseEntity.ok(response);
     }
 

@@ -130,3 +130,29 @@ export const getPendingReviews = async (
     `/api/submissions/pending-reviews?${params}`
   );
 };
+
+export const searchAssignments = async (
+  query?: string,
+  language?: string,
+  page: number = 0,
+  size: number = 10,
+  sortBy: string = "dueDate",
+  sortDir: string = "asc"
+): Promise<AssignmentResponse> => {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    size: size.toString(),
+    sortBy,
+    sortDir,
+  });
+
+  if (query && query.trim()) {
+    params.append("query", query.trim());
+  }
+  
+  if (language) {
+    params.append("language", language);
+  }
+
+  return fetcher<AssignmentResponse>(`/api/assignments/search?${params}`);
+};
