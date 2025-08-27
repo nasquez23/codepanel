@@ -48,6 +48,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/assignments/**").authenticated()
                         .requestMatchers("/api/submissions/**").authenticated()
                         .requestMatchers("/api/profile/**").authenticated()
+                        .requestMatchers("/api/notifications/**").authenticated()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)

@@ -8,6 +8,7 @@ import com.codepanel.models.dto.CommentResponse;
 import com.codepanel.models.dto.CreateCommentRequest;
 import com.codepanel.models.dto.UpdateCommentRequest;
 import com.codepanel.models.enums.ReactionType;
+import com.codepanel.models.events.CommentCreatedEvent;
 import com.codepanel.repositories.CommentReactionRepository;
 import com.codepanel.repositories.ProblemPostCommentRepository;
 import com.codepanel.repositories.ProblemPostRepository;
@@ -27,13 +28,16 @@ public class CommentService {
     private final ProblemPostCommentRepository commentRepository;
     private final ProblemPostRepository problemPostRepository;
     private final CommentReactionRepository reactionRepository;
+    private final NotificationEventPublisher notificationEventPublisher;
 
     public CommentService(ProblemPostCommentRepository commentRepository, 
                          ProblemPostRepository problemPostRepository,
-                         CommentReactionRepository reactionRepository) {
+                         CommentReactionRepository reactionRepository,
+                         NotificationEventPublisher notificationEventPublisher) {
         this.commentRepository = commentRepository;
         this.problemPostRepository = problemPostRepository;
         this.reactionRepository = reactionRepository;
+        this.notificationEventPublisher = notificationEventPublisher;
     }
 
     public CommentResponse createComment(UUID problemPostId, CreateCommentRequest request, User currentUser) {
@@ -49,6 +53,21 @@ public class CommentService {
         comment.setDislikes(0);
 
         ProblemPostComment savedComment = commentRepository.save(comment);
+        
+        // Publish comment created event for notifications
+        CommentCreatedEvent event = CommentCreatedEvent.builder()
+                .commentId(savedComment.getId())
+                .problemPostId(problemPost.getId())
+                .problemPostTitle(problemPost.getTitle())
+                .commentAuthorId(currentUser.getId())
+                .commentAuthorName(currentUser.getFirstName() + " " + currentUser.getLastName())
+                .postAuthorId(problemPost.getUser().getId())
+                .commentContent(savedComment.getComment())
+                .createdAt(savedComment.getCreatedAt())
+                .build();
+        
+        notificationEventPublisher.publishCommentCreated(event);
+        
         return mapToResponse(savedComment, currentUser);
     }
 
