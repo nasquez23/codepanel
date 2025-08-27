@@ -13,6 +13,7 @@ import com.codepanel.models.dto.UpdateAssignmentRequest;
 import com.codepanel.models.enums.ProgrammingLanguage;
 import com.codepanel.models.enums.Role;
 import com.codepanel.models.enums.SubmissionStatus;
+import com.codepanel.models.events.AssignmentGradedEvent;
 import com.codepanel.repositories.AssignmentRepository;
 import com.codepanel.repositories.AssignmentSubmissionRepository;
 import com.codepanel.repositories.SubmissionReviewRepository;
@@ -33,13 +34,16 @@ public class AssignmentService {
     private final AssignmentRepository assignmentRepository;
     private final AssignmentSubmissionRepository submissionRepository;
     private final SubmissionReviewRepository reviewRepository;
+    private final NotificationEventPublisher notificationEventPublisher;
 
     public AssignmentService(AssignmentRepository assignmentRepository,
             AssignmentSubmissionRepository submissionRepository,
-            SubmissionReviewRepository reviewRepository) {
+            SubmissionReviewRepository reviewRepository,
+            NotificationEventPublisher notificationEventPublisher) {
         this.assignmentRepository = assignmentRepository;
         this.submissionRepository = submissionRepository;
         this.reviewRepository = reviewRepository;
+        this.notificationEventPublisher = notificationEventPublisher;
     }
 
     public AssignmentResponse createAssignment(CreateAssignmentRequest request, User instructor) {
@@ -56,6 +60,7 @@ public class AssignmentService {
         assignment.setIsActive(request.getIsActive());
 
         Assignment savedAssignment = assignmentRepository.save(assignment);
+   
         return mapToAssignmentResponse(savedAssignment, null);
     }
 
@@ -230,6 +235,22 @@ public class AssignmentService {
         submission.setStatus(SubmissionStatus.REVIEWED);
         submission.setGrade(request.getScore());
         submissionRepository.save(submission);
+
+        // Publish assignment graded event
+        AssignmentGradedEvent event = AssignmentGradedEvent.builder()
+                .submissionId(submission.getId())
+                .assignmentId(submission.getAssignment().getId())
+                .assignmentTitle(submission.getAssignment().getTitle())
+                .studentId(submission.getStudent().getId())
+                .studentName(submission.getStudent().getFirstName() + " " + submission.getStudent().getLastName())
+                .reviewerId(reviewer.getId())
+                .reviewerName(reviewer.getFirstName() + " " + reviewer.getLastName())
+                .score(request.getScore())
+                .comment(request.getComment())
+                .gradedAt(LocalDateTime.now())
+                .build();
+        
+        notificationEventPublisher.publishAssignmentGraded(event);
 
         return mapToSubmissionResponse(submission);
     }

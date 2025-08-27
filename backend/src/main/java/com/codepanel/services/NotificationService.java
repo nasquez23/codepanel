@@ -3,7 +3,6 @@ package com.codepanel.services;
 import com.codepanel.models.Notification;
 import com.codepanel.models.User;
 import com.codepanel.models.enums.NotificationType;
-import com.codepanel.models.events.AssignmentCreatedEvent;
 import com.codepanel.models.events.AssignmentGradedEvent;
 import com.codepanel.models.events.CommentCreatedEvent;
 import com.codepanel.repositories.NotificationRepository;
@@ -56,6 +55,32 @@ public class NotificationService {
 
         Notification savedNotification = notificationRepository.save(notification);
         System.out.println("Created notification with ID: " + savedNotification.getId());
+        
+        return savedNotification;
+    }
+
+    @Transactional
+    public Notification createAssignmentGradedNotification(AssignmentGradedEvent event) {
+        System.out.println("Creating assignment graded notification for event: " + event);
+        
+        User recipient = userRepository.findById(event.getStudentId())
+                .orElseThrow(() -> new RuntimeException("Student not found: " + event.getStudentId()));
+
+        Notification notification = Notification.builder()
+                .recipient(recipient)
+                .type(NotificationType.ASSIGNMENT_GRADED)
+                .title("Assignment graded")
+                .message(String.format("Your assignment \"%s\" has been graded. Score: %d/100", 
+                        event.getAssignmentTitle(),
+                        event.getScore()))
+                .relatedEntityId(event.getSubmissionId())
+                .relatedEntityType("ASSIGNMENT_SUBMISSION")
+                .actionUrl("/submissions/" + event.getSubmissionId())
+                .isRead(false)
+                .build();
+
+        Notification savedNotification = notificationRepository.save(notification);
+        System.out.println("Created assignment graded notification with ID: " + savedNotification.getId());
         
         return savedNotification;
     }
