@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,7 +20,6 @@ import {
 import { Badge } from "../ui/badge";
 import { Label } from "../ui/label";
 import { Separator } from "../ui/separator";
-import { ProgrammingLanguage } from "@/types/problem-post";
 
 interface SubmissionDetailsProps {
   id: string;
@@ -44,7 +43,7 @@ export default function SubmissionDetails({ id }: SubmissionDetailsProps) {
     submission?.status === "PENDING_REVIEW" &&
     user?.id === submission?.assignment.instructor.id;
 
-  const handleReviewSubmit = (e: React.FormEvent) => {
+  const handleReviewSubmit = (e: FormEvent) => {
     e.preventDefault();
 
     if (!reviewForm.comment.trim() || !reviewForm.score) {

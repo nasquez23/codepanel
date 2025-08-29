@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import { Edit, Save, X, User, Mail, Shield } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -20,8 +20,7 @@ export default function ProfilePage() {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Initialize form data when profile is loaded
-  React.useEffect(() => {
+  useEffect(() => {
     if (profile && !isEditing) {
       setFormData({
         firstName: profile.firstName,
