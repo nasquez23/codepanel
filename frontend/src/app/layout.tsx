@@ -5,6 +5,7 @@ import QueryProvider from "@/contexts/query-provider";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { Toaster } from "@/components/ui/sonner";
+import { WebSocketProvider } from "@/contexts/websocket-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,10 +29,12 @@ export default function RootLayout({
       >
         <QueryProvider>
           <AuthProvider>
-            <Toaster />
-            <Header />
-            {children}
-            <Footer />
+            <WebSocketProvider>
+              <Toaster />
+              <Header />
+              {children}
+              <Footer />
+            </WebSocketProvider>
           </AuthProvider>
         </QueryProvider>
       </body>

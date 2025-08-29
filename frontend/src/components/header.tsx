@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { usePathname } from "next/navigation";
+import { NotificationsDropdown } from "./notifications/notifications-dropdown";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
@@ -89,9 +90,12 @@ export default function Header() {
           {isLoading ? (
             <Loader2 className="w-4 h-4 animate-spin" />
           ) : isAuthenticated ? (
-            <Button variant="primary" onClick={handleLogout}>
-              Logout
-            </Button>
+            <div className="flex items-center space-x-3">
+              <NotificationsDropdown />
+              <Button variant="primary" onClick={handleLogout}>
+                Logout
+              </Button>
+            </div>
           ) : (
             <div className="hidden md:flex items-center space-x-4">
               <Link
