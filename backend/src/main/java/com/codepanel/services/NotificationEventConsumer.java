@@ -14,13 +14,16 @@ public class NotificationEventConsumer {
     private final NotificationService notificationService;
     private final NotificationEventPublisher notificationEventPublisher;
     private final EmailService emailService;
+    private final WebSocketNotificationService webSocketService;
 
     public NotificationEventConsumer(NotificationService notificationService,
             NotificationEventPublisher notificationEventPublisher,
-            EmailService emailService) {
+            EmailService emailService,
+            WebSocketNotificationService webSocketService) {
         this.notificationService = notificationService;
         this.notificationEventPublisher = notificationEventPublisher;
         this.emailService = emailService;
+        this.webSocketService = webSocketService;
     }
 
     @RabbitListener(queues = NotificationRabbitConfig.COMMENT_NOTIFICATION_QUEUE)
@@ -34,9 +37,12 @@ public class NotificationEventConsumer {
                 System.out.println("Successfully created notification with ID: " + notification.getId() +
                         " for comment: " + event.getCommentId());
 
-                // TODO:
-                // - WebSocket notification to online users
-                // - Email notification if user has email notifications enabled
+                // Send real-time WebSocket notification
+                webSocketService.sendNotificationToUser(event.getPostAuthorId(), notification);
+
+                // Update unread count
+                Long unreadCount = notificationService.getUnreadCount(notification.getRecipient());
+                webSocketService.sendUnreadCountToUser(event.getPostAuthorId(), unreadCount);
             } else {
                 System.out.println("No notification created for comment event: " + event);
             }
@@ -58,9 +64,12 @@ public class NotificationEventConsumer {
                 System.out
                         .println("Successfully created notification for graded assignment: " + event.getSubmissionId());
 
-                // TODO:
-                // - WebSocket notification to online users
-                // - Send email notification if user has email notifications enabled
+                // Send real-time WebSocket notification
+                webSocketService.sendNotificationToUser(event.getStudentId(), notification);
+
+                // Update unread count
+                Long unreadCount = notificationService.getUnreadCount(notification.getRecipient());
+                webSocketService.sendUnreadCountToUser(event.getStudentId(), unreadCount);
             } else {
                 System.out.println("No notification created for graded assignment event: " + event);
             }

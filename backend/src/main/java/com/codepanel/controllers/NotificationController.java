@@ -4,6 +4,7 @@ import com.codepanel.models.Notification;
 import com.codepanel.models.User;
 import com.codepanel.models.dto.NotificationResponse;
 import com.codepanel.services.NotificationService;
+import com.codepanel.services.WebSocketNotificationService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,9 +20,12 @@ import java.util.UUID;
 public class NotificationController {
 
     private final NotificationService notificationService;
+    private final WebSocketNotificationService webSocketService;
 
-    public NotificationController(NotificationService notificationService) {
+    public NotificationController(NotificationService notificationService,
+            WebSocketNotificationService webSocketService) {
         this.notificationService = notificationService;
+        this.webSocketService = webSocketService;
     }
 
     @GetMapping
@@ -29,11 +33,11 @@ public class NotificationController {
             @AuthenticationPrincipal User user,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        
+
         Pageable pageable = PageRequest.of(page, size);
         Page<Notification> notifications = notificationService.getUserNotifications(user, pageable);
         Page<NotificationResponse> response = notifications.map(this::mapToResponse);
-        
+
         return ResponseEntity.ok(response);
     }
 
@@ -42,11 +46,11 @@ public class NotificationController {
             @AuthenticationPrincipal User user,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        
+
         Pageable pageable = PageRequest.of(page, size);
         Page<Notification> notifications = notificationService.getUnreadNotifications(user, pageable);
         Page<NotificationResponse> response = notifications.map(this::mapToResponse);
-        
+
         return ResponseEntity.ok(response);
     }
 
@@ -60,14 +64,26 @@ public class NotificationController {
     public ResponseEntity<Map<String, Boolean>> markAsRead(
             @PathVariable UUID id,
             @AuthenticationPrincipal User user) {
-        
+
         boolean success = notificationService.markAsRead(id, user);
+
+        if (success) {
+            // Send updated unread count via WebSocket
+            Long unreadCount = notificationService.getUnreadCount(user);
+            webSocketService.sendUnreadCountToUser(user.getId(), unreadCount);
+        }
+
         return ResponseEntity.ok(Map.of("success", success));
     }
 
     @PutMapping("/read-all")
     public ResponseEntity<Map<String, Integer>> markAllAsRead(@AuthenticationPrincipal User user) {
         int markedCount = notificationService.markAllAsRead(user);
+
+        if (markedCount > 0) {
+            webSocketService.sendUnreadCountToUser(user.getId(), 0L);
+        }
+
         return ResponseEntity.ok(Map.of("markedCount", markedCount));
     }
 

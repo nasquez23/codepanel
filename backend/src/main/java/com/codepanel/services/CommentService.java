@@ -30,10 +30,10 @@ public class CommentService {
     private final CommentReactionRepository reactionRepository;
     private final NotificationEventPublisher notificationEventPublisher;
 
-    public CommentService(ProblemPostCommentRepository commentRepository, 
-                         ProblemPostRepository problemPostRepository,
-                         CommentReactionRepository reactionRepository,
-                         NotificationEventPublisher notificationEventPublisher) {
+    public CommentService(ProblemPostCommentRepository commentRepository,
+            ProblemPostRepository problemPostRepository,
+            CommentReactionRepository reactionRepository,
+            NotificationEventPublisher notificationEventPublisher) {
         this.commentRepository = commentRepository;
         this.problemPostRepository = problemPostRepository;
         this.reactionRepository = reactionRepository;
@@ -53,7 +53,7 @@ public class CommentService {
         comment.setDislikes(0);
 
         ProblemPostComment savedComment = commentRepository.save(comment);
-        
+
         // Publish comment created event for notifications
         CommentCreatedEvent event = CommentCreatedEvent.builder()
                 .commentId(savedComment.getId())
@@ -65,9 +65,9 @@ public class CommentService {
                 .commentContent(savedComment.getComment())
                 .createdAt(savedComment.getCreatedAt())
                 .build();
-        
+
         notificationEventPublisher.publishCommentCreated(event);
-        
+
         return mapToResponse(savedComment, currentUser);
     }
 
@@ -75,7 +75,8 @@ public class CommentService {
         ProblemPost problemPost = problemPostRepository.findById(problemPostId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Problem post not found"));
 
-        Page<ProblemPostComment> comments = commentRepository.findByProblemPostOrderByCreatedAtDesc(problemPost, pageable);
+        Page<ProblemPostComment> comments = commentRepository.findByProblemPostOrderByCreatedAtDesc(problemPost,
+                pageable);
         return comments.map(comment -> mapToResponse(comment, currentUser));
     }
 
@@ -133,7 +134,7 @@ public class CommentService {
                 reactionRepository.save(reaction);
                 updateCommentCounts(comment);
             }
-        } else {            
+        } else {
             CommentReaction newReaction = new CommentReaction();
             newReaction.setComment(comment);
             newReaction.setUser(currentUser);
@@ -149,7 +150,7 @@ public class CommentService {
     private void updateCommentCounts(ProblemPostComment comment) {
         Long likes = reactionRepository.countByCommentIdAndReactionType(comment.getId(), ReactionType.LIKE);
         Long dislikes = reactionRepository.countByCommentIdAndReactionType(comment.getId(), ReactionType.DISLIKE);
-        
+
         comment.setLikes(likes.intValue());
         comment.setDislikes(dislikes.intValue());
         commentRepository.save(comment);
