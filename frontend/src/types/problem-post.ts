@@ -1,4 +1,5 @@
 import { PaginatedResponse, UserInfo } from "./shared";
+import { Category, Tag, DifficultyLevel } from "./tags-categories";
 
 export interface ProblemPost {
   id: string;
@@ -6,6 +7,9 @@ export interface ProblemPost {
   description: string;
   code?: string;
   language: ProgrammingLanguage;
+  difficultyLevel: DifficultyLevel;
+  category?: Category;
+  tags: Tag[];
   author: UserInfo;
   createdAt: string;
   updatedAt: string;
@@ -16,6 +20,9 @@ export interface CreateProblemPostRequest {
   description: string;
   code?: string;
   language: ProgrammingLanguage;
+  difficultyLevel: DifficultyLevel;
+  categoryId?: string;
+  tagIds?: string[];
 }
 
 export interface UpdateProblemPostRequest {
@@ -23,6 +30,9 @@ export interface UpdateProblemPostRequest {
   description: string;
   code?: string;
   language: ProgrammingLanguage;
+  difficultyLevel: DifficultyLevel;
+  categoryId?: string;
+  tagIds?: string[];
 }
 
 export type ProblemPostResponse = PaginatedResponse<ProblemPost>;

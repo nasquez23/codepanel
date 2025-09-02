@@ -1,11 +1,15 @@
 import { ProgrammingLanguage } from "./problem-post";
 import { PaginatedResponse, UserInfo } from "./shared";
+import { Category, Tag, DifficultyLevel } from "./tags-categories";
 
 export interface Assignment {
   id: string;
   title: string;
   description: string;
   language: ProgrammingLanguage;
+  difficultyLevel: DifficultyLevel;
+  category?: Category;
+  tags: Tag[];
   instructor: UserInfo;
   dueDate?: string;
   isActive: boolean;
@@ -20,6 +24,9 @@ export interface CreateAssignmentRequest {
   title: string;
   description: string;
   language: ProgrammingLanguage;
+  difficultyLevel: DifficultyLevel;
+  categoryId?: string;
+  tagIds?: string[];
   dueDate?: string;
   isActive?: boolean;
 }
@@ -28,6 +35,9 @@ export interface UpdateAssignmentRequest {
   title: string;
   description: string;
   language: ProgrammingLanguage;
+  difficultyLevel: DifficultyLevel;
+  categoryId?: string;
+  tagIds?: string[];
   dueDate?: string;
   isActive: boolean;
 }

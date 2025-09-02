@@ -4,6 +4,7 @@ import {
   ProblemPost,
   ProblemPostResponse,
 } from "../types/problem-post";
+import { DifficultyLevel } from "../types/tags-categories";
 import { poster, fetcher, deleter, putter } from "./api";
 
 export const getAllProblemPosts = async (
@@ -63,15 +64,34 @@ export const deleteProblemPost = async (id: string): Promise<void> => {
   await deleter(`/api/problem-posts/${id}`);
 };
 
+export interface SearchProblemPostsParams {
+  query?: string;
+  language?: string;
+  difficulty?: DifficultyLevel;
+  categoryId?: string;
+  tagIds?: string[];
+  page?: number;
+  size?: number;
+  sortBy?: string;
+  sortDir?: string;
+}
+
 export const searchProblemPosts = async (
-  query?: string,
-  language?: string,
-  page: number = 0,
-  size: number = 10,
-  sortBy: string = "createdAt",
-  sortDir: string = "desc"
+  params: SearchProblemPostsParams = {}
 ): Promise<ProblemPostResponse> => {
-  const params = new URLSearchParams({
+  const {
+    query,
+    language,
+    difficulty,
+    categoryId,
+    tagIds,
+    page = 0,
+    size = 10,
+    sortBy = "createdAt",
+    sortDir = "desc"
+  } = params;
+
+  const searchParams = new URLSearchParams({
     page: page.toString(),
     size: size.toString(),
     sortBy,
@@ -79,12 +99,26 @@ export const searchProblemPosts = async (
   });
 
   if (query && query.trim()) {
-    params.append("query", query.trim());
+    searchParams.append("query", query.trim());
   }
   
   if (language) {
-    params.append("language", language);
+    searchParams.append("language", language);
   }
 
-  return fetcher<ProblemPostResponse>(`/api/problem-posts/search?${params}`);
+  if (difficulty) {
+    searchParams.append("difficulty", difficulty);
+  }
+
+  if (categoryId) {
+    searchParams.append("categoryId", categoryId);
+  }
+
+  if (tagIds && tagIds.length > 0) {
+    tagIds.forEach(tagId => {
+      searchParams.append("tagIds", tagId);
+    });
+  }
+
+  return fetcher<ProblemPostResponse>(`/api/problem-posts/search?${searchParams}`);
 };

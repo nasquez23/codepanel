@@ -16,8 +16,12 @@ import {
   ProgrammingLanguage,
   ProgrammingLanguageDisplayNames,
 } from "@/types/problem-post";
+import { DifficultyLevel, Tag, Category } from "@/types/tags-categories";
 import { useCreateProblemPost } from "@/hooks/use-problem-posts";
 import { useAuth } from "@/hooks/use-auth";
+import { TagSelector } from "@/components/ui/tag-selector";
+import { CategorySelector } from "@/components/ui/category-selector";
+import { DifficultySelector } from "@/components/ui/difficulty-selector";
 import CodeBlock from "@/components/code-block";
 import CodeEditor from "@/components/code-editor";
 
@@ -27,6 +31,9 @@ export default function CreateProblemPostForm() {
     description: "",
     code: "",
     language: "" as ProgrammingLanguage | "",
+    difficultyLevel: "" as DifficultyLevel | "",
+    category: null as Category | null,
+    tags: [] as Tag[],
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const router = useRouter();
@@ -63,6 +70,10 @@ export default function CreateProblemPostForm() {
       newErrors.language = "Programming language is required";
     }
 
+    if (!formData.difficultyLevel) {
+      newErrors.difficultyLevel = "Difficulty level is required";
+    }
+
     if (formData.code && formData.code.length > 10000) {
       newErrors.code = "Code must not exceed 10000 characters";
     }
@@ -79,6 +90,9 @@ export default function CreateProblemPostForm() {
         description: formData.description.trim(),
         code: formData.code.trim() || undefined,
         language: formData.language as ProgrammingLanguage,
+        difficultyLevel: formData.difficultyLevel as DifficultyLevel,
+        categoryId: formData.category?.id,
+        tagIds: formData.tags.map(tag => tag.id),
       },
       {
         onSuccess: () => {
@@ -87,6 +101,9 @@ export default function CreateProblemPostForm() {
             description: "",
             code: "",
             language: "",
+            difficultyLevel: "",
+            category: null,
+            tags: [],
           });
 
           router.push("/problems");
@@ -171,6 +188,58 @@ export default function CreateProblemPostForm() {
             {errors.language && (
               <p className="mt-1 text-sm text-red-600">{errors.language}</p>
             )}
+          </div>
+
+          <div>
+            <label
+              htmlFor="difficulty"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Difficulty Level <span className="text-red-500">*</span>
+            </label>
+            <DifficultySelector
+              selectedDifficulty={formData.difficultyLevel || null}
+              onDifficultyChange={(difficulty) => 
+                handleInputChange("difficultyLevel", difficulty || "")
+              }
+              required={true}
+              className={errors.difficultyLevel ? "border-red-500" : ""}
+            />
+            {errors.difficultyLevel && (
+              <p className="mt-1 text-sm text-red-600">{errors.difficultyLevel}</p>
+            )}
+          </div>
+
+          <div>
+            <label
+              htmlFor="category"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Category (Optional)
+            </label>
+            <CategorySelector
+              selectedCategory={formData.category}
+              onCategoryChange={(category) => 
+                setFormData(prev => ({ ...prev, category }))
+              }
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="tags"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Tags (Optional)
+            </label>
+            <TagSelector
+              selectedTags={formData.tags}
+              onTagsChange={(tags) => 
+                setFormData(prev => ({ ...prev, tags }))
+              }
+              placeholder="Search and select tags..."
+              maxTags={5}
+            />
           </div>
 
           <div>

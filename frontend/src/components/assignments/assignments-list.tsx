@@ -6,24 +6,31 @@ import { useAssignments, useSearchAssignments } from "@/hooks/use-assignments";
 import { useAuth } from "@/hooks/use-auth";
 import AssignmentCard from "./assignment-card";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Plus, BookOpen, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import SearchInput from "@/components/search/search-input";
 import SearchFilters from "@/components/search/search-filters";
+import { Category, DifficultyLevel, Tag } from "@/types/tags-categories";
 
 interface AssignmentsListProps {
   showCreateButton?: boolean;
 }
 
-export default function AssignmentsList({ showCreateButton = false }: AssignmentsListProps) {
+export default function AssignmentsList({
+  showCreateButton = false,
+}: AssignmentsListProps) {
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get("q") || "";
   const initialLanguage = searchParams.get("language") || undefined;
-  
+
   const { user, isLoading: authLoading } = useAuth();
   const [page, setPage] = useState(0);
   const [query, setQuery] = useState(initialQuery);
+  const [difficulty, setDifficulty] = useState<DifficultyLevel | undefined>(
+    undefined
+  );
+  const [category, setCategory] = useState<Category | null>(null);
+  const [tags, setTags] = useState<Tag[]>([]);
   const [language, setLanguage] = useState<string | undefined>(initialLanguage);
   const [sortBy, setSortBy] = useState("dueDate");
   const [sortDir, setSortDir] = useState("asc");
@@ -40,14 +47,23 @@ export default function AssignmentsList({ showCreateButton = false }: Assignment
 
   useEffect(() => {
     setPage(0);
-  }, [language, sortBy, sortDir]);
+  }, [language, difficulty, category, tags, sortBy, sortDir]);
 
-  const hasActiveSearch = !!(debouncedQuery.trim() || language);
+  const hasActiveSearch = !!(
+    debouncedQuery.trim() ||
+    language ||
+    difficulty ||
+    category ||
+    tags.length > 0
+  );
 
   // Use search hook when there's a search query or language filter, otherwise use regular fetch
   const searchResults = useSearchAssignments(
     debouncedQuery,
     language,
+    difficulty,
+    category,
+    tags,
     page,
     10,
     sortBy,
@@ -81,6 +97,9 @@ export default function AssignmentsList({ showCreateButton = false }: Assignment
   const handleClearSearch = () => {
     setQuery("");
     setLanguage(undefined);
+    setDifficulty(undefined);
+    setCategory(null);
+    setTags([]);
     setSortBy("dueDate");
     setSortDir("asc");
     setPage(0);
@@ -130,26 +149,31 @@ export default function AssignmentsList({ showCreateButton = false }: Assignment
           <div>
             <h2 className="text-2xl font-bold text-gray-900">Assignments</h2>
             <p className="text-gray-600 text-sm">
-              {hasActiveSearch && assignmentsData?.totalElements 
-                ? `${assignmentsData.totalElements} result${assignmentsData.totalElements === 1 ? '' : 's'} found`
-                : !hasActiveSearch && assignmentsData?.totalElements 
-                ? `${assignmentsData.totalElements} assignment${assignmentsData.totalElements === 1 ? '' : 's'} available`
-                : hasActiveSearch 
+              {hasActiveSearch && assignmentsData?.totalElements
+                ? `${assignmentsData.totalElements} result${
+                    assignmentsData.totalElements === 1 ? "" : "s"
+                  } found`
+                : !hasActiveSearch && assignmentsData?.totalElements
+                ? `${assignmentsData.totalElements} assignment${
+                    assignmentsData.totalElements === 1 ? "" : "s"
+                  } available`
+                : hasActiveSearch
                 ? "No results found"
-                : "No assignments available"
-              }
+                : "No assignments available"}
             </p>
           </div>
         </div>
 
-        {showCreateButton && user && (user.role === "INSTRUCTOR" || user.role === "ADMIN") && (
-          <Link href="/assignments/create">
-            <Button className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Create Assignment
-            </Button>
-          </Link>
-        )}
+        {showCreateButton &&
+          user &&
+          (user.role === "INSTRUCTOR" || user.role === "ADMIN") && (
+            <Link href="/assignments/create">
+              <Button className="flex items-center gap-2">
+                <Plus className="h-4 w-4" />
+                Create Assignment
+              </Button>
+            </Link>
+          )}
       </div>
 
       <div className="flex flex-col lg:flex-row gap-4 mb-6">
@@ -161,11 +185,17 @@ export default function AssignmentsList({ showCreateButton = false }: Assignment
             onClear={handleClearSearch}
           />
         </div>
-        
+
         <div className="flex flex-col sm:flex-row gap-3">
           <SearchFilters
             language={language}
             onLanguageChange={setLanguage}
+            difficulty={difficulty}
+            onDifficultyChange={setDifficulty}
+            category={category}
+            onCategoryChange={setCategory}
+            tags={tags}
+            onTagsChange={setTags}
             sortBy={sortBy}
             onSortByChange={setSortBy}
             sortDir={sortDir}
@@ -180,7 +210,9 @@ export default function AssignmentsList({ showCreateButton = false }: Assignment
           <BookOpen className="h-16 w-16 text-gray-400 mx-auto mb-4" />
           {hasActiveSearch ? (
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No assignments found</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No assignments found
+              </h3>
               <p className="text-gray-500 mb-6">
                 No assignments match your search criteria.
               </p>
@@ -190,20 +222,24 @@ export default function AssignmentsList({ showCreateButton = false }: Assignment
             </div>
           ) : (
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No assignments available</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No assignments available
+              </h3>
               <p className="text-gray-500 mb-6">
                 {user && (user.role === "INSTRUCTOR" || user.role === "ADMIN")
                   ? "Create your first assignment to get started."
                   : "Check back later for new assignments from your instructors."}
               </p>
-              {showCreateButton && user && (user.role === "INSTRUCTOR" || user.role === "ADMIN") && (
-                <Link href="/assignments/create">
-                  <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Assignment
-                  </Button>
-                </Link>
-              )}
+              {showCreateButton &&
+                user &&
+                (user.role === "INSTRUCTOR" || user.role === "ADMIN") && (
+                  <Link href="/assignments/create">
+                    <Button>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Assignment
+                    </Button>
+                  </Link>
+                )}
             </div>
           )}
         </div>
@@ -234,4 +270,3 @@ export default function AssignmentsList({ showCreateButton = false }: Assignment
     </div>
   );
 }
-

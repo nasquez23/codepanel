@@ -2,7 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { useProblemPosts, useSearchProblemPosts } from "@/hooks/use-problem-posts";
+import {
+  useProblemPosts,
+  useSearchProblemPosts,
+} from "@/hooks/use-problem-posts";
+import { DifficultyLevel, Tag, Category } from "@/types/tags-categories";
 import ProblemPostCard from "./problem-post-card";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
@@ -15,17 +19,22 @@ export default function ProblemsList() {
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get("q") || "";
   const initialLanguage = searchParams.get("language") || undefined;
-  
+
   const [currentPage, setCurrentPage] = useState(0);
   const [query, setQuery] = useState(initialQuery);
   const [language, setLanguage] = useState<string | undefined>(initialLanguage);
+  const [difficulty, setDifficulty] = useState<DifficultyLevel | undefined>(
+    undefined
+  );
+  const [category, setCategory] = useState<Category | null>(null);
+  const [tags, setTags] = useState<Tag[]>([]);
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortDir, setSortDir] = useState("desc");
   const [debouncedQuery, setDebouncedQuery] = useState(query);
   const { isAuthenticated } = useAuth();
 
   const pageSize = 10;
-  
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedQuery(query);
@@ -37,14 +46,23 @@ export default function ProblemsList() {
 
   useEffect(() => {
     setCurrentPage(0);
-  }, [language, sortBy, sortDir]);
+  }, [language, difficulty, category, tags, sortBy, sortDir]);
 
-  const hasActiveSearch = !!(debouncedQuery.trim() || language);
+  const hasActiveSearch = !!(
+    debouncedQuery.trim() ||
+    language ||
+    difficulty ||
+    category ||
+    tags.length > 0
+  );
 
   // Use search hook when there's a search query or language filter, otherwise use regular fetch
   const searchResults = useSearchProblemPosts(
     debouncedQuery,
     language,
+    difficulty,
+    category,
+    tags,
     currentPage,
     pageSize,
     sortBy,
@@ -65,7 +83,7 @@ export default function ProblemsList() {
     isLoading,
     isError,
     error,
-    refetch
+    refetch,
   } = hasActiveSearch ? searchResults : regularResults;
 
   const problemPosts = response?.content || [];
@@ -81,6 +99,9 @@ export default function ProblemsList() {
   const handleClearSearch = () => {
     setQuery("");
     setLanguage(undefined);
+    setDifficulty(undefined);
+    setCategory(null);
+    setTags([]);
     setSortBy("createdAt");
     setSortDir("desc");
     setCurrentPage(0);
@@ -107,9 +128,7 @@ export default function ProblemsList() {
         <p className="text-red-600 mb-4">
           {error?.message || "Failed to load problem posts. Please try again."}
         </p>
-        <Button onClick={() => refetch()}>
-          Try Again
-        </Button>
+        <Button onClick={() => refetch()}>Try Again</Button>
       </div>
     );
   }
@@ -118,21 +137,20 @@ export default function ProblemsList() {
     <div className="max-w-6xl mx-auto p-6">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Problem Posts
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900">Problem Posts</h1>
           <p className="text-gray-600 mt-2">
-            {hasActiveSearch && totalElements > 0 
-              ? `${totalElements} result${totalElements === 1 ? '' : 's'} found`
-              : !hasActiveSearch && totalElements > 0 
-              ? `${totalElements} problem${totalElements === 1 ? '' : 's'} from the community`
-              : hasActiveSearch 
+            {hasActiveSearch && totalElements > 0
+              ? `${totalElements} result${totalElements === 1 ? "" : "s"} found`
+              : !hasActiveSearch && totalElements > 0
+              ? `${totalElements} problem${
+                  totalElements === 1 ? "" : "s"
+                } from the community`
+              : hasActiveSearch
               ? "No results found"
-              : "No problems posted yet"
-            }
+              : "No problems posted yet"}
           </p>
         </div>
-        
+
         {isAuthenticated && (
           <Link href="/problems/create">
             <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
@@ -152,10 +170,16 @@ export default function ProblemsList() {
             onClear={handleClearSearch}
           />
         </div>
-        
+
         <SearchFilters
           language={language}
           onLanguageChange={setLanguage}
+          difficulty={difficulty}
+          onDifficultyChange={setDifficulty}
+          category={category}
+          onCategoryChange={setCategory}
+          tags={tags}
+          onTagsChange={setTags}
           sortBy={sortBy}
           onSortByChange={setSortBy}
           sortDir={sortDir}
@@ -167,10 +191,7 @@ export default function ProblemsList() {
       {problemPosts.length > 0 ? (
         <div className="space-y-6">
           {problemPosts.map((problemPost) => (
-            <ProblemPostCard
-              key={problemPost.id}
-              problemPost={problemPost}
-            />
+            <ProblemPostCard key={problemPost.id} problemPost={problemPost} />
           ))}
         </div>
       ) : (
@@ -226,7 +247,7 @@ export default function ProblemsList() {
             <ChevronLeft className="w-4 h-4 mr-2" />
             Previous
           </Button>
-          
+
           <div className="flex items-center gap-2">
             {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
               let page;
@@ -253,7 +274,7 @@ export default function ProblemsList() {
               );
             })}
           </div>
-          
+
           <Button
             variant="outline"
             onClick={() => handlePageChange(currentPage + 1)}

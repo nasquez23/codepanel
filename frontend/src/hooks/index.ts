@@ -56,3 +56,12 @@ export {
   useRemoveProfilePicture,
   profileKeys,
 } from "./use-profile";
+
+export { useCategories } from "./use-categories";
+
+export {
+  useTags,
+  useTag,
+  useSearchTags,
+  tagKeys,
+} from "./use-tags";

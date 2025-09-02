@@ -4,6 +4,9 @@ import { useState } from "react";
 import { Assignment } from "@/types/assignment";
 import { Button } from "@/components/ui/button";
 import { ProgrammingLanguageDisplayNames } from "@/types/problem-post";
+import { TagBadge } from "@/components/ui/tag-badge";
+import { CategoryBadge } from "@/components/ui/category-badge";
+import { DifficultyBadge } from "@/components/ui/difficulty-badge";
 import { formatDistanceToNow } from "date-fns";
 import {
   User,
@@ -32,7 +35,10 @@ interface AssignmentCardProps {
   showActions?: boolean;
 }
 
-export default function AssignmentCard({ assignment, showActions = false }: AssignmentCardProps) {
+export default function AssignmentCard({
+  assignment,
+  showActions = false,
+}: AssignmentCardProps) {
   const { user } = useAuth();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const deleteMutation = useDeleteAssignment();
@@ -52,8 +58,11 @@ export default function AssignmentCard({ assignment, showActions = false }: Assi
     });
   };
 
-  const isDueSoon = assignment.dueDate && new Date(assignment.dueDate) <= new Date(Date.now() + 24 * 60 * 60 * 1000);
-  const isOverdue = assignment.dueDate && new Date(assignment.dueDate) < new Date();
+  const isDueSoon =
+    assignment.dueDate &&
+    new Date(assignment.dueDate) <= new Date(Date.now() + 24 * 60 * 60 * 1000);
+  const isOverdue =
+    assignment.dueDate && new Date(assignment.dueDate) < new Date();
 
   const handleDelete = () => {
     deleteMutation.mutate(assignment.id, {
@@ -66,30 +75,65 @@ export default function AssignmentCard({ assignment, showActions = false }: Assi
   return (
     <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border border-gray-200">
       <div className="flex justify-between items-start mb-4">
-        <div className="flex-1">
+        <div className="shrink max-w-[95%]">
           <Link href={`/assignments/${assignment.id}`}>
             <h3 className="text-xl font-bold text-gray-900 hover:text-blue-600 transition-colors cursor-pointer">
               {assignment.title}
             </h3>
           </Link>
-          
+
           <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
             <div className="flex items-center gap-1">
               <User className="w-4 h-4" />
-              <span>{assignment.instructor.firstName} {assignment.instructor.lastName}</span>
+              <span>
+                {assignment.instructor.firstName}{" "}
+                {assignment.instructor.lastName}
+              </span>
             </div>
-            
+
             <div className="flex items-center gap-1">
               <Code className="w-4 h-4" />
               <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
                 {ProgrammingLanguageDisplayNames[assignment.language]}
               </span>
             </div>
-            
+
             <div className="flex items-center gap-1">
               <Users className="w-4 h-4" />
               <span>{assignment.submissionCount} submissions</span>
             </div>
+
+            <DifficultyBadge
+              difficulty={assignment.difficultyLevel}
+              size="sm"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 mt-3 flex-wrap">
+            {assignment.category && (
+              <CategoryBadge
+                category={assignment.category}
+                size="sm"
+                variant="secondary"
+              />
+            )}
+            {assignment.tags && assignment.tags.length > 0 && (
+              <>
+                {assignment.tags.slice(0, 3).map((tag) => (
+                  <TagBadge
+                    key={tag.id}
+                    tag={tag}
+                    size="sm"
+                    variant="secondary"
+                  />
+                ))}
+                {assignment.tags.length > 3 && (
+                  <span className="text-xs text-gray-500">
+                    +{assignment.tags.length - 3} more
+                  </span>
+                )}
+              </>
+            )}
           </div>
         </div>
 
@@ -123,23 +167,37 @@ export default function AssignmentCard({ assignment, showActions = false }: Assi
         )}
       </div>
 
-      <p className="text-gray-700 mb-4 line-clamp-3">{assignment.description}</p>
+      <p className="text-gray-700 mb-4 line-clamp-3">
+        {assignment.description}
+      </p>
 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4 text-sm">
           {assignment.dueDate && (
-            <div className={`flex items-center gap-1 ${
-              isOverdue ? "text-red-600" : isDueSoon ? "text-orange-600" : "text-gray-600"
-            }`}>
+            <div
+              className={`flex items-center gap-1 ${
+                isOverdue
+                  ? "text-red-600"
+                  : isDueSoon
+                  ? "text-orange-600"
+                  : "text-gray-600"
+              }`}
+            >
               <Clock className="w-4 h-4" />
               <span>
-                Due {formatDistanceToNow(new Date(assignment.dueDate), { addSuffix: true })}
+                Due{" "}
+                {formatDistanceToNow(new Date(assignment.dueDate), {
+                  addSuffix: true,
+                })}
               </span>
             </div>
           )}
-          
+
           <div className="text-xs text-gray-500">
-            Created {formatDistanceToNow(new Date(assignment.createdAt), { addSuffix: true })}
+            Created{" "}
+            {formatDistanceToNow(new Date(assignment.createdAt), {
+              addSuffix: true,
+            })}
           </div>
         </div>
 
@@ -150,14 +208,17 @@ export default function AssignmentCard({ assignment, showActions = false }: Assi
               <span>Submitted</span>
             </div>
           )}
-          
-          {user && !assignment.hasSubmitted && assignment.dueDate && isOverdue && (
-            <div className="flex items-center gap-1 text-red-600 text-sm">
-              <AlertCircle className="size-4" />
-              <span>Overdue</span>
-            </div>
-          )}
-          
+
+          {user &&
+            !assignment.hasSubmitted &&
+            assignment.dueDate &&
+            isOverdue && (
+              <div className="flex items-center gap-1 text-red-600 text-sm">
+                <AlertCircle className="size-4" />
+                <span>Overdue</span>
+              </div>
+            )}
+
           <Link href={`/assignments/${assignment.id}`}>
             <Button variant="outline" size="sm">
               View Details

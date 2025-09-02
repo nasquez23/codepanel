@@ -4,6 +4,7 @@ import {
   UpdateProblemPostRequest,
   ProblemPostResponse,
 } from "@/types/problem-post";
+import { DifficultyLevel, Tag, Category } from "@/types/tags-categories";
 import {
   createProblemPost,
   updateProblemPost,
@@ -25,8 +26,8 @@ export const problemPostKeys = {
   myPostsList: (page: number, size: number) =>
     [...problemPostKeys.myPosts(), { page, size }] as const,
   search: () => [...problemPostKeys.all, "search"] as const,
-  searchList: (query?: string, language?: string, page?: number, size?: number, sortBy?: string, sortDir?: string) =>
-    [...problemPostKeys.search(), { query, language, page, size, sortBy, sortDir }] as const,
+  searchList: (query?: string, language?: string, difficulty?: DifficultyLevel, categoryId?: string, tagIds?: string[], page?: number, size?: number, sortBy?: string, sortDir?: string) =>
+    [...problemPostKeys.search(), { query, language, difficulty, categoryId, tagIds, page, size, sortBy, sortDir }] as const,
 };
 
 export const useProblemPosts = (
@@ -158,16 +159,32 @@ export const usePrefetchProblemPost = () => {
 export const useSearchProblemPosts = (
   query?: string,
   language?: string,
+  difficulty?: DifficultyLevel,
+  category?: Category | null,
+  tags?: Tag[],
   page: number = 0,
   size: number = 10,
   sortBy: string = "createdAt",
   sortDir: string = "desc",
   enabled: boolean = true
 ) => {
+  const categoryId = category?.id;
+  const tagIds = tags?.map(tag => tag.id);
+  
   return useQuery({
-    queryKey: problemPostKeys.searchList(query, language, page, size, sortBy, sortDir),
-    queryFn: () => searchProblemPosts(query, language, page, size, sortBy, sortDir),
-    enabled: enabled && !!(query?.trim() || language),
+    queryKey: problemPostKeys.searchList(query, language, difficulty, categoryId, tagIds, page, size, sortBy, sortDir),
+    queryFn: () => searchProblemPosts({
+      query,
+      language,
+      difficulty,
+      categoryId,
+      tagIds,
+      page,
+      size,
+      sortBy,
+      sortDir
+    }),
+    enabled: enabled && !!(query?.trim() || language || difficulty || category || (tags && tags.length > 0)),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });

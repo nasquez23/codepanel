@@ -19,10 +19,20 @@ import {
   ProgrammingLanguage,
   ProgrammingLanguageDisplayNames,
 } from "@/types/problem-post";
+import { DifficultyLevel, Tag, Category } from "@/types/tags-categories";
+import { TagSelector } from "@/components/ui/tag-selector";
+import { CategorySelector } from "@/components/ui/category-selector";
+import { DifficultySelector } from "@/components/ui/difficulty-selector";
 
 interface SearchFiltersProps {
   language?: string;
   onLanguageChange?: (language: string | undefined) => void;
+  difficulty?: DifficultyLevel;
+  onDifficultyChange?: (difficulty: DifficultyLevel | undefined) => void;
+  category?: Category | null;
+  onCategoryChange?: (category: Category | null) => void;
+  tags?: Tag[];
+  onTagsChange?: (tags: Tag[]) => void;
   sortBy?: string;
   onSortByChange?: (sortBy: string) => void;
   sortDir?: string;
@@ -45,6 +55,12 @@ const defaultSortOptions = [
 export default function SearchFilters({
   language,
   onLanguageChange,
+  difficulty,
+  onDifficultyChange,
+  category,
+  onCategoryChange,
+  tags = [],
+  onTagsChange,
   sortBy = "createdAt",
   onSortByChange,
   sortDir = "desc",
@@ -64,12 +80,20 @@ export default function SearchFilters({
 
   const handleClearFilters = () => {
     onLanguageChange?.(undefined);
+    onDifficultyChange?.(undefined);
+    onCategoryChange?.(null);
+    onTagsChange?.([]);
     onSortByChange?.("createdAt");
     onSortDirChange?.("desc");
   };
 
   const hasActiveFilters =
-    language || sortBy !== "createdAt" || sortDir !== "desc";
+    language || 
+    difficulty || 
+    category || 
+    (tags && tags.length > 0) ||
+    sortBy !== "createdAt" || 
+    sortDir !== "desc";
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>
@@ -120,6 +144,34 @@ export default function SearchFilters({
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Difficulty</label>
+              <DifficultySelector
+                selectedDifficulty={difficulty || null}
+                onDifficultyChange={(diff) => onDifficultyChange?.(diff || undefined)}
+                placeholder="All difficulties"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Category</label>
+              <CategorySelector
+                selectedCategory={category}
+                onCategoryChange={(cat) => onCategoryChange?.(cat)}
+                placeholder="All categories"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Tags</label>
+              <TagSelector
+                selectedTags={tags}
+                onTagsChange={(selectedTags) => onTagsChange?.(selectedTags)}
+                placeholder="All tags"
+                maxTags={3}
+              />
             </div>
 
             <div className="space-y-2">

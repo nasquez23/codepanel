@@ -20,6 +20,7 @@ import {
   CreateSubmissionRequest,
   CreateReviewRequest,
 } from "@/types/assignment";
+import { DifficultyLevel, Category, Tag } from "@/types/tags-categories";
 
 export const assignmentKeys = {
   all: ["assignments"] as const,
@@ -41,6 +42,9 @@ export const assignmentKeys = {
   searchList: (
     query?: string,
     language?: string,
+    difficulty?: DifficultyLevel,
+    category?: Category | null,
+    tags?: Tag[],
     page?: number,
     size?: number,
     sortBy?: string,
@@ -48,7 +52,17 @@ export const assignmentKeys = {
   ) =>
     [
       ...assignmentKeys.search(),
-      { query, language, page, size, sortBy, sortDir },
+      {
+        query,
+        language,
+        difficulty,
+        category,
+        tags,
+        page,
+        size,
+        sortBy,
+        sortDir,
+      },
     ] as const,
 };
 
@@ -241,6 +255,9 @@ export const usePendingReviews = (page: number = 0, size: number = 10) => {
 export const useSearchAssignments = (
   query?: string,
   language?: string,
+  difficulty?: DifficultyLevel,
+  category?: Category | null,
+  tags?: Tag[],
   page: number = 0,
   size: number = 10,
   sortBy: string = "dueDate",
@@ -251,14 +268,29 @@ export const useSearchAssignments = (
     queryKey: assignmentKeys.searchList(
       query,
       language,
+      difficulty,
+      category,
+      tags,
       page,
       size,
       sortBy,
       sortDir
     ),
     queryFn: () =>
-      searchAssignments(query, language, page, size, sortBy, sortDir),
-    enabled: enabled && !!(query?.trim() || language),
+      searchAssignments(
+        query,
+        language,
+        difficulty,
+        category,
+        tags,
+        page,
+        size,
+        sortBy,
+        sortDir
+      ),
+    enabled:
+      enabled &&
+      !!(query?.trim() || language || difficulty || category || tags),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });

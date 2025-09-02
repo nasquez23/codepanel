@@ -5,6 +5,10 @@ import { useRouter } from "next/navigation";
 import { useCreateAssignment } from "@/hooks/use-assignments";
 import { CreateAssignmentRequest } from "@/types/assignment";
 import { ProgrammingLanguage, ProgrammingLanguageDisplayNames } from "@/types/problem-post";
+import { DifficultyLevel, Tag, Category } from "@/types/tags-categories";
+import { TagSelector } from "@/components/ui/tag-selector";
+import { CategorySelector } from "@/components/ui/category-selector";
+import { DifficultySelector } from "@/components/ui/difficulty-selector";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,9 +24,15 @@ export default function CreateAssignmentForm() {
     title: "",
     description: "",
     language: ProgrammingLanguage.JAVASCRIPT,
+    difficultyLevel: DifficultyLevel.EASY,
+    categoryId: undefined,
+    tagIds: [],
     dueDate: "",
     isActive: true,
   });
+  
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -45,6 +55,10 @@ export default function CreateAssignmentForm() {
       newErrors.language = "Programming language is required";
     }
 
+    if (!formData.difficultyLevel) {
+      newErrors.difficultyLevel = "Difficulty level is required";
+    }
+
     if (formData.dueDate) {
       const dueDate = new Date(formData.dueDate);
       const now = new Date();
@@ -65,6 +79,8 @@ export default function CreateAssignmentForm() {
     try {
       const assignmentData: CreateAssignmentRequest = {
         ...formData,
+        categoryId: selectedCategory?.id,
+        tagIds: selectedTags.map(tag => tag.id),
         dueDate: formData.dueDate || undefined,
       };
 
@@ -147,6 +163,49 @@ export default function CreateAssignmentForm() {
             </SelectContent>
           </Select>
           {errors.language && <p className="text-red-500 text-sm mt-1">{errors.language}</p>}
+        </div>
+
+        <div>
+          <label htmlFor="difficulty" className="block text-sm font-medium text-gray-700 mb-2">
+            Difficulty Level *
+          </label>
+          <DifficultySelector
+            selectedDifficulty={formData.difficultyLevel}
+            onDifficultyChange={(difficulty) => 
+              setFormData({ ...formData, difficultyLevel: difficulty || DifficultyLevel.EASY })
+            }
+            required={true}
+            className={errors.difficultyLevel ? "border-red-500" : ""}
+          />
+          {errors.difficultyLevel && <p className="text-red-500 text-sm mt-1">{errors.difficultyLevel}</p>}
+        </div>
+
+        <div>
+          <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+            Category (Optional)
+          </label>
+          <CategorySelector
+            selectedCategory={selectedCategory}
+            onCategoryChange={(category) => {
+              setSelectedCategory(category);
+              setFormData({ ...formData, categoryId: category?.id });
+            }}
+          />
+        </div>
+
+        <div>
+          <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-2">
+            Tags (Optional)
+          </label>
+          <TagSelector
+            selectedTags={selectedTags}
+            onTagsChange={(tags) => {
+              setSelectedTags(tags);
+              setFormData({ ...formData, tagIds: tags.map(tag => tag.id) });
+            }}
+            placeholder="Search and select tags..."
+            maxTags={5}
+          />
         </div>
 
         <div>

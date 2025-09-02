@@ -7,6 +7,9 @@ import {
   ProgrammingLanguageDisplayNames,
 } from "@/types/problem-post";
 import { Button } from "@/components/ui/button";
+import { TagBadge } from "@/components/ui/tag-badge";
+import { CategoryBadge } from "@/components/ui/category-badge";
+import { DifficultyBadge } from "@/components/ui/difficulty-badge";
 import { User, Clock, Code, Trash2, Edit } from "lucide-react";
 import { useDeleteProblemPost } from "@/hooks/use-problem-posts";
 import { useAuth } from "@/hooks/use-auth";
@@ -82,6 +85,38 @@ export default function ProblemPostCard({ problemPost }: ProblemPostCardProps) {
                 {ProgrammingLanguageDisplayNames[problemPost.language]}
               </span>
             </div>
+
+            <DifficultyBadge
+              difficulty={problemPost.difficultyLevel}
+              size="sm"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 mt-3 flex-wrap">
+            {problemPost.category && (
+              <CategoryBadge
+                category={problemPost.category}
+                size="sm"
+                variant="secondary"
+              />
+            )}
+            {problemPost.tags && problemPost.tags.length > 0 && (
+              <>
+                {problemPost.tags.slice(0, 3).map((tag) => (
+                  <TagBadge
+                    key={tag.id}
+                    tag={tag}
+                    size="sm"
+                    variant="secondary"
+                  />
+                ))}
+                {problemPost.tags.length > 3 && (
+                  <span className="text-xs text-gray-500">
+                    +{problemPost.tags.length - 3} more
+                  </span>
+                )}
+              </>
+            )}
           </div>
         </div>
 

@@ -1,3 +1,4 @@
+import { Category, DifficultyLevel, Tag } from "@/types/tags-categories";
 import { fetcher, poster, putter, deleter } from "./api";
 import {
   Assignment,
@@ -134,6 +135,9 @@ export const getPendingReviews = async (
 export const searchAssignments = async (
   query?: string,
   language?: string,
+  difficulty?: DifficultyLevel,
+  category?: Category | null,
+  tags?: Tag[],
   page: number = 0,
   size: number = 10,
   sortBy: string = "dueDate",
@@ -149,9 +153,23 @@ export const searchAssignments = async (
   if (query && query.trim()) {
     params.append("query", query.trim());
   }
-  
+
   if (language) {
     params.append("language", language);
+  }
+
+  if (difficulty) {
+    params.append("difficulty", difficulty);
+  }
+
+  if (category) {
+    params.append("categoryId", category.id);
+  }
+
+  if (tags && tags.length > 0) {
+    tags.forEach((tag) => {
+      params.append("tagIds", tag.id);
+    });
   }
 
   return fetcher<AssignmentResponse>(`/api/assignments/search?${params}`);
