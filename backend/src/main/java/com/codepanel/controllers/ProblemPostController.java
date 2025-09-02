@@ -5,7 +5,10 @@ import com.codepanel.models.User;
 import com.codepanel.models.dto.CreateProblemPostRequest;
 import com.codepanel.models.dto.UpdateProblemPostRequest;
 import com.codepanel.models.dto.ProblemPostResponse;
+import com.codepanel.models.enums.DifficultyLevel;
 import com.codepanel.models.enums.ProgrammingLanguage;
+
+import java.util.List;
 import com.codepanel.services.ProblemPostService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -73,6 +76,9 @@ public class ProblemPostController {
     public ResponseEntity<Page<ProblemPostResponse>> searchProblemPosts(
             @RequestParam(required = false) String query,
             @RequestParam(required = false) ProgrammingLanguage language,
+            @RequestParam(required = false) DifficultyLevel difficulty,
+            @RequestParam(required = false) UUID categoryId,
+            @RequestParam(required = false) List<UUID> tagIds,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
@@ -82,7 +88,8 @@ public class ProblemPostController {
             Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
         
-        Page<ProblemPostResponse> response = problemPostService.searchProblemPosts(query, language, pageable);
+        Page<ProblemPostResponse> response = problemPostService.searchProblemPosts(
+            query, language, difficulty, categoryId, tagIds, pageable);
         return ResponseEntity.ok(response);
     }
 

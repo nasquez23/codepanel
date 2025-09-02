@@ -1,5 +1,6 @@
 package com.codepanel.models.dto;
 
+import com.codepanel.models.enums.DifficultyLevel;
 import com.codepanel.models.enums.ProgrammingLanguage;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -8,6 +9,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -26,5 +29,12 @@ public class UpdateAssignmentRequest {
     private LocalDateTime dueDate;
 
     private Boolean isActive;
+
+    @NotNull(message = "Difficulty level is required")
+    private DifficultyLevel difficultyLevel;
+
+    private UUID categoryId;
+
+    private List<UUID> tagIds;
 }
 

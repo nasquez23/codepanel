@@ -6,6 +6,7 @@ import com.codepanel.models.dto.AssignmentSubmissionResponse;
 import com.codepanel.models.dto.CreateAssignmentRequest;
 import com.codepanel.models.dto.CreateSubmissionRequest;
 import com.codepanel.models.dto.UpdateAssignmentRequest;
+import com.codepanel.models.enums.DifficultyLevel;
 import com.codepanel.models.enums.ProgrammingLanguage;
 import com.codepanel.services.AssignmentService;
 import jakarta.validation.Valid;
@@ -18,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -69,6 +71,9 @@ public class AssignmentController {
     public ResponseEntity<Page<AssignmentResponse>> searchAssignments(
             @RequestParam(required = false) String query,
             @RequestParam(required = false) ProgrammingLanguage language,
+            @RequestParam(required = false) DifficultyLevel difficulty,
+            @RequestParam(required = false) UUID categoryId,
+            @RequestParam(required = false) List<UUID> tagIds,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "dueDate") String sortBy,
@@ -79,7 +84,8 @@ public class AssignmentController {
             Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
         
-        Page<AssignmentResponse> response = assignmentService.searchAssignments(query, language, pageable, currentUser);
+        Page<AssignmentResponse> response = assignmentService.searchAssignments(
+            query, language, difficulty, categoryId, tagIds, pageable, currentUser);
         return ResponseEntity.ok(response);
     }
 

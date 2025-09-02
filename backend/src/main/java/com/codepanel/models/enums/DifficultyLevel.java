@@ -1,0 +1,19 @@
+package com.codepanel.models.enums;
+
+public enum DifficultyLevel {
+    BEGINNER("Beginner"),
+    EASY("Easy"),
+    MEDIUM("Medium"),
+    HARD("Hard"),
+    EXPERT("Expert");
+
+    private final String displayName;
+
+    DifficultyLevel(String displayName) {
+        this.displayName = displayName;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+}

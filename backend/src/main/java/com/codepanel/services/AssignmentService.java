@@ -2,21 +2,28 @@ package com.codepanel.services;
 
 import com.codepanel.models.Assignment;
 import com.codepanel.models.AssignmentSubmission;
+import com.codepanel.models.Category;
 import com.codepanel.models.SubmissionReview;
+import com.codepanel.models.Tag;
 import com.codepanel.models.User;
 import com.codepanel.models.dto.AssignmentResponse;
 import com.codepanel.models.dto.AssignmentSubmissionResponse;
+import com.codepanel.models.dto.CategoryResponse;
 import com.codepanel.models.dto.CreateAssignmentRequest;
+import com.codepanel.models.dto.TagResponse;
 import com.codepanel.models.dto.CreateReviewRequest;
 import com.codepanel.models.dto.CreateSubmissionRequest;
 import com.codepanel.models.dto.UpdateAssignmentRequest;
+import com.codepanel.models.enums.DifficultyLevel;
 import com.codepanel.models.enums.ProgrammingLanguage;
 import com.codepanel.models.enums.Role;
 import com.codepanel.models.enums.SubmissionStatus;
 import com.codepanel.models.events.AssignmentGradedEvent;
 import com.codepanel.repositories.AssignmentRepository;
 import com.codepanel.repositories.AssignmentSubmissionRepository;
+import com.codepanel.repositories.CategoryRepository;
 import com.codepanel.repositories.SubmissionReviewRepository;
+import com.codepanel.repositories.TagRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -25,8 +32,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class AssignmentService {
@@ -34,18 +46,25 @@ public class AssignmentService {
     private final AssignmentRepository assignmentRepository;
     private final AssignmentSubmissionRepository submissionRepository;
     private final SubmissionReviewRepository reviewRepository;
+    private final CategoryRepository categoryRepository;
+    private final TagRepository tagRepository;
     private final NotificationEventPublisher notificationEventPublisher;
 
     public AssignmentService(AssignmentRepository assignmentRepository,
             AssignmentSubmissionRepository submissionRepository,
             SubmissionReviewRepository reviewRepository,
+            CategoryRepository categoryRepository,
+            TagRepository tagRepository,
             NotificationEventPublisher notificationEventPublisher) {
         this.assignmentRepository = assignmentRepository;
         this.submissionRepository = submissionRepository;
         this.reviewRepository = reviewRepository;
+        this.categoryRepository = categoryRepository;
+        this.tagRepository = tagRepository;
         this.notificationEventPublisher = notificationEventPublisher;
     }
 
+    @Transactional
     public AssignmentResponse createAssignment(CreateAssignmentRequest request, User instructor) {
         if (instructor.getRole() != Role.INSTRUCTOR && instructor.getRole() != Role.ADMIN) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only instructors can create assignments");
@@ -55,12 +74,30 @@ public class AssignmentService {
         assignment.setTitle(request.getTitle());
         assignment.setDescription(request.getDescription());
         assignment.setLanguage(request.getLanguage());
+        assignment.setDifficultyLevel(request.getDifficultyLevel());
         assignment.setInstructor(instructor);
         assignment.setDueDate(request.getDueDate());
         assignment.setIsActive(request.getIsActive());
 
+        if (request.getCategoryId() != null) {
+            Category category = categoryRepository.findById(request.getCategoryId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Category not found"));
+            assignment.setCategory(category);
+        }
+
+        if (request.getTagIds() != null && !request.getTagIds().isEmpty()) {
+            Set<Tag> tags = new HashSet<>();
+            for (UUID tagId : request.getTagIds()) {
+                Tag tag = tagRepository.findById(tagId)
+                        .orElseThrow(
+                                () -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tag not found: " + tagId));
+                tags.add(tag);
+            }
+            assignment.setTags(tags);
+        }
+
         Assignment savedAssignment = assignmentRepository.save(assignment);
-   
+
         return mapToAssignmentResponse(savedAssignment, null);
     }
 
@@ -81,9 +118,18 @@ public class AssignmentService {
     }
 
     @Transactional(readOnly = true)
-    public Page<AssignmentResponse> searchAssignments(String query, ProgrammingLanguage language, Pageable pageable, User currentUser) {
-        Page<Assignment> assignments = assignmentRepository.searchAssignments(query, language, pageable);
-        return assignments.map(assignment -> mapToAssignmentResponse(assignment, currentUser));
+    public Page<AssignmentResponse> searchAssignments(String query, ProgrammingLanguage language,
+            DifficultyLevel difficulty, UUID categoryId,
+            List<UUID> tagIds, Pageable pageable, User currentUser) {
+        try {
+            Page<Assignment> assignments = assignmentRepository.searchAssignments(
+                    query, language, difficulty, categoryId, tagIds, pageable);
+            System.out.println("Assignments: " + assignments.getSize());
+            return assignments.map(assignment -> mapToAssignmentResponse(assignment, currentUser));
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error searching assignments");
+        }
     }
 
     @Transactional(readOnly = true)
@@ -109,8 +155,29 @@ public class AssignmentService {
         assignment.setTitle(request.getTitle());
         assignment.setDescription(request.getDescription());
         assignment.setLanguage(request.getLanguage());
+        assignment.setDifficultyLevel(request.getDifficultyLevel());
         assignment.setDueDate(request.getDueDate());
         assignment.setIsActive(request.getIsActive());
+
+        if (request.getCategoryId() != null) {
+            Category category = categoryRepository.findById(request.getCategoryId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Category not found"));
+            assignment.setCategory(category);
+        } else {
+            assignment.setCategory(null);
+        }
+
+        assignment.getTags().clear();
+        if (request.getTagIds() != null && !request.getTagIds().isEmpty()) {
+            Set<Tag> tags = new HashSet<>();
+            for (UUID tagId : request.getTagIds()) {
+                Tag tag = tagRepository.findById(tagId)
+                        .orElseThrow(
+                                () -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tag not found: " + tagId));
+                tags.add(tag);
+            }
+            assignment.setTags(tags);
+        }
 
         Assignment updatedAssignment = assignmentRepository.save(assignment);
         return mapToAssignmentResponse(updatedAssignment, currentUser);
@@ -249,7 +316,7 @@ public class AssignmentService {
                 .comment(request.getComment())
                 .gradedAt(LocalDateTime.now())
                 .build();
-        
+
         notificationEventPublisher.publishAssignmentGraded(event);
 
         return mapToSubmissionResponse(submission);
@@ -261,7 +328,8 @@ public class AssignmentService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only instructors can view pending reviews");
         }
 
-        Page<AssignmentSubmission> submissions = submissionRepository.findPendingReviewsByInstructorId(instructor.getId(), pageable);
+        Page<AssignmentSubmission> submissions = submissionRepository
+                .findPendingReviewsByInstructorId(instructor.getId(), pageable);
         return submissions.map(this::mapToSubmissionResponse);
     }
 
@@ -291,6 +359,7 @@ public class AssignmentService {
         response.setTitle(assignment.getTitle());
         response.setDescription(assignment.getDescription());
         response.setLanguage(assignment.getLanguage());
+        response.setDifficultyLevel(assignment.getDifficultyLevel());
         response.setInstructor(instructorInfo);
         response.setDueDate(assignment.getDueDate());
         response.setIsActive(assignment.getIsActive());
@@ -299,6 +368,31 @@ public class AssignmentService {
         response.setSubmissionCount(submissionCount.intValue());
         response.setHasSubmitted(hasSubmitted);
         response.setMySubmission(mySubmission);
+
+        if (assignment.getCategory() != null) {
+            CategoryResponse categoryResponse = new CategoryResponse();
+            categoryResponse.setId(assignment.getCategory().getId());
+            categoryResponse.setName(assignment.getCategory().getName());
+            categoryResponse.setDescription(assignment.getCategory().getDescription());
+            categoryResponse.setColor(assignment.getCategory().getColor());
+            response.setCategory(categoryResponse);
+        }
+
+        if (assignment.getTags() != null && !assignment.getTags().isEmpty()) {
+            List<TagResponse> tagResponses = assignment.getTags().stream()
+                    .map(tag -> {
+                        TagResponse tagResponse = new TagResponse();
+                        tagResponse.setId(tag.getId());
+                        tagResponse.setName(tag.getName());
+                        tagResponse.setDescription(tag.getDescription());
+                        tagResponse.setColor(tag.getColor());
+                        return tagResponse;
+                    })
+                    .collect(Collectors.toList());
+            response.setTags(tagResponses);
+        } else {
+            response.setTags(new ArrayList<>());
+        }
 
         return response;
     }
