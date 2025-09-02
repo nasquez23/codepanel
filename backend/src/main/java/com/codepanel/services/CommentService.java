@@ -7,8 +7,11 @@ import com.codepanel.models.User;
 import com.codepanel.models.dto.CommentResponse;
 import com.codepanel.models.dto.CreateCommentRequest;
 import com.codepanel.models.dto.UpdateCommentRequest;
+import com.codepanel.models.dto.GamificationEvent;
 import com.codepanel.models.enums.ReactionType;
+import com.codepanel.models.enums.ScoreEventType;
 import com.codepanel.models.events.CommentCreatedEvent;
+import com.codepanel.services.GamificationEventPublisher;
 import com.codepanel.repositories.CommentReactionRepository;
 import com.codepanel.repositories.ProblemPostCommentRepository;
 import com.codepanel.repositories.ProblemPostRepository;
@@ -29,15 +32,18 @@ public class CommentService {
     private final ProblemPostRepository problemPostRepository;
     private final CommentReactionRepository reactionRepository;
     private final NotificationEventPublisher notificationEventPublisher;
+    private final GamificationEventPublisher gamificationEventPublisher;
 
     public CommentService(ProblemPostCommentRepository commentRepository,
             ProblemPostRepository problemPostRepository,
             CommentReactionRepository reactionRepository,
-            NotificationEventPublisher notificationEventPublisher) {
+            NotificationEventPublisher notificationEventPublisher,
+            GamificationEventPublisher gamificationEventPublisher) {
         this.commentRepository = commentRepository;
         this.problemPostRepository = problemPostRepository;
         this.reactionRepository = reactionRepository;
         this.notificationEventPublisher = notificationEventPublisher;
+        this.gamificationEventPublisher = gamificationEventPublisher;
     }
 
     public CommentResponse createComment(UUID problemPostId, CreateCommentRequest request, User currentUser) {
@@ -144,6 +150,25 @@ public class CommentService {
         }
 
         comment = commentRepository.findById(commentId).orElseThrow();
+
+        ScoreEventType eventType = reactionType == ReactionType.LIKE ? ScoreEventType.COMMENT_LIKED
+                : ScoreEventType.COMMENT_DISLIKED;
+
+        try {
+            gamificationEventPublisher.publish(
+                    eventType,
+                    GamificationEvent.builder()
+                            .eventType(eventType)
+                            .userId(comment.getUser().getId())
+                            .difficulty(null)
+                            .refType("COMMENT")
+                            .refId(comment.getId())
+                            .build());
+        } catch (Exception ignored) {
+            System.out.println(
+                    "Error publishing gamification event for comment " + eventType + ": " + ignored.getMessage());
+        }
+
         return mapToResponse(comment, currentUser);
     }
 

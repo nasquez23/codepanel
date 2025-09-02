@@ -19,11 +19,13 @@ import com.codepanel.models.enums.ProgrammingLanguage;
 import com.codepanel.models.enums.Role;
 import com.codepanel.models.enums.SubmissionStatus;
 import com.codepanel.models.events.AssignmentGradedEvent;
+import com.codepanel.models.dto.GamificationEvent;
 import com.codepanel.repositories.AssignmentRepository;
 import com.codepanel.repositories.AssignmentSubmissionRepository;
 import com.codepanel.repositories.CategoryRepository;
 import com.codepanel.repositories.SubmissionReviewRepository;
 import com.codepanel.repositories.TagRepository;
+import com.codepanel.models.enums.ScoreEventType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -49,19 +51,22 @@ public class AssignmentService {
     private final CategoryRepository categoryRepository;
     private final TagRepository tagRepository;
     private final NotificationEventPublisher notificationEventPublisher;
+    private final GamificationEventPublisher gamificationEventPublisher;
 
     public AssignmentService(AssignmentRepository assignmentRepository,
             AssignmentSubmissionRepository submissionRepository,
             SubmissionReviewRepository reviewRepository,
             CategoryRepository categoryRepository,
             TagRepository tagRepository,
-            NotificationEventPublisher notificationEventPublisher) {
+            NotificationEventPublisher notificationEventPublisher,
+            GamificationEventPublisher gamificationEventPublisher) {
         this.assignmentRepository = assignmentRepository;
         this.submissionRepository = submissionRepository;
         this.reviewRepository = reviewRepository;
         this.categoryRepository = categoryRepository;
         this.tagRepository = tagRepository;
         this.notificationEventPublisher = notificationEventPublisher;
+        this.gamificationEventPublisher = gamificationEventPublisher;
     }
 
     @Transactional
@@ -302,6 +307,31 @@ public class AssignmentService {
         submission.setStatus(SubmissionStatus.REVIEWED);
         submission.setGrade(request.getScore());
         submissionRepository.save(submission);
+
+        try {
+            var difficulty = submission.getAssignment().getDifficultyLevel();
+            gamificationEventPublisher.publish(
+                    ScoreEventType.REVIEW_APPROVED,
+                    GamificationEvent.builder()
+                            .eventType(ScoreEventType.REVIEW_APPROVED)
+                            .userId(reviewer.getId())
+                            .difficulty(difficulty)
+                            .refType("REVIEW")
+                            .refId(review.getId())
+                            .build());
+
+            gamificationEventPublisher.publish(
+                    ScoreEventType.SUBMISSION_ACCEPTED,
+                    GamificationEvent.builder()
+                            .eventType(ScoreEventType.SUBMISSION_ACCEPTED)
+                            .userId(submission.getStudent().getId())
+                            .difficulty(difficulty)
+                            .refType("SUBMISSION")
+                            .refId(submission.getId())
+                            .build());
+        } catch (Exception ignored) {
+            System.out.println("Error publishing gamification events: " + ignored.getMessage());
+        }
 
         // Publish assignment graded event
         AssignmentGradedEvent event = AssignmentGradedEvent.builder()
