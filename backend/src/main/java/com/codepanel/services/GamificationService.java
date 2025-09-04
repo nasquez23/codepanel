@@ -14,6 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.List;
 
 @Service
 public class GamificationService {
@@ -80,6 +82,30 @@ public class GamificationService {
         } catch (Exception e) {
             System.out.println("Error getting weekly leaderboard: " + e.getMessage());
             return Page.empty();
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public List<Object[]> getMonthlyLeaderboard(YearMonth month, int limit) {
+        YearMonth targetMonth = (month != null) ? month : YearMonth.now();
+        LocalDate monthStart = targetMonth.atDay(1);
+        LocalDate monthEnd = targetMonth.atEndOfMonth();
+
+        try {
+            return scoreEventRepository.findMonthlyLeaderboard(monthStart, monthEnd, PageRequest.of(0, limit));
+        } catch (Exception e) {
+            System.out.println("Error getting monthly leaderboard: " + e.getMessage());
+            return List.of();
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public List<Object[]> getAllTimeLeaderboard(int limit) {
+        try {
+            return scoreEventRepository.findAllTimeLeaderboard(PageRequest.of(0, limit));
+        } catch (Exception e) {
+            System.out.println("Error getting all-time leaderboard: " + e.getMessage());
+            return List.of();
         }
     }
 }

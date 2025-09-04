@@ -21,5 +21,3 @@ public class GamificationEvent {
     private String refType;
     private UUID refId;
 }
-
-

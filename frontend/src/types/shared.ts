@@ -33,3 +33,8 @@ export interface PaginatedResponse<T> {
   numberOfElements: number;
   empty: boolean;
 }
+
+export type YearMonth =
+  `${number}${number}${number}${number}-${number}${number}`;
+export type ISODate =
+  `${number}${number}${number}${number}-${number}${number}-${number}${number}`;

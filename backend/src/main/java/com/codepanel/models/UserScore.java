@@ -25,7 +25,3 @@ public class UserScore extends BaseEntity {
     @Column(name = "points", nullable = false)
     private Integer points;
 }
-
-
-
-

@@ -12,7 +12,6 @@ import java.time.LocalDate;
 @Repository
 public interface UserScoreRepository extends JpaRepository<UserScore, java.util.UUID> {
     UserScore findByUserAndWeekStart(User user, LocalDate weekStart);
+
     Page<UserScore> findByWeekStartOrderByPointsDesc(LocalDate weekStart, Pageable pageable);
 }
-
-
