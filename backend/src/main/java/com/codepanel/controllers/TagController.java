@@ -90,14 +90,12 @@ public class TagController {
     public ResponseEntity<Map<String, Long>> getTagStats(@PathVariable UUID id) {
         Long problemPostCount = tagService.getProblemPostCount(id);
         Long assignmentCount = tagService.getAssignmentCount(id);
-        
+
         Map<String, Long> stats = Map.of(
-            "problemPosts", problemPostCount,
-            "assignments", assignmentCount,
-            "total", problemPostCount + assignmentCount
-        );
-        
+                "problemPosts", problemPostCount,
+                "assignments", assignmentCount,
+                "total", problemPostCount + assignmentCount);
+
         return ResponseEntity.ok(stats);
     }
 }
-

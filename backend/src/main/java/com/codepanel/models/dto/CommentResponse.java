@@ -23,6 +23,7 @@ public class CommentResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private ReactionType userReaction;
+    private Boolean isAccepted;
 
     @Getter
     @Setter

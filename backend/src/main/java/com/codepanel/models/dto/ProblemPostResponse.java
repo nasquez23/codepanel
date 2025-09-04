@@ -25,6 +25,7 @@ public class ProblemPostResponse {
     private CategoryResponse category;
     private List<TagResponse> tags;
     private UserInfo author;
+    private AcceptedAnswer acceptedAnswer;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -37,5 +38,17 @@ public class ProblemPostResponse {
         private String firstName;
         private String lastName;
         private String email;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class AcceptedAnswer {
+        private UUID id;
+        private String comment;
+        private String code;
+        private UserInfo author;
+        private LocalDateTime createdAt;
     }
 }

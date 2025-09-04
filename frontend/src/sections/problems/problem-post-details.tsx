@@ -187,7 +187,10 @@ export default function ProblemPostDetails({ id }: ProblemPostDetailsProps) {
       </div>
 
       <div className="mt-8 bg-white rounded-lg shadow-lg p-8">
-        <CommentsList problemPostId={id} />
+        <CommentsList 
+          problemPostId={id} 
+          problemPostAuthorId={problemPost?.author.id}
+        />
       </div>
 
       {canEdit && problemPost && (

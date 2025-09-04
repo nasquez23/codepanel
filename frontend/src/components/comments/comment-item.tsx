@@ -11,6 +11,8 @@ import {
   Trash2,
   MoreHorizontal,
   Reply,
+  CheckCircle,
+  XCircle,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import {
@@ -28,25 +30,59 @@ import {
 } from "@/components/ui/dropdown-menu";
 import DeleteConfirmationDialog from "../delete-confirmation-dialog";
 import EditCommentForm from "./edit-comment-form";
+import { acceptAnswer, unacceptAnswer } from "@/services/problem-post-api";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 interface CommentItemProps {
   comment: Comment;
   problemPostId: string;
+  problemPostAuthorId?: string;
 }
 
 export default function CommentItem({
   comment,
   problemPostId,
+  problemPostAuthorId,
 }: CommentItemProps) {
   const { user } = useAuth();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const queryClient = useQueryClient();
 
   const likeMutation = useLikeComment();
   const dislikeMutation = useDislikeComment();
   const deleteMutation = useDeleteComment();
 
+  const acceptMutation = useMutation({
+    mutationFn: ({ postId, commentId }: { postId: string; commentId: string }) =>
+      acceptAnswer(postId, commentId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["problem-post", problemPostId] });
+      queryClient.invalidateQueries({ queryKey: ["comments", problemPostId] });
+      toast.success("Answer accepted!");
+    },
+    onError: (error) => {
+      toast.error("Failed to accept answer");
+      console.error("Error accepting answer:", error);
+    },
+  });
+
+  const unacceptMutation = useMutation({
+    mutationFn: (postId: string) => unacceptAnswer(postId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["problem-post", problemPostId] });
+      queryClient.invalidateQueries({ queryKey: ["comments", problemPostId] });
+      toast.success("Answer unaccepted!");
+    },
+    onError: (error) => {
+      toast.error("Failed to unaccept answer");
+      console.error("Error unaccepting answer:", error);
+    },
+  });
+
   const isOwner = user?.id === comment.author.id;
+  const canAcceptAnswer = user?.id === problemPostAuthorId;
 
   const handleLike = () => {
     likeMutation.mutate({ commentId: comment.id, problemPostId });
@@ -71,6 +107,14 @@ export default function CommentItem({
     setIsEditing(false);
   };
 
+  const handleAcceptAnswer = () => {
+    acceptMutation.mutate({ postId: problemPostId, commentId: comment.id });
+  };
+
+  const handleUnacceptAnswer = () => {
+    unacceptMutation.mutate(problemPostId);
+  };
+
   if (isEditing) {
     return (
       <div className="border rounded-lg p-4 bg-gray-50">
@@ -85,7 +129,9 @@ export default function CommentItem({
   }
 
   return (
-    <div className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+    <div className={`border rounded-lg p-4 hover:bg-gray-50 transition-colors ${
+      comment.isAccepted ? "border-green-500 bg-green-50" : ""
+    }`}>
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
@@ -93,9 +139,17 @@ export default function CommentItem({
             {comment.author.lastName[0]}
           </div>
           <div>
-            <p className="font-medium text-gray-900">
-              {comment.author.firstName} {comment.author.lastName}
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="font-medium text-gray-900">
+                {comment.author.firstName} {comment.author.lastName}
+              </p>
+              {comment.isAccepted && (
+                <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                  <CheckCircle className="h-3 w-3" />
+                  Accepted Solution
+                </span>
+              )}
+            </div>
             <p className="text-sm text-gray-500">
               {formatDistanceToNow(new Date(comment.createdAt), {
                 addSuffix: true,
@@ -182,6 +236,32 @@ export default function CommentItem({
           />
           <span>{comment.dislikes}</span>
         </Button>
+
+        {canAcceptAnswer && !comment.isAccepted && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleAcceptAnswer}
+            disabled={acceptMutation.isPending}
+            className="flex items-center gap-1 text-green-600 border-green-200 hover:bg-green-50"
+          >
+            <CheckCircle className="h-4 w-4" />
+            Accept Solution
+          </Button>
+        )}
+
+        {canAcceptAnswer && comment.isAccepted && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleUnacceptAnswer}
+            disabled={unacceptMutation.isPending}
+            className="flex items-center gap-1 text-red-600 border-red-200 hover:bg-red-50"
+          >
+            <XCircle className="h-4 w-4" />
+            Unaccept
+          </Button>
+        )}
 
         <Button
           variant="ghost"

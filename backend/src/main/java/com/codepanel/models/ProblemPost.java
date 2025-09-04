@@ -32,6 +32,10 @@ public class ProblemPost extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "accepted_answer_id")
+    private ProblemPostComment acceptedAnswer;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private DifficultyLevel difficultyLevel = DifficultyLevel.EASY;
@@ -41,10 +45,6 @@ public class ProblemPost extends BaseEntity {
     private Category category;
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "problem_post_tags",
-        joinColumns = @JoinColumn(name = "problem_post_id"),
-        inverseJoinColumns = @JoinColumn(name = "tag_id")
-    )
+    @JoinTable(name = "problem_post_tags", joinColumns = @JoinColumn(name = "problem_post_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
     private Set<Tag> tags = new HashSet<>();
 }

@@ -19,7 +19,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import com.codepanel.repositories.ProblemPostRepository;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -29,6 +31,11 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.UUID;
 
+import com.codepanel.models.ProblemPostComment;
+import com.codepanel.models.dto.GamificationEvent;
+import com.codepanel.models.enums.ScoreEventType;
+import com.codepanel.repositories.ProblemPostCommentRepository;
+
 @Service
 @Transactional(readOnly = true)
 public class ProblemPostService {
@@ -36,13 +43,19 @@ public class ProblemPostService {
     private final ProblemPostRepository problemPostRepository;
     private final CategoryRepository categoryRepository;
     private final TagRepository tagRepository;
+    private final ProblemPostCommentRepository problemPostCommentRepository;
+    private final GamificationEventPublisher gamificationEventPublisher;
 
     public ProblemPostService(ProblemPostRepository problemPostRepository,
-                             CategoryRepository categoryRepository,
-                             TagRepository tagRepository) {
+            CategoryRepository categoryRepository,
+            TagRepository tagRepository,
+            ProblemPostCommentRepository problemPostCommentRepository,
+            GamificationEventPublisher gamificationEventPublisher) {
         this.problemPostRepository = problemPostRepository;
         this.categoryRepository = categoryRepository;
         this.tagRepository = tagRepository;
+        this.problemPostCommentRepository = problemPostCommentRepository;
+        this.gamificationEventPublisher = gamificationEventPublisher;
     }
 
     @Transactional
@@ -54,7 +67,7 @@ public class ProblemPostService {
         problemPost.setLanguage(request.getLanguage());
         problemPost.setDifficultyLevel(request.getDifficultyLevel());
         problemPost.setUser(currentUser);
-        
+
         if (request.getCategoryId() != null) {
             Category category = categoryRepository.findById(request.getCategoryId())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Category not found"));
@@ -65,7 +78,8 @@ public class ProblemPostService {
             Set<Tag> tags = new HashSet<>();
             for (UUID tagId : request.getTagIds()) {
                 Tag tag = tagRepository.findById(tagId)
-                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tag not found: " + tagId));
+                        .orElseThrow(
+                                () -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tag not found: " + tagId));
                 tags.add(tag);
             }
             problemPost.setTags(tags);
@@ -93,17 +107,97 @@ public class ProblemPostService {
         return problemPosts.map(this::mapToResponse);
     }
 
-    public Page<ProblemPostResponse> searchProblemPosts(String query, ProgrammingLanguage language, 
-                                                       DifficultyLevel difficulty, UUID categoryId, 
-                                                       List<UUID> tagIds, Pageable pageable) {
+    public Page<ProblemPostResponse> searchProblemPosts(String query, ProgrammingLanguage language,
+            DifficultyLevel difficulty, UUID categoryId,
+            List<UUID> tagIds, Pageable pageable) {
         try {
-        Page<ProblemPost> problemPosts = problemPostRepository.searchProblemPosts(
-            query, language, difficulty, categoryId, tagIds, pageable);
-        return problemPosts.map(this::mapToResponse);
+            Page<ProblemPost> problemPosts = problemPostRepository.searchProblemPosts(
+                    query, language, difficulty, categoryId, tagIds, pageable);
+            return problemPosts.map(this::mapToResponse);
         } catch (Exception e) {
             System.out.println("Error searching problem posts: " + e.getMessage());
             return Page.empty();
         }
+    }
+
+    @Transactional
+    public ProblemPostResponse acceptAnswer(UUID postId, UUID commentId, User currentUser) {
+        ProblemPost problemPost = problemPostRepository.findById(postId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Problem post not found"));
+        ProblemPostComment comment = problemPostCommentRepository.findById(commentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
+
+        if (!problemPost.getUser().getId().equals(currentUser.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You don't have permission to accept this answer");
+        }
+
+        if (!problemPost.getId().equals(comment.getProblemPost().getId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Comment does not belong to this post");
+        }
+
+        if (problemPost.getAcceptedAnswer() != null && problemPost.getAcceptedAnswer().getId().equals(commentId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Comment is already the accepted answer");
+        }
+        System.out.println("Problem post: " + problemPost.getAcceptedAnswer());
+        System.out.println("Comment: " + comment);
+
+        if (problemPost.getAcceptedAnswer() != null) {
+            // Remove points from the old accepted answer
+            gamificationEventPublisher.publish(
+                    ScoreEventType.PROBLEM_ANSWER_UNACCEPTED,
+                    GamificationEvent.builder()
+                            .eventType(ScoreEventType.PROBLEM_ANSWER_UNACCEPTED)
+                            .userId(problemPost.getAcceptedAnswer().getUser().getId())
+                            .difficulty(problemPost.getAcceptedAnswer().getProblemPost().getDifficultyLevel())
+                            .refType("PROBLEM_ANSWER_UNACCEPTED")
+                            .refId(problemPost.getAcceptedAnswer().getId())
+                            .build());
+        }
+
+        gamificationEventPublisher.publish(
+                ScoreEventType.PROBLEM_ANSWER_ACCEPTED,
+                GamificationEvent.builder()
+                        .eventType(ScoreEventType.PROBLEM_ANSWER_ACCEPTED)
+                        .userId(comment.getUser().getId())
+                        .difficulty(problemPost.getDifficultyLevel())
+                        .refType("PROBLEM_ANSWER_ACCEPTED")
+                        .refId(commentId)
+                        .build());
+
+        problemPost.setAcceptedAnswer(comment);
+        System.out.println("accepted answer: " + problemPost.getAcceptedAnswer().getId()); 
+
+        problemPostRepository.save(problemPost);
+        System.out.println("Problem post saved: " + problemPost);
+
+        return mapToResponse(problemPost);
+    }
+
+    @Transactional
+    public void unacceptAnswer(UUID postId, User currentUser) {
+        ProblemPost problemPost = problemPostRepository.findById(postId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Problem post not found"));
+
+        if (!problemPost.getUser().getId().equals(currentUser.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You don't have permission to accept this answer");
+        }
+
+        if (problemPost.getAcceptedAnswer() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No accepted answer found");
+        }
+
+        gamificationEventPublisher.publish(
+                ScoreEventType.PROBLEM_ANSWER_UNACCEPTED,
+                GamificationEvent.builder()
+                        .eventType(ScoreEventType.PROBLEM_ANSWER_UNACCEPTED)
+                        .userId(problemPost.getAcceptedAnswer().getUser().getId())
+                        .difficulty(problemPost.getAcceptedAnswer().getProblemPost().getDifficultyLevel())
+                        .refType("PROBLEM_ANSWER_UNACCEPTED")
+                        .refId(problemPost.getAcceptedAnswer().getId())
+                        .build());
+
+        problemPost.setAcceptedAnswer(null);
+        problemPostRepository.save(problemPost);
     }
 
     @Transactional
@@ -134,7 +228,8 @@ public class ProblemPostService {
             Set<Tag> tags = new HashSet<>();
             for (UUID tagId : request.getTagIds()) {
                 Tag tag = tagRepository.findById(tagId)
-                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tag not found: " + tagId));
+                        .orElseThrow(
+                                () -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tag not found: " + tagId));
                 tags.add(tag);
             }
             problemPost.setTags(tags);
@@ -203,6 +298,25 @@ public class ProblemPostService {
         authorInfo.setLastName(author.getLastName());
         authorInfo.setEmail(author.getEmail());
         response.setAuthor(authorInfo);
+
+        // Map accepted answer if it exists
+        if (problemPost.getAcceptedAnswer() != null) {
+            ProblemPostComment acceptedComment = problemPost.getAcceptedAnswer();
+            ProblemPostResponse.AcceptedAnswer acceptedAnswer = new ProblemPostResponse.AcceptedAnswer();
+            acceptedAnswer.setId(acceptedComment.getId());
+            acceptedAnswer.setComment(acceptedComment.getComment());
+            acceptedAnswer.setCode(acceptedComment.getCode());
+            acceptedAnswer.setCreatedAt(acceptedComment.getCreatedAt());
+            
+            ProblemPostResponse.UserInfo acceptedAuthorInfo = new ProblemPostResponse.UserInfo();
+            acceptedAuthorInfo.setId(acceptedComment.getUser().getId());
+            acceptedAuthorInfo.setFirstName(acceptedComment.getUser().getFirstName());
+            acceptedAuthorInfo.setLastName(acceptedComment.getUser().getLastName());
+            acceptedAuthorInfo.setEmail(acceptedComment.getUser().getEmail());
+            acceptedAnswer.setAuthor(acceptedAuthorInfo);
+            
+            response.setAcceptedAnswer(acceptedAnswer);
+        }
 
         return response;
     }

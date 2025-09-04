@@ -64,6 +64,18 @@ export const deleteProblemPost = async (id: string): Promise<void> => {
   await deleter(`/api/problem-posts/${id}`);
 };
 
+export const acceptAnswer = async (postId: string, commentId: string): Promise<ProblemPost> => {
+  const response = await putter<{}, ProblemPost>(
+    `/api/problem-posts/${postId}/accept-answer/${commentId}`,
+    {}
+  );
+  return response.data;
+};
+
+export const unacceptAnswer = async (postId: string): Promise<void> => {
+  await deleter(`/api/problem-posts/${postId}/unaccept-answer`);
+};
+
 export interface SearchProblemPostsParams {
   query?: string;
   language?: string;

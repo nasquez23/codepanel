@@ -49,7 +49,7 @@ public class GamificationService {
         System.out.println("Recording event: " + user.getEmail() + " " + type + " " + difficulty + " " + basePoints
                 + " " + refType + " " + refId);
 
-        int points = Math.max(0, basePoints) * difficultyMultiplier(difficulty);
+        int points = basePoints * difficultyMultiplier(difficulty);
 
         ScoreEvent event = new ScoreEvent();
         event.setUser(user);

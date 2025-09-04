@@ -200,6 +200,10 @@ public class CommentService {
             }
         }
 
+        // Check if this comment is the accepted answer
+        boolean isAccepted = comment.getProblemPost().getAcceptedAnswer() != null &&
+                comment.getProblemPost().getAcceptedAnswer().getId().equals(comment.getId());
+
         CommentResponse response = new CommentResponse();
         response.setId(comment.getId());
         response.setComment(comment.getComment());
@@ -210,6 +214,7 @@ public class CommentService {
         response.setCreatedAt(comment.getCreatedAt());
         response.setUpdatedAt(comment.getUpdatedAt());
         response.setUserReaction(userReaction);
+        response.setIsAccepted(isAccepted);
 
         return response;
     }

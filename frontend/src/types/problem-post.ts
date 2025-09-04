@@ -11,6 +11,13 @@ export interface ProblemPost {
   category?: Category;
   tags: Tag[];
   author: UserInfo;
+  acceptedAnswer?: {
+    id: string;
+    comment: string;
+    code?: string;
+    author: UserInfo;
+    createdAt: string;
+  };
   createdAt: string;
   updatedAt: string;
 }

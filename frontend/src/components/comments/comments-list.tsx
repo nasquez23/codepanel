@@ -10,9 +10,10 @@ import { useAuth } from "@/hooks/use-auth";
 
 interface CommentsListProps {
   problemPostId: string;
+  problemPostAuthorId?: string;
 }
 
-export default function CommentsList({ problemPostId }: CommentsListProps) {
+export default function CommentsList({ problemPostId, problemPostAuthorId }: CommentsListProps) {
   const { user, isLoading: authLoading } = useAuth();
   const [page, setPage] = useState(0);
   const [showCommentForm, setShowCommentForm] = useState(false);
@@ -109,6 +110,7 @@ export default function CommentsList({ problemPostId }: CommentsListProps) {
               key={comment.id}
               comment={comment}
               problemPostId={problemPostId}
+              problemPostAuthorId={problemPostAuthorId}
             />
           ))}
 

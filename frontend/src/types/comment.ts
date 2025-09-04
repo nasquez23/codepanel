@@ -10,6 +10,7 @@ export interface Comment {
   createdAt: string;
   updatedAt: string;
   userReaction?: "LIKE" | "DISLIKE" | null;
+  isAccepted?: boolean;
 }
 
 export interface CreateCommentRequest {

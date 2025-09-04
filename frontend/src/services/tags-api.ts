@@ -38,4 +38,3 @@ export const tagsApi = {
     return response.data;
   },
 };
-

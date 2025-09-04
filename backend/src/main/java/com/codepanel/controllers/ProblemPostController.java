@@ -1,6 +1,5 @@
 package com.codepanel.controllers;
 
-
 import com.codepanel.models.User;
 import com.codepanel.models.dto.CreateProblemPostRequest;
 import com.codepanel.models.dto.UpdateProblemPostRequest;
@@ -46,11 +45,10 @@ public class ProblemPostController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDir) {
-        
-        Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ? 
-            Sort.Direction.DESC : Sort.Direction.ASC;
+
+        Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
-        
+
         Page<ProblemPostResponse> response = problemPostService.getAllProblemPosts(pageable);
         return ResponseEntity.ok(response);
     }
@@ -66,7 +64,7 @@ public class ProblemPostController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @AuthenticationPrincipal User currentUser) {
-        
+
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<ProblemPostResponse> response = problemPostService.getProblemPostsByUser(currentUser, pageable);
         return ResponseEntity.ok(response);
@@ -83,13 +81,12 @@ public class ProblemPostController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDir) {
-        
-        Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ? 
-            Sort.Direction.DESC : Sort.Direction.ASC;
+
+        Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
-        
+
         Page<ProblemPostResponse> response = problemPostService.searchProblemPosts(
-            query, language, difficulty, categoryId, tagIds, pageable);
+                query, language, difficulty, categoryId, tagIds, pageable);
         return ResponseEntity.ok(response);
     }
 
@@ -100,6 +97,23 @@ public class ProblemPostController {
             @AuthenticationPrincipal User currentUser) {
         ProblemPostResponse response = problemPostService.updateProblemPost(id, request, currentUser);
         return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{id}/accept-answer/{commentId}")
+    public ResponseEntity<ProblemPostResponse> acceptAnswer(
+            @PathVariable UUID id,
+            @PathVariable UUID commentId,
+            @AuthenticationPrincipal User currentUser) {
+        ProblemPostResponse response = problemPostService.acceptAnswer(id, commentId, currentUser);
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/{id}/unaccept-answer")
+    public ResponseEntity<Void> unacceptAnswer(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal User currentUser) {
+        problemPostService.unacceptAnswer(id, currentUser);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
