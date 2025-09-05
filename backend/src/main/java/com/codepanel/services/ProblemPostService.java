@@ -138,8 +138,10 @@ public class ProblemPostService {
         if (problemPost.getAcceptedAnswer() != null && problemPost.getAcceptedAnswer().getId().equals(commentId)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Comment is already the accepted answer");
         }
-        System.out.println("Problem post: " + problemPost.getAcceptedAnswer());
-        System.out.println("Comment: " + comment);
+
+        if (problemPost.getUser().getId().equals(comment.getUser().getId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You can't accept your own answer");
+        }
 
         if (problemPost.getAcceptedAnswer() != null) {
             // Remove points from the old accepted answer
@@ -165,7 +167,7 @@ public class ProblemPostService {
                         .build());
 
         problemPost.setAcceptedAnswer(comment);
-        System.out.println("accepted answer: " + problemPost.getAcceptedAnswer().getId()); 
+        System.out.println("accepted answer: " + problemPost.getAcceptedAnswer().getId());
 
         problemPostRepository.save(problemPost);
         System.out.println("Problem post saved: " + problemPost);
@@ -307,14 +309,14 @@ public class ProblemPostService {
             acceptedAnswer.setComment(acceptedComment.getComment());
             acceptedAnswer.setCode(acceptedComment.getCode());
             acceptedAnswer.setCreatedAt(acceptedComment.getCreatedAt());
-            
+
             ProblemPostResponse.UserInfo acceptedAuthorInfo = new ProblemPostResponse.UserInfo();
             acceptedAuthorInfo.setId(acceptedComment.getUser().getId());
             acceptedAuthorInfo.setFirstName(acceptedComment.getUser().getFirstName());
             acceptedAuthorInfo.setLastName(acceptedComment.getUser().getLastName());
             acceptedAuthorInfo.setEmail(acceptedComment.getUser().getEmail());
             acceptedAnswer.setAuthor(acceptedAuthorInfo);
-            
+
             response.setAcceptedAnswer(acceptedAnswer);
         }
 

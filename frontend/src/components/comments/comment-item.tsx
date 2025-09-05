@@ -55,10 +55,17 @@ export default function CommentItem({
   const deleteMutation = useDeleteComment();
 
   const acceptMutation = useMutation({
-    mutationFn: ({ postId, commentId }: { postId: string; commentId: string }) =>
-      acceptAnswer(postId, commentId),
+    mutationFn: ({
+      postId,
+      commentId,
+    }: {
+      postId: string;
+      commentId: string;
+    }) => acceptAnswer(postId, commentId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["problem-post", problemPostId] });
+      queryClient.invalidateQueries({
+        queryKey: ["problem-post", problemPostId],
+      });
       queryClient.invalidateQueries({ queryKey: ["comments", problemPostId] });
       toast.success("Answer accepted!");
     },
@@ -71,7 +78,9 @@ export default function CommentItem({
   const unacceptMutation = useMutation({
     mutationFn: (postId: string) => unacceptAnswer(postId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["problem-post", problemPostId] });
+      queryClient.invalidateQueries({
+        queryKey: ["problem-post", problemPostId],
+      });
       queryClient.invalidateQueries({ queryKey: ["comments", problemPostId] });
       toast.success("Answer unaccepted!");
     },
@@ -82,7 +91,8 @@ export default function CommentItem({
   });
 
   const isOwner = user?.id === comment.author.id;
-  const canAcceptAnswer = user?.id === problemPostAuthorId;
+  const canAcceptAnswer =
+    user?.id === problemPostAuthorId && user?.id !== comment.author.id;
 
   const handleLike = () => {
     likeMutation.mutate({ commentId: comment.id, problemPostId });
@@ -129,9 +139,11 @@ export default function CommentItem({
   }
 
   return (
-    <div className={`border rounded-lg p-4 hover:bg-gray-50 transition-colors ${
-      comment.isAccepted ? "border-green-500 bg-green-50" : ""
-    }`}>
+    <div
+      className={`border rounded-lg p-4 hover:bg-gray-50 transition-colors ${
+        comment.isAccepted ? "border-green-500 bg-green-50" : ""
+      }`}
+    >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
