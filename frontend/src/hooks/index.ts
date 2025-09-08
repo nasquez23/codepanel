@@ -59,9 +59,12 @@ export {
 
 export { useCategories } from "./use-categories";
 
+export { useTags, useTag, useSearchTags, tagKeys } from "./use-tags";
+
 export {
-  useTags,
-  useTag,
-  useSearchTags,
-  tagKeys,
-} from "./use-tags";
+  useAllAchievements,
+  useUserAchievements,
+  useMyAchievements,
+  useUserProgress,
+  useMyProgress,
+} from "./use-achievements";

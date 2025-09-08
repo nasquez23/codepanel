@@ -2,14 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { Edit, Save, X, User, Mail, Shield } from "lucide-react";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import AvatarUpload from "./avatar-upload";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import AvatarUpload from "@/components/avatar-upload";
 import { useProfile, useUpdateProfile } from "@/hooks";
 import { UpdateProfileRequest } from "@/types/profile";
 
-export default function ProfilePage() {
+export function ProfileInfoTab() {
   const { data: profile, isLoading, error } = useProfile();
   const updateMutation = useUpdateProfile();
 
@@ -61,14 +62,16 @@ export default function ProfilePage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!validateForm()) return;
 
-    updateMutation.mutate(formData, {
-      onSuccess: () => {
-        setIsEditing(false);
-      },
-    });
+    try {
+      await updateMutation.mutateAsync(formData);
+      setIsEditing(false);
+      setErrors({});
+    } catch (error) {
+      console.error("Failed to update profile:", error);
+    }
   };
 
   const handleCancel = () => {
@@ -78,11 +81,11 @@ export default function ProfilePage() {
         lastName: profile.lastName,
       });
     }
-    setErrors({});
     setIsEditing(false);
+    setErrors({});
   };
 
-  const getRoleBadgeColor = (role: string) => {
+  const getRoleColor = (role: string) => {
     switch (role) {
       case "ADMIN":
         return "bg-red-100 text-red-800";
@@ -97,17 +100,12 @@ export default function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="h-96 bg-gray-200 rounded"></div>
-            <div className="space-y-4">
-              <div className="h-6 bg-gray-200 rounded"></div>
-              <div className="h-6 bg-gray-200 rounded"></div>
-              <div className="h-6 bg-gray-200 rounded"></div>
-            </div>
-          </div>
+      <div className="grid md:grid-cols-2 gap-6">
+        <div className="h-96 bg-gray-200 animate-pulse rounded"></div>
+        <div className="space-y-4">
+          <div className="h-6 bg-gray-200 animate-pulse rounded"></div>
+          <div className="h-6 bg-gray-200 animate-pulse rounded"></div>
+          <div className="h-6 bg-gray-200 animate-pulse rounded"></div>
         </div>
       </div>
     );
@@ -115,25 +113,26 @@ export default function ProfilePage() {
 
   if (error) {
     return (
-      <div className="max-w-4xl mx-auto p-6">
-        <Card className="border-red-200">
-          <CardContent className="pt-6">
-            <div className="text-center text-red-600">
-              <p>Failed to load profile</p>
-              <p className="text-sm mt-2">Please try refreshing the page</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <Card className="border-red-200">
+        <CardContent className="pt-6">
+          <div className="text-center text-red-600">
+            <p>Failed to load profile</p>
+            <p className="text-sm mt-2">Please try refreshing the page</p>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   if (!profile) return null;
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Profile</h1>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-gray-900">
+          Profile Information
+        </h2>
         {!isEditing && (
           <Button
             onClick={() => setIsEditing(true)}
@@ -146,6 +145,7 @@ export default function ProfilePage() {
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
+        {/* Profile Picture */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
@@ -158,6 +158,7 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
+        {/* Personal Information */}
         <Card>
           <CardHeader>
             <CardTitle>Personal Information</CardTitle>
@@ -174,7 +175,6 @@ export default function ProfilePage() {
                     onChange={(e) =>
                       handleInputChange("firstName", e.target.value)
                     }
-                    placeholder="Enter first name"
                     className={errors.firstName ? "border-red-500" : ""}
                   />
                   {errors.firstName && (
@@ -184,9 +184,7 @@ export default function ProfilePage() {
                   )}
                 </div>
               ) : (
-                <p className="text-gray-900 py-2 px-3 bg-gray-50 rounded-md">
-                  {profile.firstName}
-                </p>
+                <p className="text-gray-900">{profile.firstName}</p>
               )}
             </div>
 
@@ -201,7 +199,6 @@ export default function ProfilePage() {
                     onChange={(e) =>
                       handleInputChange("lastName", e.target.value)
                     }
-                    placeholder="Enter last name"
                     className={errors.lastName ? "border-red-500" : ""}
                   />
                   {errors.lastName && (
@@ -211,37 +208,29 @@ export default function ProfilePage() {
                   )}
                 </div>
               ) : (
-                <p className="text-gray-900 py-2 px-3 bg-gray-50 rounded-md">
-                  {profile.lastName}
-                </p>
+                <p className="text-gray-900">{profile.lastName}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                <Mail className="w-4 h-4 inline mr-1" />
-                Email
+              <label className="flex items-center space-x-2 text-sm font-medium text-gray-700 mb-1">
+                <Mail className="w-4 h-4" />
+                <span>Email</span>
               </label>
-              <p className="text-gray-600 py-2 px-3 bg-gray-100 rounded-md">
-                {profile.email}
-              </p>
-              <p className="text-xs text-gray-500 mt-1">
-                Email cannot be changed. Contact support if needed.
+              <p className="text-gray-900">{profile.email}</p>
+              <p className="text-sm text-gray-500 mt-1">
+                Email cannot be changed
               </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                <Shield className="w-4 h-4 inline mr-1" />
-                Role
+              <label className="flex items-center space-x-2 text-sm font-medium text-gray-700 mb-1">
+                <Shield className="w-4 h-4" />
+                <span>Role</span>
               </label>
-              <span
-                className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleBadgeColor(
-                  profile.role
-                )}`}
-              >
+              <Badge className={getRoleColor(profile.role)}>
                 {profile.role}
-              </span>
+              </Badge>
             </div>
 
             {isEditing && (
@@ -259,7 +248,6 @@ export default function ProfilePage() {
                 <Button
                   variant="outline"
                   onClick={handleCancel}
-                  disabled={updateMutation.isPending}
                   className="flex items-center space-x-2"
                 >
                   <X className="w-4 h-4" />
