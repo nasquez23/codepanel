@@ -57,6 +57,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/categories").hasRole(Role.ADMIN.name())
                         .requestMatchers(HttpMethod.GET, "/api/tags/**").permitAll()
                         .requestMatchers("/api/tags").hasRole(Role.ADMIN.name())
+                        .requestMatchers("/api/achievements/**").authenticated()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)

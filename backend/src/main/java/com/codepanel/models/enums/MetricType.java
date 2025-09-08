@@ -1,0 +1,13 @@
+package com.codepanel.models.enums;
+
+public enum MetricType {
+    PROBLEMS_POSTED,
+    COMMENTS_POSTED,
+    ACCEPTED_ANSWERS,
+    ASSIGNMENTS_COMPLETED,
+    TOTAL_POINTS,
+    TOTAL_LIKES_RECEIVED,
+    PROBLEM_POSTING_STREAK,
+    ASSIGNMENT_STREAK,
+    ACTIVITY_STREAK
+}

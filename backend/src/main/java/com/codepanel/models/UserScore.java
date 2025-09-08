@@ -11,7 +11,7 @@ import java.time.LocalDate;
 @Setter
 @Entity
 @Table(name = "user_scores", uniqueConstraints = {
-        @UniqueConstraint(name = "uk_user_scores_user_week", columnNames = {"user_id", "week_start"})
+        @UniqueConstraint(name = "uk_user_scores_user_week", columnNames = { "user_id", "week_start" })
 })
 public class UserScore extends BaseEntity {
 
