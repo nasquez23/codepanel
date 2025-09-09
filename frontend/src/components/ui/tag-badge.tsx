@@ -31,13 +31,6 @@ export function TagBadge({
   const baseClasses =
     "inline-flex items-center rounded-full font-medium transition-colors";
 
-  const style =
-    variant === "default"
-      ? { backgroundColor: tag.color }
-      : variant === "outline"
-      ? { borderColor: tag.color, color: tag.color }
-      : { backgroundColor: `${tag.color}33`, color: tag.color };
-
   return (
     <span
       className={cn(
@@ -45,9 +38,9 @@ export function TagBadge({
         sizeClasses[size],
         variantClasses[variant],
         onClick && "cursor-pointer hover:opacity-80",
+        "bg-gray-200 font-medium text-gray-800",
         className
       )}
-      style={style}
       onClick={onClick}
       title={tag.description}
     >
