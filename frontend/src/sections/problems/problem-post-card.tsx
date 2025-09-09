@@ -4,17 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { ProblemPost } from "@/types/problem-post";
 import { Button } from "@/components/ui/button";
-import { TagBadge } from "@/components/ui/tag-badge";
-import { CategoryBadge } from "@/components/ui/category-badge";
-import { DifficultyBadge } from "@/components/ui/difficulty-badge";
 import { Trash2, Edit, MessageSquare } from "lucide-react";
 import { useDeleteProblemPost } from "@/hooks/use-problem-posts";
 import { useAuth } from "@/hooks/use-auth";
 import EditProblemPostDialog from "./edit-problem-post-dialog";
 import DeleteConfirmationDialog from "@/components/delete-confirmation-dialog";
-import ProfilePicture from "@/components/profile-picture";
-import { formatDistanceToNow } from "date-fns";
-import { ProgrammingLanguageBadge } from "@/components/ui/programming-language-badge";
+import ProblemPostUserInfo from "./problem-post-user-info";
+import ProblemPostAttributes from "./problem-post-attributes";
 
 interface ProblemPostCardProps {
   problemPost: ProblemPost;
@@ -47,24 +43,7 @@ export default function ProblemPostCard({ problemPost }: ProblemPostCardProps) {
   return (
     <div className="bg-white rounded-lg shadow-md border border-gray-200 px-6 py-4 hover:shadow-lg transition-shadow">
       <div className="flex justify-between items-start mb-4">
-        <div className="flex items-center gap-3 mt-2 text-sm text-gray-600">
-          <ProfilePicture
-            profilePictureUrl={problemPost.author.profilePictureUrl}
-            firstName={problemPost.author.firstName}
-            lastName={problemPost.author.lastName}
-            className="size-11"
-          />
-          <div className="flex flex-col">
-            <span className="font-medium text-lg">
-              {problemPost.author.firstName} {problemPost.author.lastName}
-            </span>
-            <span className="text-gray-500">
-              {formatDistanceToNow(new Date(problemPost.createdAt), {
-                addSuffix: true,
-              })}
-            </span>
-          </div>
-        </div>
+        <ProblemPostUserInfo problemPost={problemPost} />
 
         <div className="flex gap-2">
           {canEdit && (
@@ -101,29 +80,7 @@ export default function ProblemPostCard({ problemPost }: ProblemPostCardProps) {
         {problemPost.description}
       </p>
 
-      <div className="flex items-center gap-2 flex-wrap">
-        <DifficultyBadge difficulty={problemPost.difficultyLevel} size="sm" />
-        <ProgrammingLanguageBadge language={problemPost.language} />
-        {problemPost.category && (
-          <CategoryBadge
-            category={problemPost.category}
-            size="sm"
-            variant="secondary"
-          />
-        )}
-        {problemPost.tags && problemPost.tags.length > 0 && (
-          <>
-            {problemPost.tags.slice(0, 3).map((tag) => (
-              <TagBadge key={tag.id} tag={tag} size="sm" variant="secondary" />
-            ))}
-            {problemPost.tags.length > 3 && (
-              <span className="text-xs text-gray-500">
-                +{problemPost.tags.length - 3} more
-              </span>
-            )}
-          </>
-        )}
-      </div>
+      <ProblemPostAttributes problemPost={problemPost} />
 
       <div className="flex justify-between items-center mt-5 border-t pt-2">
         <div className="flex items-center gap-2">

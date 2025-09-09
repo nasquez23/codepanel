@@ -5,7 +5,7 @@ import { Metadata } from "next";
 
 function AssignmentsContent() {
   return (
-    <div className="min-h-screen bg-blue-200/30">
+    <div className="min-h-screen bg-blue-200/20">
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <AssignmentsList showCreateButton={true} />
       </div>
