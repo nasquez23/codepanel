@@ -41,6 +41,6 @@ public class AssignmentResponse {
         private String firstName;
         private String lastName;
         private String email;
+        private String profilePictureUrl;
     }
 }
-

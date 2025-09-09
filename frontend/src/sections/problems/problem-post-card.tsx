@@ -139,7 +139,7 @@ export default function ProblemPostCard({ problemPost }: ProblemPostCardProps) {
         </h3>
       </Link>
 
-      <p className="text-gray-700 mb-4 mt-2 line-clamp-3">
+      <p className="text-gray-700 mb-4 mt-2 line-clamp-2">
         {problemPost.description}
       </p>
 
