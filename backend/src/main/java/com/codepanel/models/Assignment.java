@@ -21,7 +21,7 @@ public class Assignment extends BaseEntity {
     @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
 
     @Column(nullable = false)
@@ -48,10 +48,6 @@ public class Assignment extends BaseEntity {
     private Category category;
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "assignment_tags",
-        joinColumns = @JoinColumn(name = "assignment_id"),
-        inverseJoinColumns = @JoinColumn(name = "tag_id")
-    )
+    @JoinTable(name = "assignment_tags", joinColumns = @JoinColumn(name = "assignment_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
     private Set<Tag> tags = new HashSet<>();
 }

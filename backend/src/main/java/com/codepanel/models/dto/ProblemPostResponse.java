@@ -28,6 +28,7 @@ public class ProblemPostResponse {
     private AcceptedAnswer acceptedAnswer;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Long commentCount;
 
     @Getter
     @Setter

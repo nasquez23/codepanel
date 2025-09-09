@@ -302,6 +302,9 @@ public class ProblemPostService {
         authorInfo.setProfilePictureUrl(author.getProfilePictureUrl());
         response.setAuthor(authorInfo);
 
+        Long commentCount = problemPostRepository.countCommentsByProblemPostId(problemPost.getId());
+        response.setCommentCount(commentCount);
+
         // Map accepted answer if it exists
         if (problemPost.getAcceptedAnswer() != null) {
             ProblemPostComment acceptedComment = problemPost.getAcceptedAnswer();
