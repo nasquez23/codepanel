@@ -92,20 +92,10 @@ export default function CreateProblemPostForm() {
         language: formData.language as ProgrammingLanguage,
         difficultyLevel: formData.difficultyLevel as DifficultyLevel,
         categoryId: formData.category?.id,
-        tagIds: formData.tags.map(tag => tag.id),
+        tagIds: formData.tags.map((tag) => tag.id),
       },
       {
         onSuccess: () => {
-          setFormData({
-            title: "",
-            description: "",
-            code: "",
-            language: "",
-            difficultyLevel: "",
-            category: null,
-            tags: [],
-          });
-
           router.push("/problems");
         },
         onError: (error: any) => {
@@ -199,14 +189,16 @@ export default function CreateProblemPostForm() {
             </label>
             <DifficultySelector
               selectedDifficulty={formData.difficultyLevel || null}
-              onDifficultyChange={(difficulty) => 
+              onDifficultyChange={(difficulty) =>
                 handleInputChange("difficultyLevel", difficulty || "")
               }
               required={true}
               className={errors.difficultyLevel ? "border-red-500" : ""}
             />
             {errors.difficultyLevel && (
-              <p className="mt-1 text-sm text-red-600">{errors.difficultyLevel}</p>
+              <p className="mt-1 text-sm text-red-600">
+                {errors.difficultyLevel}
+              </p>
             )}
           </div>
 
@@ -219,8 +211,8 @@ export default function CreateProblemPostForm() {
             </label>
             <CategorySelector
               selectedCategory={formData.category}
-              onCategoryChange={(category) => 
-                setFormData(prev => ({ ...prev, category }))
+              onCategoryChange={(category) =>
+                setFormData((prev) => ({ ...prev, category }))
               }
             />
           </div>
@@ -234,8 +226,8 @@ export default function CreateProblemPostForm() {
             </label>
             <TagSelector
               selectedTags={formData.tags}
-              onTagsChange={(tags) => 
-                setFormData(prev => ({ ...prev, tags }))
+              onTagsChange={(tags) =>
+                setFormData((prev) => ({ ...prev, tags }))
               }
               placeholder="Search and select tags..."
               maxTags={5}

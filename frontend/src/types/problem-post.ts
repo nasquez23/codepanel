@@ -20,6 +20,7 @@ export interface ProblemPost {
   };
   createdAt: string;
   updatedAt: string;
+  commentCount: number;
 }
 
 export interface CreateProblemPostRequest {
