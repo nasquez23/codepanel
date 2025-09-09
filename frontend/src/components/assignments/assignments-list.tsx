@@ -142,24 +142,14 @@ export default function AssignmentsList({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <BookOpen className="h-6 w-6 text-blue-600" />
           <div>
             <h2 className="text-2xl font-bold text-gray-900">Assignments</h2>
             <p className="text-gray-600 text-sm">
-              {hasActiveSearch && assignmentsData?.totalElements
-                ? `${assignmentsData.totalElements} result${
-                    assignmentsData.totalElements === 1 ? "" : "s"
-                  } found`
-                : !hasActiveSearch && assignmentsData?.totalElements
-                ? `${assignmentsData.totalElements} assignment${
-                    assignmentsData.totalElements === 1 ? "" : "s"
-                  } available`
-                : hasActiveSearch
-                ? "No results found"
-                : "No assignments available"}
+              Complete assignments to improve your skills and get feedback from
+              your instructors.
             </p>
           </div>
         </div>
@@ -168,8 +158,8 @@ export default function AssignmentsList({
           user &&
           (user.role === "INSTRUCTOR" || user.role === "ADMIN") && (
             <Link href="/assignments/create">
-              <Button className="flex items-center gap-2">
-                <Plus className="h-4 w-4" />
+              <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
+                <Plus className="w-4 h-4 mr-2" />
                 Create Assignment
               </Button>
             </Link>

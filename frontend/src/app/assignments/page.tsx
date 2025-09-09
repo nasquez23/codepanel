@@ -1,10 +1,11 @@
 import AssignmentsList from "@/components/assignments/assignments-list";
 import { Suspense } from "react";
 import { Loader2 } from "lucide-react";
+import { Metadata } from "next";
 
 function AssignmentsContent() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-blue-200/30">
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <AssignmentsList showCreateButton={true} />
       </div>
@@ -27,4 +28,12 @@ export default function AssignmentsPage() {
       <AssignmentsContent />
     </Suspense>
   );
+}
+
+export function generateMetadata(): Metadata {
+  return {
+    title: "Assignments | CodePanel",
+    description:
+      "Browse and share assignments with the CodePanel community. Get help from peers and instructors.",
+  };
 }

@@ -94,6 +94,7 @@ export default function ProblemsList() {
     if (newPage >= 0 && newPage < totalPages) {
       setCurrentPage(newPage);
     }
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleClearSearch = () => {

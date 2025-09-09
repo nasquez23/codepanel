@@ -2,23 +2,11 @@
 
 import { useState } from "react";
 import { Assignment } from "@/types/assignment";
-import { Button } from "@/components/ui/button";
-import { ProgrammingLanguageDisplayNames } from "@/types/problem-post";
 import { TagBadge } from "@/components/ui/tag-badge";
 import { CategoryBadge } from "@/components/ui/category-badge";
 import { DifficultyBadge } from "@/components/ui/difficulty-badge";
-import { formatDistanceToNow } from "date-fns";
-import {
-  User,
-  Clock,
-  Code,
-  Users,
-  CheckCircle,
-  AlertCircle,
-  Edit,
-  Trash2,
-  MoreHorizontal,
-} from "lucide-react";
+import { formatDate } from "date-fns";
+import { NotepadText } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useDeleteAssignment } from "@/hooks/use-assignments";
 import Link from "next/link";
@@ -29,6 +17,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import DeleteConfirmationDialog from "@/components/delete-confirmation-dialog";
+import ProfilePicture from "../profile-picture";
+import { cn } from "@/lib/utils";
 
 interface AssignmentCardProps {
   assignment: Assignment;
@@ -47,22 +37,12 @@ export default function AssignmentCard({
   const canEdit = user && (user.role === "ADMIN" || isOwner);
   const canDelete = user && (user.role === "ADMIN" || isOwner);
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  const isDueSoon =
-    assignment.dueDate &&
-    new Date(assignment.dueDate) <= new Date(Date.now() + 24 * 60 * 60 * 1000);
   const isOverdue =
     assignment.dueDate && new Date(assignment.dueDate) < new Date();
+  const isDueSoon =
+    assignment.dueDate &&
+    !isOverdue &&
+    new Date(assignment.dueDate) <= new Date(Date.now() + 24 * 60 * 60 * 1000);
 
   const handleDelete = () => {
     deleteMutation.mutate(assignment.id, {
@@ -72,72 +52,44 @@ export default function AssignmentCard({
     });
   };
 
+  const baseClasses =
+    "bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border border-gray-200";
+
   return (
-    <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border border-gray-200">
-      <div className="flex justify-between items-start mb-4">
-        <div className="shrink max-w-[95%]">
-          <Link href={`/assignments/${assignment.id}`}>
-            <h3 className="text-xl font-bold text-gray-900 hover:text-blue-600 transition-colors cursor-pointer">
-              {assignment.title}
-            </h3>
-          </Link>
-
-          <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-            <div className="flex items-center gap-1">
-              <User className="w-4 h-4" />
-              <span>
-                {assignment.instructor.firstName}{" "}
-                {assignment.instructor.lastName}
-              </span>
-            </div>
-
-            <div className="flex items-center gap-1">
-              <Code className="w-4 h-4" />
-              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
-                {ProgrammingLanguageDisplayNames[assignment.language]}
-              </span>
-            </div>
-
-            <div className="flex items-center gap-1">
-              <Users className="w-4 h-4" />
-              <span>{assignment.submissionCount} submissions</span>
-            </div>
-
-            <DifficultyBadge
-              difficulty={assignment.difficultyLevel}
-              size="sm"
-            />
-          </div>
-
-          <div className="flex items-center gap-2 mt-3 flex-wrap">
-            {assignment.category && (
-              <CategoryBadge
-                category={assignment.category}
-                size="sm"
-                variant="secondary"
-              />
-            )}
-            {assignment.tags && assignment.tags.length > 0 && (
-              <>
-                {assignment.tags.slice(0, 3).map((tag) => (
-                  <TagBadge
-                    key={tag.id}
-                    tag={tag}
-                    size="sm"
-                    variant="secondary"
-                  />
-                ))}
-                {assignment.tags.length > 3 && (
-                  <span className="text-xs text-gray-500">
-                    +{assignment.tags.length - 3} more
-                  </span>
-                )}
-              </>
-            )}
-          </div>
+    <div
+      className={cn(
+        baseClasses,
+        user && assignment.hasSubmitted && "bg-green-100/70 shadow-green-200"
+      )}
+    >
+      <div className="flex justify-between items-center mb-2">
+        <div className="flex items-center gap-3 text-sm text-gray-600">
+          <ProfilePicture
+            profilePictureUrl={assignment.instructor.profilePictureUrl}
+            firstName={assignment.instructor.firstName}
+            lastName={assignment.instructor.lastName}
+            className="size-10"
+          />
+          <span className="font-medium text-base">
+            {assignment.instructor.firstName} {assignment.instructor.lastName}
+          </span>
         </div>
-
-        {showActions && (canEdit || canDelete) && (
+        <div className="flex flex-col gap-2">
+          <DifficultyBadge difficulty={assignment.difficultyLevel} size="sm" />
+          {assignment.isActive && (
+            <span className="bg-blue-100 text-blue-500 rounded-full px-2 py-1 text-xs font-medium">
+              Active
+            </span>
+          )}
+        </div>
+      </div>
+      <div className="flex justify-between items-start mb-2">
+        <Link href={`/assignments/${assignment.id}`}>
+          <h3 className="text-2xl font-medium text-gray-900 hover:text-blue-600 transition-colors cursor-pointer">
+            {assignment.title}
+          </h3>
+        </Link>
+        {/* {showActions && (canEdit || canDelete) && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm">
@@ -164,52 +116,75 @@ export default function AssignmentCard({
               )}
             </DropdownMenuContent>
           </DropdownMenu>
-        )}
+        )} */}
       </div>
 
       <p className="text-gray-700 mb-4 line-clamp-3">
         {assignment.description}
       </p>
 
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4 text-sm">
-          {assignment.dueDate && (
-            <div
-              className={`flex items-center gap-1 ${
-                isOverdue
-                  ? "text-red-600"
-                  : isDueSoon
-                  ? "text-orange-600"
-                  : "text-gray-600"
-              }`}
-            >
-              <Clock className="w-4 h-4" />
-              <span>
-                Due{" "}
-                {formatDistanceToNow(new Date(assignment.dueDate), {
-                  addSuffix: true,
-                })}
-              </span>
-            </div>
+      {(assignment.category || (assignment.tags && assignment.tags.length > 0)) && (
+        <div className="flex items-center gap-2 my-3 flex-wrap">
+          {assignment.category && (
+            <CategoryBadge
+              category={assignment.category}
+              size="sm"
+              variant="secondary"
+            />
           )}
+          {assignment.tags && assignment.tags.length > 0 && (
+            <>
+              {assignment.tags.slice(0, 3).map((tag) => (
+                <TagBadge
+                  key={tag.id}
+                  tag={tag}
+                  size="sm"
+                  variant="secondary"
+                />
+              ))}
+              {assignment.tags.length > 3 && (
+                <span className="text-xs text-gray-500">
+                  +{assignment.tags.length - 3} more
+                </span>
+              )}
+            </>
+          )}
+        </div>
+      )}
 
-          <div className="text-xs text-gray-500">
-            Created{" "}
-            {formatDistanceToNow(new Date(assignment.createdAt), {
-              addSuffix: true,
-            })}
-          </div>
+      <div className="flex items-center justify-between border-t border-gray-300 pt-2">
+        <div className="flex items-center gap-2">
+          <NotepadText className="size-4" />
+          <span className="text-sm font-medium">
+            {assignment.submissionCount} submissions
+          </span>
         </div>
 
         <div className="flex items-center gap-2">
-          {user && assignment.hasSubmitted && (
+          {assignment.dueDate && (
+            <div className="flex flex-col gap-1 text-sm">
+              <span>Due Date</span>
+              <span
+                className={cn(
+                  "font-medium",
+                  isOverdue && "text-red-600",
+                  isDueSoon && "text-orange-600"
+                )}
+              >
+                {formatDate(new Date(assignment.dueDate), "MMM d, yyyy")}{" "}
+                {isOverdue && " (Overdue)"}
+                {isDueSoon && " (Due Soon)"}
+              </span>
+            </div>
+          )}
+          {/* {user && assignment.hasSubmitted && (
             <div className="flex items-center gap-1 text-green-600 text-sm">
               <CheckCircle className="w-4 h-4" />
               <span>Submitted</span>
             </div>
-          )}
+          )} */}
 
-          {user &&
+          {/* {user &&
             !assignment.hasSubmitted &&
             assignment.dueDate &&
             isOverdue && (
@@ -217,13 +192,7 @@ export default function AssignmentCard({
                 <AlertCircle className="size-4" />
                 <span>Overdue</span>
               </div>
-            )}
-
-          <Link href={`/assignments/${assignment.id}`}>
-            <Button variant="outline" size="sm">
-              View Details
-            </Button>
-          </Link>
+            )} */}
         </div>
       </div>
 
