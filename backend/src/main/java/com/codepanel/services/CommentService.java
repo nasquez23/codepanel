@@ -191,6 +191,7 @@ public class CommentService {
         userInfo.setFirstName(comment.getUser().getFirstName());
         userInfo.setLastName(comment.getUser().getLastName());
         userInfo.setEmail(comment.getUser().getEmail());
+        userInfo.setProfilePictureUrl(comment.getUser().getProfilePictureUrl());
 
         ReactionType userReaction = null;
         if (currentUser != null) {

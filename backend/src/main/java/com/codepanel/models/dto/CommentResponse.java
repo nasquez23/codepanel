@@ -34,5 +34,6 @@ public class CommentResponse {
         private String firstName;
         private String lastName;
         private String email;
+        private String profilePictureUrl;
     }
 }

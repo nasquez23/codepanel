@@ -3,6 +3,7 @@ export interface UserInfo {
   firstName: string;
   lastName: string;
   email: string;
+  profilePictureUrl?: string;
 }
 
 export interface PaginatedResponse<T> {

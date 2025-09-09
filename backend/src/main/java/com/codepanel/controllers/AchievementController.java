@@ -139,8 +139,6 @@ public class AchievementController {
                 return "Total Points";
             case TOTAL_LIKES_RECEIVED:
                 return "Total Likes Received";
-            case LOGIN_STREAK:
-                return "Login Streak";
             case PROBLEM_POSTING_STREAK:
                 return "Problem Posting Streak";
             case ASSIGNMENT_STREAK:

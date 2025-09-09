@@ -299,6 +299,7 @@ public class ProblemPostService {
         authorInfo.setFirstName(author.getFirstName());
         authorInfo.setLastName(author.getLastName());
         authorInfo.setEmail(author.getEmail());
+        authorInfo.setProfilePictureUrl(author.getProfilePictureUrl());
         response.setAuthor(authorInfo);
 
         // Map accepted answer if it exists
@@ -315,6 +316,7 @@ public class ProblemPostService {
             acceptedAuthorInfo.setFirstName(acceptedComment.getUser().getFirstName());
             acceptedAuthorInfo.setLastName(acceptedComment.getUser().getLastName());
             acceptedAuthorInfo.setEmail(acceptedComment.getUser().getEmail());
+            acceptedAuthorInfo.setProfilePictureUrl(acceptedComment.getUser().getProfilePictureUrl());
             acceptedAnswer.setAuthor(acceptedAuthorInfo);
 
             response.setAcceptedAnswer(acceptedAnswer);

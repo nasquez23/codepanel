@@ -10,12 +10,15 @@ import { Button } from "@/components/ui/button";
 import { TagBadge } from "@/components/ui/tag-badge";
 import { CategoryBadge } from "@/components/ui/category-badge";
 import { DifficultyBadge } from "@/components/ui/difficulty-badge";
-import { User, Clock, Code, Trash2, Edit } from "lucide-react";
+import { User, Clock, Code, Trash2, Edit, CodeXml } from "lucide-react";
 import { useDeleteProblemPost } from "@/hooks/use-problem-posts";
 import { useAuth } from "@/hooks/use-auth";
 import EditProblemPostDialog from "./edit-problem-post-dialog";
 import DeleteConfirmationDialog from "@/components/delete-confirmation-dialog";
 import CodeBlock from "@/components/code-block";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import ProfilePicture from "@/components/profile-picture";
+import { formatDistanceToNow } from "date-fns";
 
 interface ProblemPostCardProps {
   problemPost: ProblemPost;
@@ -57,42 +60,27 @@ export default function ProblemPostCard({ problemPost }: ProblemPostCardProps) {
       user.role === "INSTRUCTOR");
 
   return (
-    <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6 hover:shadow-lg transition-shadow">
+    <div className="bg-white rounded-lg shadow-md border border-gray-200 px-6 py-4 hover:shadow-lg transition-shadow">
       <div className="flex justify-between items-start mb-4">
-        <div className="flex-1">
-          <Link href={`/problems/${problemPost.id}`}>
-            <h3 className="text-xl font-semibold text-gray-900 hover:text-blue-600 transition-colors cursor-pointer">
-              {problemPost.title}
-            </h3>
-          </Link>
-
-          <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-            <div className="flex items-center gap-1">
-              <User className="w-4 h-4" />
-              <span>
-                {problemPost.author.firstName} {problemPost.author.lastName}
-              </span>
-            </div>
-
-            <div className="flex items-center gap-1">
-              <Clock className="w-4 h-4" />
-              <span>{formatDate(problemPost.createdAt)}</span>
-            </div>
-
-            <div className="flex items-center gap-1">
-              <Code className="w-4 h-4" />
-              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
-                {ProgrammingLanguageDisplayNames[problemPost.language]}
-              </span>
-            </div>
-
-            <DifficultyBadge
-              difficulty={problemPost.difficultyLevel}
-              size="sm"
-            />
+        <div className="flex items-center gap-3 mt-2 text-sm text-gray-600">
+          <ProfilePicture
+            profilePictureUrl={problemPost.author.profilePictureUrl}
+            firstName={problemPost.author.firstName}
+            lastName={problemPost.author.lastName}
+            className="size-11"
+          />
+          <div className="flex flex-col">
+            <span className="font-medium text-lg">
+              {problemPost.author.firstName} {problemPost.author.lastName}
+            </span>
+            <span className="text-gray-500">
+              {formatDistanceToNow(new Date(problemPost.createdAt), {
+                addSuffix: true,
+              })}
+            </span>
           </div>
 
-          <div className="flex items-center gap-2 mt-3 flex-wrap">
+          {/* <div className="flex items-center gap-2 mt-3 flex-wrap">
             {problemPost.category && (
               <CategoryBadge
                 category={problemPost.category}
@@ -117,7 +105,7 @@ export default function ProblemPostCard({ problemPost }: ProblemPostCardProps) {
                 )}
               </>
             )}
-          </div>
+          </div> */}
         </div>
 
         <div className="flex gap-2">
@@ -145,9 +133,25 @@ export default function ProblemPostCard({ problemPost }: ProblemPostCardProps) {
         </div>
       </div>
 
-      <p className="text-gray-700 mb-4 line-clamp-3">
+      <Link href={`/problems/${problemPost.id}`}>
+        <h3 className="text-xl font-semibold text-gray-900 hover:text-blue-600 transition-colors cursor-pointer">
+          {problemPost.title}
+        </h3>
+      </Link>
+
+      <p className="text-gray-700 mb-4 mt-2 line-clamp-3">
         {problemPost.description}
       </p>
+
+      <div className="flex items-center gap-2">
+        <DifficultyBadge difficulty={problemPost.difficultyLevel} size="sm" />
+        <div className="flex gap-1 bg-blue-100 px-2 py-1 rounded-2xl shrink">
+          <CodeXml className="w-4 h-4 text-blue-800" />
+          <span className="text-blue-800 rounded-full text-xs font-medium">
+            {ProgrammingLanguageDisplayNames[problemPost.language]}
+          </span>
+        </div>
+      </div>
 
       {problemPost.code && (
         <div className="mb-4">
@@ -160,10 +164,14 @@ export default function ProblemPostCard({ problemPost }: ProblemPostCardProps) {
         </div>
       )}
 
-      <div className="flex justify-between items-center">
+      <div className="flex justify-end mt-2">
         <Link href={`/problems/${problemPost.id}`}>
-          <Button variant="outline" size="sm">
-            View Details & Comments
+          <Button
+            variant="ghost"
+            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+            size="sm"
+          >
+            View Details
           </Button>
         </Link>
       </div>
