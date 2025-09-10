@@ -110,7 +110,7 @@ export default function CommentForm({
         <Button
           type="submit"
           disabled={!formData.comment.trim() || isSubmitting}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 bg-blue-500 text-white hover:bg-blue-700"
         >
           {isSubmitting ? (
             <Loader2 className="h-4 w-4 animate-spin" />

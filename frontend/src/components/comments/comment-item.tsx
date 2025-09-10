@@ -13,6 +13,7 @@ import {
   Reply,
   CheckCircle,
   XCircle,
+  CircleCheck,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import {
@@ -33,6 +34,7 @@ import EditCommentForm from "./edit-comment-form";
 import { acceptAnswer, unacceptAnswer } from "@/services/problem-post-api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import ProfilePicture from "../profile-picture";
 
 interface CommentItemProps {
   comment: Comment;
@@ -140,159 +142,158 @@ export default function CommentItem({
 
   return (
     <div
-      className={`border rounded-lg p-4 hover:bg-gray-50 transition-colors ${
-        comment.isAccepted ? "border-green-500 bg-green-50" : ""
+      className={`border-l-4 p-4 transition-colors ${
+        comment.isAccepted
+          ? "bg-green-50 border-l-green-500 hover:bg-green-100"
+          : "border-l-gray-500 hover:bg-gray-50"
       }`}
     >
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
-            {comment.author.firstName[0]}
-            {comment.author.lastName[0]}
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <p className="font-medium text-gray-900">
-                {comment.author.firstName} {comment.author.lastName}
-              </p>
-              {comment.isAccepted && (
-                <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
-                  <CheckCircle className="h-3 w-3" />
-                  Accepted Solution
-                </span>
-              )}
-            </div>
-            <p className="text-sm text-gray-500">
+      {comment.isAccepted && (
+        <div className="flex items-center gap-2 px-2 rounded-2xl -mt-2 mb-3 bg-inherit">
+          <CircleCheck className="size-5 rounded-full bg-green-500 text-white" />
+          <span className="text-green-500 font-semibold">Accepted Solution</span>
+        </div>
+      )}
+      <div className="flex gap-3">
+        <ProfilePicture
+          profilePictureUrl={comment.author.profilePictureUrl}
+          firstName={comment.author.firstName}
+          lastName={comment.author.lastName}
+          className="size-10"
+        />
+        <div className="flex flex-col">
+          <div className="flex items-center gap-2">
+            <span className="font-medium text-lg">
+              {comment.author.firstName} {comment.author.lastName}
+            </span>
+            <span className="text-sm font-medium text-gray-500">
               {formatDistanceToNow(new Date(comment.createdAt), {
                 addSuffix: true,
               })}
-              {comment.updatedAt !== comment.createdAt && " (edited)"}
+            </span>
+          </div>
+          <div className="mb-4 mt-2">
+            <p className="text-gray-800 whitespace-pre-wrap">
+              {comment.comment}
             </p>
           </div>
-        </div>
+          {comment.code && (
+            <div className="mb-4">
+              <CodeBlock
+                code={comment.code}
+                language={ProgrammingLanguage.JAVASCRIPT}
+                maxHeight="300px"
+                className="border"
+              />
+            </div>
+          )}
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleLike}
+              disabled={likeMutation.isPending}
+              className={`flex items-center gap-1 transition-colors ${
+                comment.userReaction === "LIKE"
+                  ? "text-green-600 bg-green-50"
+                  : "text-gray-600 hover:text-green-600"
+              }`}
+            >
+              <ThumbsUp
+                className={`h-4 w-4 ${
+                  comment.userReaction === "LIKE" ? "fill-current" : ""
+                }`}
+              />
+              <span>{comment.likes}</span>
+            </Button>
 
-        {isOwner && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setIsEditing(true)}>
-                <Edit className="h-4 w-4 mr-2" />
-                Edit
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setShowDeleteDialog(true)}
-                className="text-red-600"
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleDislike}
+              disabled={dislikeMutation.isPending}
+              className={`flex items-center gap-1 transition-colors ${
+                comment.userReaction === "DISLIKE"
+                  ? "text-red-600 bg-red-50"
+                  : "text-gray-600 hover:text-red-600"
+              }`}
+            >
+              <ThumbsDown
+                className={`h-4 w-4 ${
+                  comment.userReaction === "DISLIKE" ? "fill-current" : ""
+                }`}
+              />
+              <span>{comment.dislikes}</span>
+            </Button>
+
+            {canAcceptAnswer && !comment.isAccepted && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleAcceptAnswer}
+                disabled={acceptMutation.isPending}
+                className="flex items-center gap-1 text-green-600 border-green-200 hover:bg-green-50"
               >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-      </div>
+                <CheckCircle className="h-4 w-4" />
+                Accept Solution
+              </Button>
+            )}
 
-      <div className="mb-4">
-        <p className="text-gray-800 whitespace-pre-wrap">{comment.comment}</p>
-      </div>
+            {canAcceptAnswer && comment.isAccepted && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleUnacceptAnswer}
+                disabled={unacceptMutation.isPending}
+                className="flex items-center gap-1 text-red-600 border-red-200 hover:bg-red-50"
+              >
+                <XCircle className="h-4 w-4" />
+                Unaccept
+              </Button>
+            )}
 
-      {comment.code && (
-        <div className="mb-4">
-          <CodeBlock
-            code={comment.code}
-            language={ProgrammingLanguage.JAVASCRIPT}
-            maxHeight="300px"
-            className="border"
-          />
-        </div>
-      )}
-
-      <div className="flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleLike}
-          disabled={likeMutation.isPending}
-          className={`flex items-center gap-1 transition-colors ${
-            comment.userReaction === "LIKE"
-              ? "text-green-600 bg-green-50"
-              : "text-gray-600 hover:text-green-600"
-          }`}
-        >
-          <ThumbsUp
-            className={`h-4 w-4 ${
-              comment.userReaction === "LIKE" ? "fill-current" : ""
-            }`}
-          />
-          <span>{comment.likes}</span>
-        </Button>
-
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleDislike}
-          disabled={dislikeMutation.isPending}
-          className={`flex items-center gap-1 transition-colors ${
-            comment.userReaction === "DISLIKE"
-              ? "text-red-600 bg-red-50"
-              : "text-gray-600 hover:text-red-600"
-          }`}
-        >
-          <ThumbsDown
-            className={`h-4 w-4 ${
-              comment.userReaction === "DISLIKE" ? "fill-current" : ""
-            }`}
-          />
-          <span>{comment.dislikes}</span>
-        </Button>
-
-        {canAcceptAnswer && !comment.isAccepted && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleAcceptAnswer}
-            disabled={acceptMutation.isPending}
-            className="flex items-center gap-1 text-green-600 border-green-200 hover:bg-green-50"
-          >
-            <CheckCircle className="h-4 w-4" />
-            Accept Solution
-          </Button>
-        )}
-
-        {canAcceptAnswer && comment.isAccepted && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleUnacceptAnswer}
-            disabled={unacceptMutation.isPending}
-            className="flex items-center gap-1 text-red-600 border-red-200 hover:bg-red-50"
-          >
-            <XCircle className="h-4 w-4" />
-            Unaccept
-          </Button>
-        )}
-
-        <Button
+            {/* <Button
           variant="ghost"
           size="sm"
           className="flex items-center gap-1 text-gray-600 hover:text-blue-600"
         >
           <Reply className="h-4 w-4" />
           Reply
-        </Button>
-      </div>
+        </Button> */}
+          </div>
+          {isOwner && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setShowDeleteDialog(true)}
+                  className="text-red-600"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
 
-      <DeleteConfirmationDialog
-        open={showDeleteDialog}
-        onOpenChange={setShowDeleteDialog}
-        onConfirm={handleDelete}
-        title="Delete Comment"
-        description="Are you sure you want to delete this comment? This action cannot be undone."
-        isLoading={deleteMutation.isPending}
-      />
+        <DeleteConfirmationDialog
+          open={showDeleteDialog}
+          onOpenChange={setShowDeleteDialog}
+          onConfirm={handleDelete}
+          title="Delete Comment"
+          description="Are you sure you want to delete this comment? This action cannot be undone."
+          isLoading={deleteMutation.isPending}
+        />
+      </div>
     </div>
   );
 }

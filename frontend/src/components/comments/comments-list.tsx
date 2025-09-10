@@ -13,7 +13,10 @@ interface CommentsListProps {
   problemPostAuthorId?: string;
 }
 
-export default function CommentsList({ problemPostId, problemPostAuthorId }: CommentsListProps) {
+export default function CommentsList({
+  problemPostId,
+  problemPostAuthorId,
+}: CommentsListProps) {
   const { user, isLoading: authLoading } = useAuth();
   const [page, setPage] = useState(0);
   const [showCommentForm, setShowCommentForm] = useState(false);
@@ -72,7 +75,11 @@ export default function CommentsList({ problemPostId, problemPostAuthorId }: Com
         {user && (
           <Button
             onClick={() => setShowCommentForm(!showCommentForm)}
-            variant={showCommentForm ? "outline" : "default"}
+            className={
+              showCommentForm
+                ? "bg-primary text-white hover:bg-primary/90"
+                : "bg-blue-500 text-white hover:bg-blue-700"
+            }
           >
             {showCommentForm ? "Cancel" : "Add Response"}
           </Button>
