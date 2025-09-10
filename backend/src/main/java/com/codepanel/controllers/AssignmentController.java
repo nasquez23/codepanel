@@ -6,6 +6,7 @@ import com.codepanel.models.dto.AssignmentSubmissionResponse;
 import com.codepanel.models.dto.CreateAssignmentRequest;
 import com.codepanel.models.dto.CreateSubmissionRequest;
 import com.codepanel.models.dto.UpdateAssignmentRequest;
+import com.codepanel.models.dto.AssignmentsPageSlice;
 import com.codepanel.models.enums.DifficultyLevel;
 import com.codepanel.models.enums.ProgrammingLanguage;
 import com.codepanel.services.AssignmentService;
@@ -13,6 +14,7 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -52,8 +54,10 @@ public class AssignmentController {
             Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
         
-        Page<AssignmentResponse> response = assignmentService.getAllAssignments(pageable, currentUser);
-        return ResponseEntity.ok(response);
+        AssignmentsPageSlice slice = assignmentService.getAllAssignments(pageable, currentUser);
+        Page<AssignmentResponse> pageResp = new PageImpl<>(
+                slice.getContent(), pageable, slice.getTotal());
+        return ResponseEntity.ok(pageResp);
     }
 
     @GetMapping("/my")

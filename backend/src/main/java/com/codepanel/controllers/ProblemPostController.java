@@ -4,6 +4,7 @@ import com.codepanel.models.User;
 import com.codepanel.models.dto.CreateProblemPostRequest;
 import com.codepanel.models.dto.UpdateProblemPostRequest;
 import com.codepanel.models.dto.ProblemPostResponse;
+import com.codepanel.models.dto.ProblemPostsPageSlice;
 import com.codepanel.models.enums.DifficultyLevel;
 import com.codepanel.models.enums.ProgrammingLanguage;
 
@@ -12,6 +13,7 @@ import com.codepanel.services.ProblemPostService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -49,14 +51,26 @@ public class ProblemPostController {
         Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
-        Page<ProblemPostResponse> response = problemPostService.getAllProblemPosts(pageable);
-        return ResponseEntity.ok(response);
+        try {
+            ProblemPostsPageSlice slice = problemPostService.getAllProblemPosts(pageable);
+            Page<ProblemPostResponse> pageResp = new PageImpl<>(
+                    slice.getContent(), pageable, slice.getTotal());
+            return ResponseEntity.ok(pageResp);
+        } catch (Exception e) {
+            System.out.println("Error getting all problem posts: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ProblemPostResponse> getProblemPostById(@PathVariable UUID id) {
-        ProblemPostResponse response = problemPostService.getProblemPostById(id);
-        return ResponseEntity.ok(response);
+        try {
+            ProblemPostResponse response = problemPostService.getProblemPostById(id);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            System.out.println("Error getting problem post by id: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @GetMapping("/my-posts")

@@ -10,6 +10,7 @@ import com.codepanel.models.dto.AssignmentResponse;
 import com.codepanel.models.dto.AssignmentSubmissionResponse;
 import com.codepanel.models.dto.CategoryResponse;
 import com.codepanel.models.dto.CreateAssignmentRequest;
+import com.codepanel.models.dto.AssignmentsPageSlice;
 import com.codepanel.models.dto.TagResponse;
 import com.codepanel.models.dto.CreateReviewRequest;
 import com.codepanel.models.dto.CreateSubmissionRequest;
@@ -26,6 +27,9 @@ import com.codepanel.repositories.CategoryRepository;
 import com.codepanel.repositories.SubmissionReviewRepository;
 import com.codepanel.repositories.TagRepository;
 import com.codepanel.models.enums.ScoreEventType;
+
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -42,9 +46,10 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.cache.annotation.Caching;
+
 @Service
 public class AssignmentService {
-
     private final AssignmentRepository assignmentRepository;
     private final AssignmentSubmissionRepository submissionRepository;
     private final SubmissionReviewRepository reviewRepository;
@@ -70,6 +75,7 @@ public class AssignmentService {
     }
 
     @Transactional
+    @CacheEvict(cacheNames = "assignmentsByPage", allEntries = true)
     public AssignmentResponse createAssignment(CreateAssignmentRequest request, User instructor) {
         if (instructor.getRole() != Role.INSTRUCTOR && instructor.getRole() != Role.ADMIN) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only instructors can create assignments");
@@ -107,9 +113,12 @@ public class AssignmentService {
     }
 
     @Transactional(readOnly = true)
-    public Page<AssignmentResponse> getAllAssignments(Pageable pageable, User currentUser) {
+    @Cacheable(cacheNames = "assignmentsByPage", key = "T(String).format('%d:%d:%s', #pageable.pageNumber, #pageable.pageSize, #pageable.sort)")
+    public AssignmentsPageSlice getAllAssignments(Pageable pageable, User currentUser) {
         Page<Assignment> assignments = assignmentRepository.findByIsActiveTrueOrderByDueDateAsc(pageable);
-        return assignments.map(assignment -> mapToAssignmentResponse(assignment, currentUser));
+        List<AssignmentResponse> content = assignments
+                .map(assignment -> mapToAssignmentResponse(assignment, currentUser)).getContent();
+        return new AssignmentsPageSlice(content, assignments.getTotalElements());
     }
 
     @Transactional(readOnly = true)
@@ -138,6 +147,7 @@ public class AssignmentService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = "assignmentById", key = "#assignmentId")
     public AssignmentResponse getAssignmentById(UUID assignmentId, User currentUser) {
         Assignment assignment = assignmentRepository.findByIdWithInstructor(assignmentId);
         if (assignment == null) {
@@ -147,6 +157,10 @@ public class AssignmentService {
     }
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "assignmentById", key = "#assignmentId"),
+            @CacheEvict(cacheNames = "assignmentsByPage", allEntries = true)
+    })
     public AssignmentResponse updateAssignment(UUID assignmentId, UpdateAssignmentRequest request, User currentUser) {
         Assignment assignment = assignmentRepository.findByIdWithInstructor(assignmentId);
         if (assignment == null) {
@@ -189,6 +203,10 @@ public class AssignmentService {
     }
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "assignmentById", key = "#assignmentId"),
+            @CacheEvict(cacheNames = "assignmentsByPage", allEntries = true)
+    })
     public void deleteAssignment(UUID assignmentId, User currentUser) {
         Assignment assignment = assignmentRepository.findByIdWithInstructor(assignmentId);
         if (assignment == null) {
@@ -302,11 +320,17 @@ public class AssignmentService {
         review.setComment(request.getComment());
         review.setScore(request.getScore());
 
-        reviewRepository.save(review);
+        try {
 
-        submission.setStatus(SubmissionStatus.REVIEWED);
-        submission.setGrade(request.getScore());
-        submissionRepository.save(submission);
+            reviewRepository.save(review);
+            submission.setStatus(SubmissionStatus.REVIEWED);
+            submission.setGrade(request.getScore());
+            submissionRepository.save(submission);
+        } catch (Exception e) {
+            System.out.println("Error saving review/submission: " + e.getMessage());
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error saving review/submission");
+        }
+        System.out.println("Submission saved");
 
         try {
             var difficulty = submission.getAssignment().getDifficultyLevel();
@@ -319,7 +343,7 @@ public class AssignmentService {
                             .refType("REVIEW")
                             .refId(review.getId())
                             .build());
-
+            System.out.println("Gamification event published");
             gamificationEventPublisher.publish(
                     ScoreEventType.SUBMISSION_ACCEPTED,
                     GamificationEvent.builder()
@@ -329,25 +353,34 @@ public class AssignmentService {
                             .refType("SUBMISSION")
                             .refId(submission.getId())
                             .build());
+            System.out.println("Gamification event published");
         } catch (Exception ignored) {
             System.out.println("Error publishing gamification events: " + ignored.getMessage());
         }
 
         // Publish assignment graded event
-        AssignmentGradedEvent event = AssignmentGradedEvent.builder()
-                .submissionId(submission.getId())
-                .assignmentId(submission.getAssignment().getId())
-                .assignmentTitle(submission.getAssignment().getTitle())
-                .studentId(submission.getStudent().getId())
-                .studentName(submission.getStudent().getFirstName() + " " + submission.getStudent().getLastName())
-                .reviewerId(reviewer.getId())
-                .reviewerName(reviewer.getFirstName() + " " + reviewer.getLastName())
-                .score(request.getScore())
-                .comment(request.getComment())
-                .gradedAt(LocalDateTime.now())
-                .build();
+        try {
+            AssignmentGradedEvent event = AssignmentGradedEvent.builder()
+                    .submissionId(submission.getId())
+                    .assignmentId(submission.getAssignment().getId())
+                    .assignmentTitle(submission.getAssignment().getTitle())
+                    .studentId(submission.getStudent().getId())
+                    .studentName(submission.getStudent().getFirstName() + " " + submission.getStudent().getLastName())
+                    .reviewerId(reviewer.getId())
+                    .reviewerName(reviewer.getFirstName() + " " + reviewer.getLastName())
+                    .score(request.getScore())
+                    .comment(request.getComment())
+                    .gradedAt(LocalDateTime.now())
+                    .build();
 
-        notificationEventPublisher.publishAssignmentGraded(event);
+            System.out.println("Assignment graded event published");
+
+            notificationEventPublisher.publishAssignmentGraded(event);
+        } catch (Exception e) {
+            System.out.println("Failed to publish assignment graded event: " + e.getMessage());
+        }
+
+        System.out.println("Notification event published");
 
         return mapToSubmissionResponse(submission);
     }

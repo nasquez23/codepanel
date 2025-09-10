@@ -6,6 +6,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.codepanel.models.dto.ProblemPostResponse;
 import com.codepanel.models.dto.AssignmentResponse;
 import com.codepanel.models.dto.ProblemPostsPageSlice;
+import com.codepanel.models.dto.AssignmentsPageSlice;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.interceptor.CacheErrorHandler;
@@ -48,7 +49,8 @@ public class RedisConfig {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
         StringRedisSerializer keySerializer = new StringRedisSerializer();
-        GenericJackson2JsonRedisSerializer valueSerializer = new GenericJackson2JsonRedisSerializer(objectMapperWithJavaTime());
+        GenericJackson2JsonRedisSerializer valueSerializer = new GenericJackson2JsonRedisSerializer(
+                objectMapperWithJavaTime());
         template.setKeySerializer(keySerializer);
         template.setHashKeySerializer(keySerializer);
         template.setValueSerializer(valueSerializer);
@@ -76,9 +78,11 @@ public class RedisConfig {
                             .fromSerializer(new GenericJackson2JsonRedisSerializer(objectMapperWithJavaTime())));
             // Per-cache serializers to avoid LinkedHashMap casting
             com.fasterxml.jackson.databind.ObjectMapper mapper = objectMapperWithJavaTime();
-            Jackson2JsonRedisSerializer<ProblemPostResponse> pprSerializer = new Jackson2JsonRedisSerializer<>(ProblemPostResponse.class);
+            Jackson2JsonRedisSerializer<ProblemPostResponse> pprSerializer = new Jackson2JsonRedisSerializer<>(
+                    ProblemPostResponse.class);
             pprSerializer.setObjectMapper(mapper);
-            Jackson2JsonRedisSerializer<AssignmentResponse> arSerializer = new Jackson2JsonRedisSerializer<>(AssignmentResponse.class);
+            Jackson2JsonRedisSerializer<AssignmentResponse> arSerializer = new Jackson2JsonRedisSerializer<>(
+                    AssignmentResponse.class);
             arSerializer.setObjectMapper(mapper);
             Jackson2JsonRedisSerializer<Long> longSerializer = new Jackson2JsonRedisSerializer<>(Long.class);
             longSerializer.setObjectMapper(mapper);
@@ -89,16 +93,23 @@ public class RedisConfig {
                     RedisSerializationContext.SerializationPair.fromSerializer(arSerializer));
             RedisCacheConfiguration notifCountConfig = defaultConfig.serializeValuesWith(
                     RedisSerializationContext.SerializationPair.fromSerializer(longSerializer));
-            Jackson2JsonRedisSerializer<ProblemPostsPageSlice> sliceSerializer = new Jackson2JsonRedisSerializer<>(ProblemPostsPageSlice.class);
-            sliceSerializer.setObjectMapper(mapper);
+            Jackson2JsonRedisSerializer<ProblemPostsPageSlice> problemPostsSliceSerializer = new Jackson2JsonRedisSerializer<>(
+                    ProblemPostsPageSlice.class);
+            problemPostsSliceSerializer.setObjectMapper(mapper);
             RedisCacheConfiguration problemPostsByPageConfig = defaultConfig.serializeValuesWith(
-                    RedisSerializationContext.SerializationPair.fromSerializer(sliceSerializer));
+                    RedisSerializationContext.SerializationPair.fromSerializer(problemPostsSliceSerializer));
+            Jackson2JsonRedisSerializer<AssignmentsPageSlice> assignmentsSliceSerializer = new Jackson2JsonRedisSerializer<>(
+                    AssignmentsPageSlice.class);
+            assignmentsSliceSerializer.setObjectMapper(mapper);
+            RedisCacheConfiguration assignmentsByPageConfig = defaultConfig.serializeValuesWith(
+                    RedisSerializationContext.SerializationPair.fromSerializer(assignmentsSliceSerializer));
 
             java.util.Map<String, RedisCacheConfiguration> cacheConfigs = new java.util.HashMap<>();
             cacheConfigs.put("problemPostById", problemPostConfig);
             cacheConfigs.put("assignmentById", assignmentConfig);
             cacheConfigs.put("notifUnreadCount", notifCountConfig);
             cacheConfigs.put("problemPostsByPage", problemPostsByPageConfig);
+            cacheConfigs.put("assignmentsByPage", assignmentsByPageConfig);
 
             return RedisCacheManager.builder(connectionFactory)
                     .cacheDefaults(defaultConfig)
@@ -121,17 +132,20 @@ public class RedisConfig {
     public CacheErrorHandler cacheErrorHandler() {
         return new CacheErrorHandler() {
             @Override
-            public void handleCacheGetError(RuntimeException exception, org.springframework.cache.Cache cache, Object key) {
+            public void handleCacheGetError(RuntimeException exception, org.springframework.cache.Cache cache,
+                    Object key) {
                 System.out.println("[CACHE] GET error on key=" + key + ": " + exception.getMessage());
             }
 
             @Override
-            public void handleCachePutError(RuntimeException exception, org.springframework.cache.Cache cache, Object key, Object value) {
+            public void handleCachePutError(RuntimeException exception, org.springframework.cache.Cache cache,
+                    Object key, Object value) {
                 System.out.println("[CACHE] PUT error on key=" + key + ": " + exception.getMessage());
             }
 
             @Override
-            public void handleCacheEvictError(RuntimeException exception, org.springframework.cache.Cache cache, Object key) {
+            public void handleCacheEvictError(RuntimeException exception, org.springframework.cache.Cache cache,
+                    Object key) {
                 System.out.println("[CACHE] EVICT error on key=" + key + ": " + exception.getMessage());
             }
 
