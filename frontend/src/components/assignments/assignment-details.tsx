@@ -1,38 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 import { useAssignment, useSubmitAssignment } from "@/hooks/use-assignments";
 import { useAuth } from "@/hooks/use-auth";
 import { CreateSubmissionRequest } from "@/types/assignment";
 import { ProgrammingLanguageDisplayNames } from "@/types/problem-post";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { formatDate } from "date-fns";
-import {
-  User,
-  Clock,
-  Code,
-  Users,
-  CheckCircle,
-  AlertCircle,
-  ArrowLeft,
-  Send,
-  FileText,
-  Calendar,
-  Edit,
-  Trash2,
-} from "lucide-react";
+import { formatDate, formatDistanceToNow } from "date-fns";
+import { ArrowLeft, Send, FileText, Edit } from "lucide-react";
 import Link from "next/link";
-import CodeBlock from "@/components/code-block";
 import CodeEditor from "@/components/code-editor";
 import { Card } from "../ui/card";
 import { DifficultyBadge } from "../ui/difficulty-badge";
 import { Badge } from "../ui/badge";
 import { cn } from "@/lib/utils";
 import ProfilePicture from "../profile-picture";
-import { ProgrammingLanguageBadge } from "../ui/programming-language-badge";
 import { CategoryBadge } from "../ui/category-badge";
 import { TagBadge } from "../ui/tag-badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 interface AssignmentDetailsProps {
   id: string;
@@ -43,11 +35,12 @@ export default function AssignmentDetails({ id }: AssignmentDetailsProps) {
   const { data: assignment, isLoading, isError, error } = useAssignment(id);
   const submitMutation = useSubmitAssignment();
 
-  const [showSubmissionForm, setShowSubmissionForm] = useState(false);
-  const [submissionCode, setSubmissionCode] = useState("");
-  const [submissionError, setSubmissionError] = useState("");
+  const [isSubmitOpen, setIsSubmitOpen] = useState<boolean>(false);
+  const [submissionCode, setSubmissionCode] = useState<string>("");
+  const [submissionError, setSubmissionError] = useState<string>("");
+  const [isSubmissionOpen, setIsSubmissionOpen] = useState<boolean>(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setSubmissionError("");
 
@@ -67,7 +60,7 @@ export default function AssignmentDetails({ id }: AssignmentDetailsProps) {
       });
 
       setSubmissionCode("");
-      setShowSubmissionForm(false);
+      setIsSubmitOpen(false);
     } catch (error: any) {
       setSubmissionError(
         error.response?.data?.message || "Failed to submit assignment"
@@ -103,7 +96,7 @@ export default function AssignmentDetails({ id }: AssignmentDetailsProps) {
   const canEdit = user && (user.role === "ADMIN" || isOwner);
   const canSubmit =
     user &&
-    user.role === "STUDENT" &&
+    user.role === "ADMIN" &&
     !assignment.hasSubmitted &&
     assignment.isActive;
   const isOverdue =
@@ -131,7 +124,7 @@ export default function AssignmentDetails({ id }: AssignmentDetailsProps) {
           <DifficultyBadge difficulty={assignment.difficultyLevel} size="lg" />
           <Badge
             className={cn(
-              "rounded-lg px-4 py-3 font-medium",
+              "rounded-lg px-4 py-2 font-medium text-base",
               assignment.isActive
                 ? "bg-blue-100 text-blue-500"
                 : "bg-red-100 text-red-500"
@@ -262,11 +255,84 @@ export default function AssignmentDetails({ id }: AssignmentDetailsProps) {
                 {assignment.instructor.email}
               </span>
             </div>
-            <Button className="w-full mt-5 bg-blue-500 text-white hover:bg-blue-700">
-              Submit Assignment
-            </Button>
+            {assignment.hasSubmitted && assignment.mySubmission && (
+              <Button
+                className="w-full mt-5 bg-blue-500 text-white hover:bg-blue-700"
+                onClick={() => setIsSubmissionOpen(true)}
+              >
+                View Submission
+              </Button>
+            )}
+            {canSubmit && !isOverdue && (
+              <Button
+                className="w-full mt-5 bg-blue-500 text-white hover:bg-blue-700"
+                onClick={() => setIsSubmitOpen(true)}
+              >
+                Submit Assignment
+              </Button>
+            )}
           </div>
         </div>
+
+        {assignment.mySubmission && (
+          <Dialog open={isSubmissionOpen} onOpenChange={setIsSubmissionOpen}>
+            <DialogContent className="w-[800px]">
+              <DialogHeader>
+                <DialogTitle>Submission Details</DialogTitle>
+                <DialogDescription>
+                  View your submission details for this assignment.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="bg-gray-50 rounded-lg p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-4">
+                    <span
+                      className={`px-3 py-1 rounded-full text-sm font-medium ${
+                        assignment.mySubmission.status === "REVIEWED"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-yellow-100 text-yellow-800"
+                      }`}
+                    >
+                      {assignment.mySubmission.status === "REVIEWED"
+                        ? "Reviewed"
+                        : "Pending Review"}
+                    </span>
+
+                    {assignment.mySubmission.grade !== null && (
+                      <span className="text-lg font-semibold text-gray-900">
+                        Score: {assignment.mySubmission.grade}/100
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="text-sm text-gray-500">
+                    Submitted{" "}
+                    {formatDistanceToNow(
+                      new Date(assignment.mySubmission.createdAt),
+                      { addSuffix: true }
+                    )}
+                  </div>
+                </div>
+
+                {assignment.mySubmission.review && (
+                  <div className="mb-4 p-4 bg-white rounded border">
+                    <h4 className="font-medium text-gray-900 mb-2">
+                      Instructor Feedback
+                    </h4>
+                    <p className="text-gray-700 mb-2">
+                      {assignment.mySubmission.review.comment}
+                    </p>
+                    <div className="text-sm text-gray-500">
+                      Reviewed by{" "}
+                      {assignment.mySubmission.review.reviewer.firstName}{" "}
+                      {assignment.mySubmission.review.reviewer.lastName}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
 
         {/* {assignment.mySubmission && (
           <div className="mb-8 border-t pt-8">
@@ -320,92 +386,72 @@ export default function AssignmentDetails({ id }: AssignmentDetailsProps) {
                   </div>
                 </div>
               )} */}
+      </Card>
 
-        {/* <CodeBlock
-                code={assignment.mySubmission.code}
+      <Dialog open={isSubmitOpen} onOpenChange={setIsSubmitOpen}>
+        <DialogContent className="w-[800px]">
+          <DialogHeader>
+            <DialogTitle>Submit Your Solution</DialogTitle>
+            <DialogDescription>
+              Paste or write your code and submit it for review.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-4"
+            onChange={() => submissionError && setSubmissionError("")}
+          >
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Your Code Solution
+              </label>
+              <CodeEditor
+                code={submissionCode}
                 language={assignment.language}
-                showCopyButton={true}
+                onChange={(value) => setSubmissionCode(value || "")}
               />
             </div>
-          </div>
-        )} */}
 
-        {/* {canSubmit && !isOverdue && (
-          <div className="border-t pt-8">
-            {!showSubmissionForm ? (
-              <div className="text-center">
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  Ready to submit your solution?
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  Upload your code solution for this assignment.
-                </p>
-                <Button onClick={() => setShowSubmissionForm(true)}>
-                  <Send className="w-4 h-4 mr-2" />
-                  Submit Assignment
+            {submissionError && (
+              <div className="text-red-600 text-sm">{submissionError}</div>
+            )}
+
+            <DialogFooter>
+              <div className="flex gap-3 sm:justify-end w-full">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => {
+                    setIsSubmitOpen(false);
+                    setSubmissionCode("");
+                    setSubmissionError("");
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={submitMutation.isPending}
+                  className="flex items-center gap-2 bg-blue-500 text-white hover:bg-blue-700"
+                >
+                  {submitMutation.isPending ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      Submitting...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" />
+                      Submit
+                    </>
+                  )}
                 </Button>
               </div>
-            ) : (
-              <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">
-                  Submit Your Solution
-                </h3>
-
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Your Code Solution
-                    </label>
-                    <CodeEditor
-                      code={submissionCode}
-                      language={assignment.language}
-                      onChange={(value) => setSubmissionCode(value || "")}
-                    />
-                  </div>
-
-                  {submissionError && (
-                    <div className="text-red-600 text-sm">
-                      {submissionError}
-                    </div>
-                  )}
-
-                  <div className="flex gap-3">
-                    <Button
-                      type="submit"
-                      disabled={submitMutation.isPending}
-                      className="flex items-center gap-2"
-                    >
-                      {submitMutation.isPending ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                          Submitting...
-                        </>
-                      ) : (
-                        <>
-                          <Send className="w-4 h-4" />
-                          Submit
-                        </>
-                      )}
-                    </Button>
-
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        setShowSubmissionForm(false);
-                        setSubmissionCode("");
-                        setSubmissionError("");
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </form>
-              </div>
-            )}
-          </div>
-        )} */}
-      </Card>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
