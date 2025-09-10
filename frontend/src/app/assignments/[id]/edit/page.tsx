@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Loader2, Save, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { DifficultyLevel } from "@/types/tags-categories";
 
 interface EditAssignmentPageProps {
   params: {
@@ -42,6 +43,7 @@ export default function EditAssignmentPage({
     language: ProgrammingLanguage.JAVASCRIPT,
     dueDate: "",
     isActive: true,
+    difficultyLevel: DifficultyLevel.EASY,
   });
 
   const [isInitialized, setIsInitialized] = useState<boolean>(false);
@@ -63,6 +65,7 @@ export default function EditAssignmentPage({
           ? new Date(assignment.dueDate).toISOString().slice(0, 16)
           : "",
         isActive: assignment.isActive,
+        difficultyLevel: assignment.difficultyLevel,
       });
       setIsInitialized(true);
     }
