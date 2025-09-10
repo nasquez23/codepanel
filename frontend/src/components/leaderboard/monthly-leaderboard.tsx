@@ -1,3 +1,5 @@
+"use client";
+
 import { useMonthlyLeaderboard } from "@/hooks/use-leaderboard";
 import { YearMonth } from "@/types/shared";
 import { format } from "date-fns";

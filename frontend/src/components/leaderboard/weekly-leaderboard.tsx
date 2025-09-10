@@ -1,3 +1,5 @@
+"use client";
+
 import { useWeeklyLeaderboard } from "@/hooks/use-leaderboard";
 import { Card, CardContent } from "../ui/card";
 import { Badge } from "../ui/badge";
