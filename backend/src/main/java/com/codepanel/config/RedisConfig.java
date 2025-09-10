@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.codepanel.models.dto.ProblemPostResponse;
 import com.codepanel.models.dto.AssignmentResponse;
+import com.codepanel.models.dto.ProblemPostsPageSlice;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.interceptor.CacheErrorHandler;
@@ -88,11 +89,16 @@ public class RedisConfig {
                     RedisSerializationContext.SerializationPair.fromSerializer(arSerializer));
             RedisCacheConfiguration notifCountConfig = defaultConfig.serializeValuesWith(
                     RedisSerializationContext.SerializationPair.fromSerializer(longSerializer));
+            Jackson2JsonRedisSerializer<ProblemPostsPageSlice> sliceSerializer = new Jackson2JsonRedisSerializer<>(ProblemPostsPageSlice.class);
+            sliceSerializer.setObjectMapper(mapper);
+            RedisCacheConfiguration problemPostsByPageConfig = defaultConfig.serializeValuesWith(
+                    RedisSerializationContext.SerializationPair.fromSerializer(sliceSerializer));
 
             java.util.Map<String, RedisCacheConfiguration> cacheConfigs = new java.util.HashMap<>();
             cacheConfigs.put("problemPostById", problemPostConfig);
             cacheConfigs.put("assignmentById", assignmentConfig);
             cacheConfigs.put("notifUnreadCount", notifCountConfig);
+            cacheConfigs.put("problemPostsByPage", problemPostsByPageConfig);
 
             return RedisCacheManager.builder(connectionFactory)
                     .cacheDefaults(defaultConfig)

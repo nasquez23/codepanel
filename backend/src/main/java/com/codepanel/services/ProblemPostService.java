@@ -9,32 +9,34 @@ import com.codepanel.models.dto.CreateProblemPostRequest;
 import com.codepanel.models.dto.TagResponse;
 import com.codepanel.models.dto.UpdateProblemPostRequest;
 import com.codepanel.models.dto.ProblemPostResponse;
+import com.codepanel.models.dto.ProblemPostsPageSlice;
 import com.codepanel.models.enums.DifficultyLevel;
 import com.codepanel.models.enums.ProgrammingLanguage;
+import com.codepanel.models.ProblemPostComment;
+import com.codepanel.models.dto.GamificationEvent;
+import com.codepanel.models.enums.ScoreEventType;
 import com.codepanel.repositories.CategoryRepository;
 import com.codepanel.repositories.TagRepository;
+import com.codepanel.repositories.ProblemPostRepository;
+import com.codepanel.repositories.ProblemPostCommentRepository;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
-import com.codepanel.repositories.ProblemPostRepository;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.util.UUID;
-
-import com.codepanel.models.ProblemPostComment;
-import com.codepanel.models.dto.GamificationEvent;
-import com.codepanel.models.enums.ScoreEventType;
-import com.codepanel.repositories.ProblemPostCommentRepository;
 
 @Service
 @Transactional(readOnly = true)
@@ -58,6 +60,7 @@ public class ProblemPostService {
         this.gamificationEventPublisher = gamificationEventPublisher;
     }
 
+    @CacheEvict(cacheNames = "problemPostsByPage", allEntries = true)
     @Transactional
     public ProblemPostResponse createProblemPost(CreateProblemPostRequest request, User currentUser) {
         ProblemPost problemPost = new ProblemPost();
@@ -89,11 +92,17 @@ public class ProblemPostService {
         return mapToResponse(savedPost);
     }
 
-    public Page<ProblemPostResponse> getAllProblemPosts(Pageable pageable) {
+    @Cacheable(
+        cacheNames = "problemPostsByPage",
+        key = "T(String).format('%d:%d:%s', #pageable.pageNumber, #pageable.pageSize, #pageable.sort)"
+    )
+    public ProblemPostsPageSlice getAllProblemPosts(Pageable pageable) {
         Page<ProblemPost> problemPosts = problemPostRepository.findAllWithRelations(pageable);
-        return problemPosts.map(this::mapToResponse);
+        List<ProblemPostResponse> content = problemPosts.map(this::mapToResponse).getContent();
+        return new ProblemPostsPageSlice(content, problemPosts.getTotalElements());
     }
 
+    @Cacheable(cacheNames = "problemPostById", key = "#id")
     public ProblemPostResponse getProblemPostById(UUID id) {
         ProblemPost problemPost = problemPostRepository.findByIdWithCategoryAndTags(id);
         if (problemPost == null) {
@@ -121,6 +130,7 @@ public class ProblemPostService {
     }
 
     @Transactional
+    @CacheEvict(cacheNames = "problemPostsByPage", allEntries = true)
     public ProblemPostResponse acceptAnswer(UUID postId, UUID commentId, User currentUser) {
         ProblemPost problemPost = problemPostRepository.findById(postId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Problem post not found"));
@@ -176,6 +186,7 @@ public class ProblemPostService {
     }
 
     @Transactional
+    @CacheEvict(cacheNames = "problemPostsByPage", allEntries = true)
     public void unacceptAnswer(UUID postId, User currentUser) {
         ProblemPost problemPost = problemPostRepository.findById(postId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Problem post not found"));
@@ -203,6 +214,10 @@ public class ProblemPostService {
     }
 
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(cacheNames = "problemPostById", key = "#id"),
+        @CacheEvict(cacheNames = "problemPostsByPage", allEntries = true)
+    })
     public ProblemPostResponse updateProblemPost(UUID id, UpdateProblemPostRequest request, User currentUser) {
         ProblemPost problemPost = problemPostRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Problem post not found"));
@@ -242,6 +257,10 @@ public class ProblemPostService {
     }
 
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(cacheNames = "problemPostById", key = "#id"),
+        @CacheEvict(cacheNames = "problemPostsByPage", allEntries = true)
+    })
     public void deleteProblemPost(UUID id, User currentUser) {
         ProblemPost problemPost = problemPostRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Problem post not found"));
