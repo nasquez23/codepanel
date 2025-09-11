@@ -35,9 +35,7 @@ services:
       - "${RABBITMQ_MGMT_PORT:-15672}:15672"
 
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: ${DOCKER_USERNAME}/codepanel:backend-latest
     environment:
       SPRING_DATASOURCE_URL: "jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
@@ -62,11 +60,7 @@ services:
       - "${BACKEND_PORT:-8080}:8080"
 
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-      args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    image: ${DOCKER_USERNAME}/codepanel:frontend-latest
     environment:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
     depends_on:
