@@ -1,7 +1,6 @@
 package com.codepanel.services;
 
 import com.codepanel.config.NotificationRabbitConfig;
-import com.codepanel.models.events.AssignmentDueEvent;
 import com.codepanel.models.events.AssignmentGradedEvent;
 import com.codepanel.models.events.CommentCreatedEvent;
 import com.codepanel.models.events.EmailNotificationEvent;
@@ -10,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class NotificationEventPublisher {
-
     private final RabbitTemplate rabbitTemplate;
 
     public NotificationEventPublisher(RabbitTemplate rabbitTemplate) {
@@ -23,12 +21,23 @@ public class NotificationEventPublisher {
             rabbitTemplate.convertAndSend(
                     NotificationRabbitConfig.NOTIFICATIONS_EXCHANGE,
                     NotificationRabbitConfig.COMMENT_CREATED_ROUTING_KEY,
-                    event
-            );
+                    event);
         } catch (Exception e) {
             System.out.println("Failed to publish comment created event: " + e.getMessage());
         }
     }
+
+    // public void publishAssignmentDue(AssignmentDueEvent event) {
+    //     try {
+    //         System.out.println("Publishing assignment due event for assignment ID: " + event.getAssignmentId());
+    //         rabbitTemplate.convertAndSend(
+    //                 NotificationRabbitConfig.NOTIFICATIONS_EXCHANGE,
+    //                 NotificationRabbitConfig.ASSIGNMENT_DUE_ROUTING_KEY,
+    //                 event);
+    //     } catch (Exception e) {
+    //         System.out.println("Failed to publish assignment due event: " + e.getMessage());
+    //     }
+    // }
 
     public void publishAssignmentGraded(AssignmentGradedEvent event) {
         try {
@@ -36,8 +45,7 @@ public class NotificationEventPublisher {
             rabbitTemplate.convertAndSend(
                     NotificationRabbitConfig.NOTIFICATIONS_EXCHANGE,
                     NotificationRabbitConfig.ASSIGNMENT_GRADED_ROUTING_KEY,
-                    event
-            );
+                    event);
         } catch (Exception e) {
             System.out.println("Failed to publish assignment graded event: " + e.getMessage());
         }
@@ -49,8 +57,7 @@ public class NotificationEventPublisher {
             rabbitTemplate.convertAndSend(
                     NotificationRabbitConfig.NOTIFICATIONS_EXCHANGE,
                     NotificationRabbitConfig.EMAIL_NOTIFICATION_ROUTING_KEY,
-                    event
-            );
+                    event);
         } catch (Exception e) {
             System.out.println("Failed to publish email notification event: " + e.getMessage());
         }
