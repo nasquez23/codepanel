@@ -2,6 +2,8 @@ package com.codepanel.services;
 
 import com.codepanel.models.Category;
 import com.codepanel.repositories.CategoryRepository;
+
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -9,16 +11,18 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.cache.annotation.CacheEvict;
+
 @Service
 @Transactional(readOnly = true)
 public class CategoryService {
-
     private final CategoryRepository categoryRepository;
 
     public CategoryService(CategoryRepository categoryRepository) {
         this.categoryRepository = categoryRepository;
     }
 
+    @Cacheable(value = "categories")
     public List<Category> getAllCategories() {
         return categoryRepository.findAllOrderByName();
     }
@@ -36,6 +40,7 @@ public class CategoryService {
     }
 
     @Transactional
+    @CacheEvict(value = "categories", allEntries = true)
     public Category createCategory(String name, String description, String color) {
         // Check if category already exists
         Optional<Category> existingCategory = categoryRepository.findByNameIgnoreCase(name);
@@ -48,6 +53,7 @@ public class CategoryService {
     }
 
     @Transactional
+    @CacheEvict(value = "categories", allEntries = true)
     public Category updateCategory(UUID id, String name, String description, String color) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Category not found with id: " + id));
@@ -67,6 +73,7 @@ public class CategoryService {
     }
 
     @Transactional
+    @CacheEvict(value = "categories", allEntries = true)
     public void deleteCategory(UUID id) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Category not found with id: " + id));
@@ -74,10 +81,10 @@ public class CategoryService {
         // Check if category is being used
         Long problemPostCount = categoryRepository.countProblemPostsByCategory(id);
         Long assignmentCount = categoryRepository.countAssignmentsByCategory(id);
-        
+
         if (problemPostCount > 0 || assignmentCount > 0) {
-            throw new IllegalStateException("Cannot delete category that is being used by " + 
-                (problemPostCount + assignmentCount) + " items");
+            throw new IllegalStateException("Cannot delete category that is being used by " +
+                    (problemPostCount + assignmentCount) + " items");
         }
 
         categoryRepository.delete(category);
@@ -91,4 +98,3 @@ public class CategoryService {
         return categoryRepository.countAssignmentsByCategory(categoryId);
     }
 }
-

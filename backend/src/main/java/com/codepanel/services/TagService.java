@@ -2,6 +2,9 @@ package com.codepanel.services;
 
 import com.codepanel.models.Tag;
 import com.codepanel.repositories.TagRepository;
+
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,13 +15,13 @@ import java.util.UUID;
 @Service
 @Transactional(readOnly = true)
 public class TagService {
-
     private final TagRepository tagRepository;
 
     public TagService(TagRepository tagRepository) {
         this.tagRepository = tagRepository;
     }
 
+    @Cacheable(value = "tags")
     public List<Tag> getAllTags() {
         return tagRepository.findAllOrderByName();
     }
@@ -36,6 +39,7 @@ public class TagService {
     }
 
     @Transactional
+    @CacheEvict(value = "tags", allEntries = true)
     public Tag createTag(String name, String description, String color) {
         // Check if tag already exists
         Optional<Tag> existingTag = tagRepository.findByNameIgnoreCase(name);
@@ -48,6 +52,7 @@ public class TagService {
     }
 
     @Transactional
+    @CacheEvict(value = "tags", allEntries = true)
     public Tag updateTag(UUID id, String name, String description, String color) {
         Tag tag = tagRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Tag not found with id: " + id));
@@ -67,6 +72,7 @@ public class TagService {
     }
 
     @Transactional
+    @CacheEvict(value = "tags", allEntries = true)
     public void deleteTag(UUID id) {
         Tag tag = tagRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Tag not found with id: " + id));
@@ -74,10 +80,10 @@ public class TagService {
         // Check if tag is being used
         Long problemPostCount = tagRepository.countProblemPostsByTag(id);
         Long assignmentCount = tagRepository.countAssignmentsByTag(id);
-        
+
         if (problemPostCount > 0 || assignmentCount > 0) {
-            throw new IllegalStateException("Cannot delete tag that is being used by " + 
-                (problemPostCount + assignmentCount) + " items");
+            throw new IllegalStateException("Cannot delete tag that is being used by " +
+                    (problemPostCount + assignmentCount) + " items");
         }
 
         tagRepository.delete(tag);
@@ -91,4 +97,3 @@ public class TagService {
         return tagRepository.countAssignmentsByTag(tagId);
     }
 }
-
