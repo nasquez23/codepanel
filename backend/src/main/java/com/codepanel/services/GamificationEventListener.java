@@ -32,6 +32,7 @@ public class GamificationEventListener {
             case COMMENT_DISLIKED -> -2;
             case PROBLEM_ANSWER_ACCEPTED -> 10;
             case PROBLEM_ANSWER_UNACCEPTED -> -10;
+            case PROBLEM_POSTED -> 0;
         };
 
         gamificationService.recordEvent(

@@ -23,9 +23,8 @@ public class GamificationEventPublisher {
             case COMMENT_DISLIKED -> GamificationRabbitConfig.RK_COMMENT_DISLIKED;
             case PROBLEM_ANSWER_ACCEPTED -> GamificationRabbitConfig.RK_PROBLEM_ANSWER_ACCEPTED;
             case PROBLEM_ANSWER_UNACCEPTED -> GamificationRabbitConfig.RK_PROBLEM_ANSWER_UNACCEPTED;
+            case PROBLEM_POSTED -> GamificationRabbitConfig.RK_PROBLEM_POSTED;
         };
         rabbitTemplate.convertAndSend(GamificationRabbitConfig.EXCHANGE, routingKey, payload);
     }
 }
-
-

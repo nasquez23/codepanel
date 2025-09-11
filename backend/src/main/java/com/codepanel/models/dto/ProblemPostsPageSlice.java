@@ -15,5 +15,3 @@ public class ProblemPostsPageSlice {
     private List<ProblemPostResponse> content;
     private long total;
 }
-
-
