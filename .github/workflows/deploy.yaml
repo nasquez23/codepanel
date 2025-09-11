@@ -1,0 +1,52 @@
+name: deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      REPO: docker.io/${{ secrets.DOCKER_USERNAME }}/codepanel
+      SHORT_SHA: ${GITHUB_SHA::7}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Build & push backend image
+        run: |
+          docker build -t "$REPO:backend-$SHORT_SHA" -t "$REPO:backend-latest" ./backend
+          docker push "$REPO:backend-$SHORT_SHA"
+          docker push "$REPO:backend-latest"
+
+      - name: Build & push frontend image
+        run: |
+          docker build -t "$REPO:frontend-$SHORT_SHA" -t "$REPO:frontend-latest" ./frontend
+          docker push "$REPO:frontend-$SHORT_SHA"
+          docker push "$REPO:frontend-latest"
+
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            set -e
+            cd ~/codepanel || exit 1
+            # Ensure Docker Hub login for pulls
+            echo '${{ secrets.DOCKER_TOKEN }}' | docker login -u '${{ secrets.DOCKER_USERNAME }}' --password-stdin
+            # Optional: pull repo to refresh compose and env if you keep it in git
+            if [ -d .git ]; then git pull --rebase || true; fi
+            # Pull latest images and restart
+            docker compose pull
+            docker compose up -d
+            # Cleanup dangling images
+            docker image prune -f
