@@ -49,7 +49,7 @@ jobs:
             # Optional: pull repo to refresh compose and env if you keep it in git
             if [ -d .git ]; then git pull --rebase || true; fi
             # Pull latest images and restart
-            docker compose pull
-            docker compose up -d
+            docker-compose pull
+            docker-compose up -d
             # Cleanup dangling images
             docker image prune -f
