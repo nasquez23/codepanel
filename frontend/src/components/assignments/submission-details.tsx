@@ -20,6 +20,7 @@ import {
 import { Badge } from "../ui/badge";
 import { Label } from "../ui/label";
 import { Separator } from "../ui/separator";
+import { ProgrammingLanguage } from "@/types/problem-post";
 
 interface SubmissionDetailsProps {
   id: string;
@@ -46,7 +47,11 @@ export default function SubmissionDetails({ id }: SubmissionDetailsProps) {
   const handleReviewSubmit = (e: FormEvent) => {
     e.preventDefault();
 
-    if (!reviewForm.comment.trim() || !reviewForm.score) {
+    if (
+      createReviewMutation.isPending ||
+      !reviewForm.comment.trim() ||
+      !reviewForm.score
+    ) {
       return;
     }
 
@@ -227,7 +232,9 @@ export default function SubmissionDetails({ id }: SubmissionDetailsProps) {
               <h3 className="text-lg font-semibold mb-3">Submitted Code</h3>
               <CodeBlock
                 code={submission.code}
-                language={submission.assignment.language.toLowerCase() as any}
+                language={
+                  submission.assignment.language.toLowerCase() as ProgrammingLanguage
+                }
               />
             </div>
           </CardContent>

@@ -96,7 +96,7 @@ export default function AssignmentDetails({ id }: AssignmentDetailsProps) {
   const canEdit = user && (user.role === "ADMIN" || isOwner);
   const canSubmit =
     user &&
-    user.role === "ADMIN" &&
+    user.role === "STUDENT" &&
     !assignment.hasSubmitted &&
     assignment.isActive;
   const isOverdue =
