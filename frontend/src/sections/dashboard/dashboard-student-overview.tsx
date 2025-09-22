@@ -6,7 +6,13 @@ import { useMySubmissions } from "@/hooks/use-assignments";
 import { useProblemPosts } from "@/hooks/use-problem-posts";
 import DashboardSubmissionCard from "./dashboard-submission-card";
 
-export default function DashboardStudentOverview() {
+export default function DashboardStudentOverview({
+  onViewAllSubmissions,
+  onViewAllProblems,
+}: {
+  onViewAllSubmissions?: () => void;
+  onViewAllProblems?: () => void;
+}) {
   const { data: recentSubmissions } = useMySubmissions(0, 3);
   const { data: recentProblems } = useProblemPosts(0, 3, "createdAt", "desc");
 
@@ -15,14 +21,13 @@ export default function DashboardStudentOverview() {
       <Card className="border-none shadow-none">
         <CardHeader className="flex items-center justify-between pb-3">
           <CardTitle className="text-lg">Recent Submissions</CardTitle>
-          <Link href="/assignments">
-            <Button
-              variant="ghost"
-              className="cursor-pointer text-blue-500 hover:text-blue-500 hover:bg-blue-50"
-            >
-              View All
-            </Button>
-          </Link>
+          <Button
+            variant="ghost"
+            className="cursor-pointer text-blue-500 hover:text-blue-500 hover:bg-blue-50"
+            onClick={onViewAllSubmissions}
+          >
+            View All
+          </Button>
         </CardHeader>
         <CardContent className="space-y-4">
           {(recentSubmissions?.content || []).slice(0, 3).map((s) => (
@@ -37,14 +42,13 @@ export default function DashboardStudentOverview() {
       <Card className="border-none shadow-none">
         <CardHeader className="flex items-center justify-between">
           <CardTitle className="text-lg">Recent Problems</CardTitle>
-          <Link href="/problems">
-            <Button
-              variant="ghost"
-              className="cursor-pointer text-blue-500 hover:text-blue-500 hover:bg-blue-50"
-            >
-              View All
-            </Button>
-          </Link>
+          <Button
+            variant="ghost"
+            className="cursor-pointer text-blue-500 hover:text-blue-500 hover:bg-blue-50"
+            onClick={onViewAllProblems}
+          >
+            View All
+          </Button>
         </CardHeader>
         <CardContent className="space-y-4">
           {(recentProblems?.content || []).slice(0, 3).map((p) => (

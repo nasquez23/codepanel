@@ -1,6 +1,7 @@
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useMySubmissions } from "@/hooks/use-assignments";
 import { useMyStudentStats } from "@/hooks";
@@ -27,7 +28,10 @@ export default function StudentDashboardView() {
 
   const { data: submissionsData } = useMySubmissions(0, 5);
   const { data: stats } = useMyStudentStats();
-  console.log(stats);
+
+  const [activeTab, setActiveTab] = useState<
+    "overview" | "submissions" | "my-problems"
+  >("overview");
 
   return (
     <>
@@ -70,11 +74,6 @@ export default function StudentDashboardView() {
           title="Average Grade"
           value={
             stats?.averageGrade ? `${stats.averageGrade.toFixed(1)}%` : "—"
-            // stats?.averageGrade !== undefined && stats?.averageGrade !== null
-            //   ? `${stats.averageGrade.toFixed(1)}%`
-            //   : stats?.averageGrade !== null
-            //   ? `${stats?.averageGrade}%`
-            //   : "—"
           }
           icon={
             <Star className="size-14 text-blue-600 bg-blue-100 p-4 rounded-lg" />
@@ -93,7 +92,13 @@ export default function StudentDashboardView() {
       </div>
 
       <Card className="px-3 py-4">
-        <Tabs defaultValue="overview" className="w-full px-3">
+        <Tabs
+          value={activeTab}
+          onValueChange={(value) =>
+            setActiveTab(value as "overview" | "submissions" | "my-problems")
+          }
+          className="w-full px-3"
+        >
           <TabsList className="grid w-full grid-cols-6 px-0">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <Shapes className="size-4" /> Overview
@@ -113,7 +118,10 @@ export default function StudentDashboardView() {
           </TabsList>
 
           <TabsContent value="overview">
-            <DashboardStudentOverview />
+            <DashboardStudentOverview
+              onViewAllSubmissions={() => setActiveTab("submissions")}
+              onViewAllProblems={() => setActiveTab("my-problems")}
+            />
           </TabsContent>
 
           <TabsContent value="submissions">
