@@ -54,6 +54,11 @@ public interface AssignmentSubmissionRepository extends JpaRepository<Assignment
            "WHERE s.student = :student " +
            "ORDER BY s.createdAt DESC")
     Page<AssignmentSubmission> findByStudentOrderByCreatedAtDesc(@Param("student") User student, Pageable pageable);
+
+    long countByStudent(User student);
+
+    @Query("SELECT AVG(s.grade) FROM AssignmentSubmission s WHERE s.student = :student AND s.status = com.codepanel.models.enums.SubmissionStatus.REVIEWED AND s.grade IS NOT NULL")
+    Double findAverageReviewedGradeByStudent(@Param("student") User student);
     
     /**
      * Find submissions by status

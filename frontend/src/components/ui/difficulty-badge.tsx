@@ -6,7 +6,7 @@ import {
 import { cn } from "@/lib/utils";
 
 interface DifficultyBadgeProps {
-  difficulty: DifficultyLevel;
+  difficulty: DifficultyLevel | undefined;
   className?: string;
   size?: "sm" | "md" | "lg";
   onClick?: () => void;
@@ -18,6 +18,10 @@ export function DifficultyBadge({
   size = "md",
   onClick,
 }: DifficultyBadgeProps) {
+  if (!difficulty) {
+    return null;
+  }
+
   const sizeClasses = {
     sm: "px-2 py-1 text-xs",
     md: "px-2.5 py-1.5 text-sm",
@@ -27,7 +31,7 @@ export function DifficultyBadge({
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-md font-medium transition-colors border",
+        "inline-flex items-center rounded-lg font-medium transition-colors border",
         DIFFICULTY_LEVEL_COLORS[difficulty],
         sizeClasses[size],
         onClick && "cursor-pointer hover:opacity-80",

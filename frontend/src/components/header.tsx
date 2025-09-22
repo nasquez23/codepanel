@@ -77,6 +77,12 @@ export default function Header() {
             >
               Dashboard
             </Link>
+            <Link
+              href="/leaderboard"
+              className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer whitespace-nowrap"
+            >
+              Leaderboard
+            </Link>
             {isAuthenticated && (
               <Link
                 href="/profile"
@@ -156,6 +162,12 @@ export default function Header() {
                 className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
               >
                 Dashboard
+              </Link>
+              <Link
+                href="/leaderboard"
+                className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
+              >
+                Leaderboard
               </Link>
               {isAuthenticated && (
                 <Link

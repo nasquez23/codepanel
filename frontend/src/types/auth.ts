@@ -4,6 +4,7 @@ export interface User {
   firstName: string;
   lastName: string;
   role: string;
+  profilePictureUrl?: string;
 }
 
 export interface AuthTokens {

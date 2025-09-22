@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useMyAssignments, usePendingReviews } from "@/hooks/use-assignments";
 import { useAuth } from "@/hooks/use-auth";
-import AssignmentCard from "./assignment-card";
+import AssignmentCard from "@/components/assignments/assignment-card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatDistanceToNow } from "date-fns";
@@ -43,7 +43,9 @@ export default function InstructorDashboard() {
     return (
       <div className="text-center py-12">
         <AlertCircle className="h-16 w-16 text-red-400 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Access Denied</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">
+          Access Denied
+        </h3>
         <p className="text-gray-500">
           Only instructors and administrators can access this dashboard.
         </p>
@@ -58,21 +60,24 @@ export default function InstructorDashboard() {
 
   // Calculate stats
   const totalAssignments = assignmentsData?.totalElements || 0;
-  const activeAssignments = assignments.filter(a => a.isActive).length;
-  const totalSubmissions = assignments.reduce((sum, a) => sum + a.submissionCount, 0);
+  const activeAssignments = assignments.filter((a) => a.isActive).length;
+  const totalSubmissions = assignments.reduce(
+    (sum, a) => sum + a.submissionCount,
+    0
+  );
   const totalPendingReviews = pendingReviewsData?.totalElements || 0;
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
+    <>
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Instructor Dashboard</h1>
-          <p className="text-gray-600 mt-2">
-            Welcome back, {user.firstName}! Manage your assignments and review submissions.
-          </p>
-        </div>
-        
+        <h1 className="text-3xl font-bold text-gray-900">
+          Instructor Dashboard
+        </h1>
+        <p className="text-gray-600 mt-2">
+          Welcome back, {user.firstName}! Manage your assignments and review
+          submissions.
+        </p>
+
         <Link href="/assignments/create">
           <Button className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
@@ -114,7 +119,8 @@ export default function InstructorDashboard() {
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="assignments">My Assignments</TabsTrigger>
           <TabsTrigger value="reviews">
-            Pending Reviews {totalPendingReviews > 0 && `(${totalPendingReviews})`}
+            Pending Reviews{" "}
+            {totalPendingReviews > 0 && `(${totalPendingReviews})`}
           </TabsTrigger>
         </TabsList>
 
@@ -127,12 +133,16 @@ export default function InstructorDashboard() {
             </div>
           ) : assignmentsError ? (
             <div className="text-center py-12">
-              <p className="text-red-600">Failed to load assignments. Please try again later.</p>
+              <p className="text-red-600">
+                Failed to load assignments. Please try again later.
+              </p>
             </div>
           ) : assignments.length === 0 ? (
             <div className="text-center py-12">
               <BookOpen className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No assignments yet</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No assignments yet
+              </h3>
               <p className="text-gray-500 mb-6">
                 Create your first assignment to get started with CodePanel.
               </p>
@@ -176,16 +186,22 @@ export default function InstructorDashboard() {
           {reviewsLoading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-              <span className="ml-2 text-gray-600">Loading pending reviews...</span>
+              <span className="ml-2 text-gray-600">
+                Loading pending reviews...
+              </span>
             </div>
           ) : reviewsError ? (
             <div className="text-center py-12">
-              <p className="text-red-600">Failed to load pending reviews. Please try again later.</p>
+              <p className="text-red-600">
+                Failed to load pending reviews. Please try again later.
+              </p>
             </div>
           ) : pendingReviews.length === 0 ? (
             <div className="text-center py-12">
               <CheckCircle className="h-16 w-16 text-green-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">All caught up!</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                All caught up!
+              </h3>
               <p className="text-gray-500">
                 No submissions are waiting for your review right now.
               </p>
@@ -193,7 +209,10 @@ export default function InstructorDashboard() {
           ) : (
             <div className="space-y-4">
               {pendingReviews.map((submission) => (
-                <PendingReviewCard key={submission.id} submission={submission} />
+                <PendingReviewCard
+                  key={submission.id}
+                  submission={submission}
+                />
               ))}
 
               {hasMoreReviews && (
@@ -212,11 +231,16 @@ export default function InstructorDashboard() {
           )}
         </TabsContent>
       </Tabs>
-    </div>
+    </>
   );
 }
 
-function StatCard({ title, value, icon, color }: {
+function StatCard({
+  title,
+  value,
+  icon,
+  color,
+}: {
   title: string;
   value: number;
   icon: React.ReactNode;
@@ -252,19 +276,22 @@ function PendingReviewCard({ submission }: { submission: any }) {
           {/* Student Info */}
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
-              {submission.student.firstName[0]}{submission.student.lastName[0]}
+              {submission.student.firstName[0]}
+              {submission.student.lastName[0]}
             </div>
             <div>
               <h3 className="font-medium text-gray-900">
                 {submission.student.firstName} {submission.student.lastName}
               </h3>
-              <p className="text-sm text-gray-500">{submission.student.email}</p>
+              <p className="text-sm text-gray-500">
+                {submission.student.email}
+              </p>
             </div>
           </div>
 
           {/* Assignment Info */}
           <div className="ml-6">
-            <Link 
+            <Link
               href={`/assignments/${submission.assignment.id}`}
               className="font-medium text-blue-600 hover:text-blue-800"
             >
@@ -273,7 +300,10 @@ function PendingReviewCard({ submission }: { submission: any }) {
             <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
               <Clock className="w-4 h-4" />
               <span>
-                Submitted {formatDistanceToNow(new Date(submission.createdAt), { addSuffix: true })}
+                Submitted{" "}
+                {formatDistanceToNow(new Date(submission.createdAt), {
+                  addSuffix: true,
+                })}
               </span>
             </div>
           </div>
@@ -290,4 +320,3 @@ function PendingReviewCard({ submission }: { submission: any }) {
     </div>
   );
 }
-

@@ -2,7 +2,7 @@ import { Category } from "@/types/tags-categories";
 import { cn } from "@/lib/utils";
 
 interface CategoryBadgeProps {
-  category: Category;
+  category: Category | undefined;
   className?: string;
   variant?: "default" | "outline" | "secondary";
   size?: "sm" | "md" | "lg";
@@ -16,6 +16,10 @@ export function CategoryBadge({
   size = "md",
   onClick,
 }: CategoryBadgeProps) {
+  if (!category) {
+    return null;
+  }
+
   const sizeClasses = {
     sm: "px-2 py-1 text-xs",
     md: "px-2.5 py-1.5 text-sm",

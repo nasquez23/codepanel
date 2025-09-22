@@ -230,6 +230,7 @@ export const useReviewSubmission = () => {
       submissionId: string;
       data: CreateReviewRequest;
     }) => reviewSubmission(submissionId, data),
+    retry: false,
     onSuccess: (reviewedSubmission) => {
       queryClient.invalidateQueries({ queryKey: assignmentKeys.submissions() });
       queryClient.setQueryData(

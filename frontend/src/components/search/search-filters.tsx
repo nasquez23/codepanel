@@ -94,11 +94,12 @@ export default function SearchFilters({
     (tags && tags.length > 0) ||
     sortBy !== "createdAt" || 
     sortDir !== "desc";
+    console.log(hasActiveFilters);
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       <Popover open={isOpen} onOpenChange={setIsOpen}>
-        <PopoverTrigger asChild>
+        <PopoverTrigger asChild className="py-5">
           <Button variant="outline" size="sm" className="relative">
             <Filter className="h-4 w-4 mr-2" />
             Filters

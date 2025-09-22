@@ -34,7 +34,6 @@ public class WebSocketAuthenticationInterceptor implements ChannelInterceptor {
             System.out.println("Processing CONNECT command");
 
             List<String> authHeaders = accessor.getNativeHeader("Authorization");
-            System.out.println("Authorization headers: " + authHeaders);
 
             String token = null;
 
@@ -43,8 +42,6 @@ public class WebSocketAuthenticationInterceptor implements ChannelInterceptor {
                 System.out.println("First auth header: " + authHeader);
                 if (authHeader.startsWith("Bearer ")) {
                     token = authHeader.substring(7);
-                    System.out.println("Extracted token: "
-                            + (token != null ? token.substring(0, Math.min(20, token.length())) + "..." : "null"));
                 }
             }
 

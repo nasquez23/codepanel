@@ -32,8 +32,8 @@ export default function AssignmentsList({
   const [category, setCategory] = useState<Category | null>(null);
   const [tags, setTags] = useState<Tag[]>([]);
   const [language, setLanguage] = useState<string | undefined>(initialLanguage);
-  const [sortBy, setSortBy] = useState("dueDate");
-  const [sortDir, setSortDir] = useState("asc");
+  const [sortBy, setSortBy] = useState("createdAt");
+  const [sortDir, setSortDir] = useState("desc");
   const [debouncedQuery, setDebouncedQuery] = useState(query);
 
   useEffect(() => {

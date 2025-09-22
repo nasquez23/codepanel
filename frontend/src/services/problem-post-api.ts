@@ -45,6 +45,7 @@ export const getMyProblemPosts = async (
     page: page.toString(),
     size: size.toString(),
   });
+  console.log(`/api/problem-posts/my-posts?${params}`);
 
   return fetcher<ProblemPostResponse>(`/api/problem-posts/my-posts?${params}`);
 };

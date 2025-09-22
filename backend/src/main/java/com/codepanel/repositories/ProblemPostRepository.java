@@ -17,6 +17,7 @@ import java.util.List;
 
 public interface ProblemPostRepository extends JpaRepository<ProblemPost, UUID> {
     Page<ProblemPost> findByUserOrderByCreatedAtDesc(User user, Pageable pageable);
+    long countByUser(User user);
 
     @Query("SELECT p FROM ProblemPost p LEFT JOIN FETCH p.user LEFT JOIN FETCH p.category LEFT JOIN FETCH p.tags")
     Page<ProblemPost> findAllWithRelations(Pageable pageable);
