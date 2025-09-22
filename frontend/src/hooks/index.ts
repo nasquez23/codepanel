@@ -69,4 +69,8 @@ export {
   useMyProgress,
 } from "./use-achievements";
 
-export { useMyStudentStats, dashboardKeys } from "./use-dashboard";
+export {
+  useMyStudentStats,
+  useMyInstructorStats,
+  dashboardKeys,
+} from "./use-dashboard";

@@ -4,3 +4,10 @@ export interface StudentStatsResponse {
   averageGrade: number | null;
   totalPoints: number;
 }
+
+export interface InstructorStatsResponse {
+  totalAssignments: number;
+  activeAssignments: number;
+  totalSubmissions: number;
+  pendingReviews: number;
+}

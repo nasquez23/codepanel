@@ -3,6 +3,7 @@ package com.codepanel.controllers;
 
 import com.codepanel.models.User;
 import com.codepanel.models.dto.StudentStatsResponse;
+import com.codepanel.models.dto.InstructorStatsResponse;
 import com.codepanel.services.DashboardService;
 
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,13 @@ public class DashboardController {
     public ResponseEntity<StudentStatsResponse> getMyStudentStats(
             @AuthenticationPrincipal User currentUser) {
         StudentStatsResponse resp = dashboardService.getStudentStats(currentUser);
+        return ResponseEntity.ok(resp);
+    }
+
+    @GetMapping("/me/instructor")
+    public ResponseEntity<InstructorStatsResponse> getMyInstructorStats(
+            @AuthenticationPrincipal User currentUser) {
+        InstructorStatsResponse resp = dashboardService.getInstructorStats(currentUser);
         return ResponseEntity.ok(resp);
     }
 }
