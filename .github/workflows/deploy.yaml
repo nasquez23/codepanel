@@ -37,19 +37,22 @@ jobs:
 
       - name: Deploy to EC2 via SSH
         uses: appleboy/ssh-action@v1.0.3
+        timeout-minutes: 20
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.SSH_KEY }}
+          timeout: 120s
+          command_timeout: 1200s
           script: |
-            set -e
+            set -euo pipefail
             cd ~/codepanel || exit 1
             # Ensure Docker Hub login for pulls
             echo '${{ secrets.DOCKER_TOKEN }}' | docker login -u '${{ secrets.DOCKER_USERNAME }}' --password-stdin
             # Optional: pull repo to refresh compose and env if you keep it in git
             if [ -d .git ]; then git pull --rebase || true; fi
             # Pull latest images and restart
-            docker-compose pull
-            docker-compose up -d
+            timeout 15m docker-compose pull --quiet || exit 1
+            timeout 10m docker-compose up -d --no-build --remove-orphans || exit 1
             # Cleanup dangling images
             docker image prune -f
