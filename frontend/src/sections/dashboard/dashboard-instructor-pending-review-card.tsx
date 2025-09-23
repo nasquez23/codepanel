@@ -12,7 +12,7 @@ export default function DashboardInstructorPendingReviewCard({
   submission: AssignmentSubmission;
 }) {
   return (
-    <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow">
+    <Card className="bg-gray-50 hover:shadow-md transition-shadow">
       <CardContent className="px-4 pt-1">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">

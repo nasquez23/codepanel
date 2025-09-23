@@ -13,7 +13,7 @@ export default function DashboardProblemPostCard({
   problemPost,
 }: DashboardProblemPostCardProps) {
   return (
-    <Card className="bg-gray-50 gap-4">
+    <Card className="bg-gray-50 gap-4 hover:shadow-md transition-shadow">
       <CardHeader className="flex items-center justify-between">
         <Link href={`/problems/${problemPost.id}`}>
           <CardTitle className="hover:text-blue-600">

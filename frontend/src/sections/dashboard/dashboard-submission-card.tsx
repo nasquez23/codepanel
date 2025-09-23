@@ -11,7 +11,7 @@ export default function DashboardSubmissionCard({
   submission: AssignmentSubmission;
 }) {
   return (
-    <Card className="bg-gray-50 gap-2">
+    <Card className="bg-gray-50 gap-2 hover:shadow-md transition-shadow">
       <CardHeader className="flex items-center justify-between">
         <Link href={`/submissions/${submission.id}`}>
           <CardTitle className="hover:text-blue-600">

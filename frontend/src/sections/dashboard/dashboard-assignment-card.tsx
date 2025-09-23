@@ -16,7 +16,7 @@ export default function DashboardAssignmentCard({
     : "—";
 
   return (
-    <Card className="bg-gray-50 gap-4">
+    <Card className="bg-gray-50 gap-4 hover:shadow-md transition-shadow">
       <CardHeader className="flex items-center justify-between">
         <Link href={`/assignments/${assignment.id}`}>
           <CardTitle className="hover:text-blue-600">
@@ -32,7 +32,6 @@ export default function DashboardAssignmentCard({
         </div>
         <div className="flex items-center gap-2 text-sm text-gray-600">
           <span>{assignment.submissionCount} submissions</span>
-          {/* {assignment.category && <span>• {assignment.category.name}</span>} */}
         </div>
       </CardContent>
     </Card>
