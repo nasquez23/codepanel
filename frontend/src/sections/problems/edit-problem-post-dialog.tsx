@@ -315,7 +315,7 @@ export default function EditProblemPostDialog({
           <DialogFooter className="gap-2">
             <Button
               type="button"
-              variant="outline"
+              variant="ghost"
               onClick={() => onOpenChange(false)}
               disabled={updateMutation.isPending}
             >

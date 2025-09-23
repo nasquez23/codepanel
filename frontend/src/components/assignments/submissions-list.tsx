@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useSubmissionsForAssignment } from "@/hooks/use-assignments";
+import {
+  useAssignment,
+  useSubmissionsForAssignment,
+} from "@/hooks/use-assignments";
 import { AssignmentSubmission } from "@/types/assignment";
 import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
@@ -21,14 +24,13 @@ import Link from "next/link";
 
 interface SubmissionsListProps {
   assignmentId: string;
-  assignmentTitle: string;
 }
 
 export default function SubmissionsList({
   assignmentId,
-  assignmentTitle,
 }: SubmissionsListProps) {
   const [page, setPage] = useState(0);
+  const { data: assignment } = useAssignment(assignmentId);
 
   const {
     data: submissionsData,
@@ -76,7 +78,8 @@ export default function SubmissionsList({
 
         <h1 className="text-3xl font-bold text-gray-900">Submissions</h1>
         <p className="text-gray-600 mt-2">
-          {assignmentTitle} • {submissionsData?.totalElements || 0} submissions
+          {assignment?.title} • {submissionsData?.totalElements || 0}{" "}
+          submissions
         </p>
       </div>
 

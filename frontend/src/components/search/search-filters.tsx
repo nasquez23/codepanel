@@ -88,13 +88,12 @@ export default function SearchFilters({
   };
 
   const hasActiveFilters =
-    language || 
-    difficulty || 
-    category || 
+    language ||
+    difficulty ||
+    category ||
     (tags && tags.length > 0) ||
-    sortBy !== "createdAt" || 
+    sortBy !== "createdAt" ||
     sortDir !== "desc";
-    console.log(hasActiveFilters);
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>
@@ -151,7 +150,9 @@ export default function SearchFilters({
               <label className="text-sm font-medium">Difficulty</label>
               <DifficultySelector
                 selectedDifficulty={difficulty || null}
-                onDifficultyChange={(diff) => onDifficultyChange?.(diff || undefined)}
+                onDifficultyChange={(diff) =>
+                  onDifficultyChange?.(diff || undefined)
+                }
                 placeholder="All difficulties"
               />
             </div>

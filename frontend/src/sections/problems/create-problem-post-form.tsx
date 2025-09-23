@@ -299,7 +299,7 @@ export default function CreateProblemPostForm() {
             </Button>
             <Button
               type="button"
-              variant="outline"
+              variant="ghost"
               onClick={() => router.back()}
               disabled={createMutation.isPending}
             >
