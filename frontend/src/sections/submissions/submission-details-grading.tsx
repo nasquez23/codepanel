@@ -16,6 +16,7 @@ import { Star } from "lucide-react";
 import { FormEvent, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import SubmissionDetailsReview from "./submission-details-review";
 
 export default function SubmissionDetailsGrading({
   submission,
@@ -67,53 +68,7 @@ export default function SubmissionDetailsGrading({
   return (
     <div className="p-3 mt-2">
       <h1 className="text-xl font-medium mb-8">Grade Submission</h1>
-      {submission.review && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Star className="size-5" />
-              Review
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">
-                    Reviewer
-                  </Label>
-                  <p>
-                    {submission.review.reviewer.firstName}{" "}
-                    {submission.review.reviewer.lastName}
-                  </p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">
-                    Score
-                  </Label>
-                  <p className="text-2xl font-bold text-green-600">
-                    {submission.review.score}/100
-                  </p>
-                </div>
-              </div>
-              <div>
-                <Label className="text-sm font-medium text-gray-700">
-                  Comments
-                </Label>
-                <div className="mt-1 p-4 bg-gray-50 rounded-lg">
-                  <p className="whitespace-pre-wrap">
-                    {submission.review.comment}
-                  </p>
-                </div>
-              </div>
-              <div className="text-sm text-gray-500">
-                Reviewed on{" "}
-                {formatDate(submission.review.createdAt, "MM/dd/yyyy")}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {submission.review && <SubmissionDetailsReview submission={submission} />}
 
       {canReview && (
         <div className="p-3 mt-2">
