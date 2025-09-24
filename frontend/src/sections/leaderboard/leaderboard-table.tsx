@@ -1,3 +1,4 @@
+import ProfilePicture from "@/components/profile-picture";
 import { Badge } from "../../components/ui/badge";
 import { Trophy, Medal, Award, Flame } from "lucide-react";
 
@@ -125,14 +126,12 @@ export default function LeaderboardTable({
           <div className="flex items-center">{getRankIcon(entry.rank)}</div>
 
           <div className="flex items-center space-x-3">
-            <div
-              className={`h-8 w-8 ${getAvatarColor(
-                entry.rank
-              )} rounded-full flex items-center justify-center text-white text-sm font-semibold`}
-            >
-              {entry.user.firstName[0]}
-              {entry.user.lastName[0]}
-            </div>
+            <ProfilePicture
+              profilePictureUrl={entry.user.profilePictureUrl}
+              firstName={entry.user.firstName}
+              lastName={entry.user.lastName}
+              className="size-8"
+            />
             <span className="font-medium text-gray-900">
               {entry.user.firstName} {entry.user.lastName}
             </span>

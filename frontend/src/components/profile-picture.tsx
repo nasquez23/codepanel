@@ -17,13 +17,15 @@ export default function ProfilePicture({
 }: ProfilePictureProps) {
   return profilePictureUrl ? (
     <Avatar className={cn("rounded-full", className)}>
-      <AvatarImage src={profilePictureUrl} />
+      <AvatarImage src={profilePictureUrl} className="object-cover" />
       <AvatarFallback>
         {firstName.charAt(0)}
         {lastName.charAt(0)}
       </AvatarFallback>
     </Avatar>
   ) : (
-    <User className={cn("rounded-full border border-gray-800", className)} />
+    <User
+      className={cn("rounded-full border border-gray-800 bg-white", className)}
+    />
   );
 }

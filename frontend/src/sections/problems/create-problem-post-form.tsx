@@ -289,14 +289,7 @@ export default function CreateProblemPostForm() {
             </div>
           )}
 
-          <div className="flex gap-4 pt-4">
-            <Button
-              type="submit"
-              disabled={createMutation.isPending}
-              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
-            >
-              {createMutation.isPending ? "Posting..." : "Post Problem"}
-            </Button>
+          <div className="flex justify-end gap-4 pt-4">
             <Button
               type="button"
               variant="ghost"
@@ -304,6 +297,13 @@ export default function CreateProblemPostForm() {
               disabled={createMutation.isPending}
             >
               Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={createMutation.isPending}
+              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+            >
+              {createMutation.isPending ? "Posting..." : "Post Problem"}
             </Button>
           </div>
         </form>
