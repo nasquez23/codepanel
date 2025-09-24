@@ -3,8 +3,9 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useMySubmissions } from "@/hooks/use-assignments";
-import { useProblemPosts } from "@/hooks/use-problem-posts";
+import { useMyProblemPosts } from "@/hooks/use-problem-posts";
 import DashboardSubmissionCard from "./dashboard-submission-card";
+import { useAuth } from "@/hooks";
 
 export default function DashboardStudentOverview({
   onViewAllSubmissions,
@@ -13,8 +14,14 @@ export default function DashboardStudentOverview({
   onViewAllSubmissions?: () => void;
   onViewAllProblems?: () => void;
 }) {
+  const { isAuthenticated } = useAuth();
   const { data: recentSubmissions } = useMySubmissions(0, 3);
-  const { data: recentProblems } = useProblemPosts(0, 3, "createdAt", "desc");
+  const { data: recentProblems } = useMyProblemPosts(
+    0,
+    3,
+    true,
+    isAuthenticated
+  );
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

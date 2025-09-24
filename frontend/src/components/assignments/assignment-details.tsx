@@ -1,7 +1,11 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { useAssignment, useSubmitAssignment } from "@/hooks/use-assignments";
+import {
+  assignmentKeys,
+  useAssignment,
+  useSubmitAssignment,
+} from "@/hooks/use-assignments";
 import { useAuth } from "@/hooks/use-auth";
 import { CreateSubmissionRequest } from "@/types/assignment";
 import { ProgrammingLanguageDisplayNames } from "@/types/problem-post";
@@ -25,6 +29,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface AssignmentDetailsProps {
   id: string;
@@ -34,11 +39,11 @@ export default function AssignmentDetails({ id }: AssignmentDetailsProps) {
   const { user } = useAuth();
   const { data: assignment, isLoading, isError, error } = useAssignment(id);
   const submitMutation = useSubmitAssignment();
+  const queryClient = useQueryClient();
 
   const [isSubmitOpen, setIsSubmitOpen] = useState<boolean>(false);
   const [submissionCode, setSubmissionCode] = useState<string>("");
   const [submissionError, setSubmissionError] = useState<string>("");
-  const [isSubmissionOpen, setIsSubmissionOpen] = useState<boolean>(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -54,13 +59,21 @@ export default function AssignmentDetails({ id }: AssignmentDetailsProps) {
         code: submissionCode,
       };
 
-      await submitMutation.mutateAsync({
-        assignmentId: id,
-        data: submissionData,
-      });
-
-      setSubmissionCode("");
-      setIsSubmitOpen(false);
+      await submitMutation.mutateAsync(
+        {
+          assignmentId: id,
+          data: submissionData,
+        },
+        {
+          onSuccess: () => {
+            setSubmissionCode("");
+            setIsSubmitOpen(false);
+            queryClient.invalidateQueries({
+              queryKey: assignmentKeys.detail(id),
+            });
+          },
+        }
+      );
     } catch (error: any) {
       setSubmissionError(
         error.response?.data?.message || "Failed to submit assignment"
@@ -256,12 +269,11 @@ export default function AssignmentDetails({ id }: AssignmentDetailsProps) {
               </span>
             </div>
             {assignment.hasSubmitted && assignment.mySubmission && (
-              <Button
-                className="w-full mt-5 bg-blue-500 text-white hover:bg-blue-700"
-                onClick={() => setIsSubmissionOpen(true)}
-              >
-                View Submission
-              </Button>
+              <Link href={`/submissions/${assignment.mySubmission.id}`}>
+                <Button className="w-full mt-5 bg-blue-500 text-white hover:bg-blue-700">
+                  View Submission
+                </Button>
+              </Link>
             )}
             {canSubmit && !isOverdue && (
               <Button
@@ -274,7 +286,7 @@ export default function AssignmentDetails({ id }: AssignmentDetailsProps) {
           </div>
         </div>
 
-        {assignment.mySubmission && (
+        {/* {assignment.mySubmission && (
           <Dialog open={isSubmissionOpen} onOpenChange={setIsSubmissionOpen}>
             <DialogContent className="w-[800px]">
               <DialogHeader>
@@ -332,7 +344,7 @@ export default function AssignmentDetails({ id }: AssignmentDetailsProps) {
               </div>
             </DialogContent>
           </Dialog>
-        )}
+        )} */}
 
         {/* {assignment.mySubmission && (
           <div className="mb-8 border-t pt-8">
