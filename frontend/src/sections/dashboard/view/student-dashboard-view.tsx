@@ -49,7 +49,7 @@ export default function StudentDashboardView() {
         </CardHeader>
       </Card>
 
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-8">
         <DashboardStatCard
           title="Problems Posted"
           value={stats?.problemsPosted ?? 0}
@@ -97,9 +97,9 @@ export default function StudentDashboardView() {
           onValueChange={(value) =>
             setActiveTab(value as "overview" | "submissions" | "my-problems")
           }
-          className="w-full px-3"
+          className="w-full px-0 sm:px-3"
         >
-          <TabsList className="grid w-full grid-cols-6 px-0">
+          <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 px-0">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <Shapes className="size-4" /> Overview
             </TabsTrigger>
@@ -117,7 +117,7 @@ export default function StudentDashboardView() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview">
+          <TabsContent value="overview" className="px-0">
             <DashboardStudentOverview
               onViewAllSubmissions={() => setActiveTab("submissions")}
               onViewAllProblems={() => setActiveTab("my-problems")}

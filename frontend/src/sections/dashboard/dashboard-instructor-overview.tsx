@@ -20,7 +20,7 @@ export default function DashboardInstructorOverview({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <Card className="border-none shadow-none">
-        <CardHeader className="flex items-center justify-between pb-3">
+        <CardHeader className="flex items-center justify-between pb-3 max-md:px-2 px-4">
           <CardTitle className="text-lg">Recent Assignments</CardTitle>
           <Button
             variant="ghost"
@@ -30,7 +30,7 @@ export default function DashboardInstructorOverview({
             View All
           </Button>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 max-md:px-0 px-3">
           {assignments.slice(0, 3).map((a) => (
             <DashboardAssignmentCard key={a.id} assignment={a} />
           ))}
@@ -41,7 +41,7 @@ export default function DashboardInstructorOverview({
       </Card>
 
       <Card className="border-none shadow-none">
-        <CardHeader className="flex items-center justify-between pb-3">
+        <CardHeader className="flex items-center justify-between pb-3 max-md:px-2 px-4">
           <CardTitle className="text-lg">Recent Pending Reviews</CardTitle>
           <Button
             variant="ghost"
@@ -51,7 +51,7 @@ export default function DashboardInstructorOverview({
             View All
           </Button>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-3 max-md:px-0 px-3">
           {pendingReviews.slice(0, 3).map((s) => (
             <DashboardInstructorPendingReviewCard key={s.id} submission={s} />
           ))}

@@ -92,9 +92,9 @@ export default function InstructorDashboardView() {
         <Tabs
           value={activeTab}
           onValueChange={(v) => setActiveTab(v as any)}
-          className="w-full px-3"
+          className="w-full px-0 sm:px-3"
         >
-          <TabsList className="grid w-full grid-cols-6 px-0">
+          <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 px-0">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <Shapes className="size-4" /> Overview
             </TabsTrigger>

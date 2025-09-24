@@ -26,7 +26,7 @@ export default function DashboardStudentOverview({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <Card className="border-none shadow-none">
-        <CardHeader className="flex items-center justify-between pb-3">
+        <CardHeader className="flex items-center justify-between pb-3 max-md:px-2 px-4">
           <CardTitle className="text-lg">Recent Submissions</CardTitle>
           <Button
             variant="ghost"
@@ -36,7 +36,7 @@ export default function DashboardStudentOverview({
             View All
           </Button>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 max-md:px-0 px-3">
           {(recentSubmissions?.content || []).slice(0, 3).map((s) => (
             <DashboardSubmissionCard key={s.id} submission={s} />
           ))}
@@ -47,7 +47,7 @@ export default function DashboardStudentOverview({
       </Card>
 
       <Card className="border-none shadow-none">
-        <CardHeader className="flex items-center justify-between">
+        <CardHeader className="flex items-center justify-between max-md:px-2 px-4">
           <CardTitle className="text-lg">Recent Problems</CardTitle>
           <Button
             variant="ghost"
@@ -57,7 +57,7 @@ export default function DashboardStudentOverview({
             View All
           </Button>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 max-md:px-0 px-3">
           {(recentProblems?.content || []).slice(0, 3).map((p) => (
             <DashboardProblemPostCard key={p.id} problemPost={p} />
           ))}
