@@ -28,7 +28,7 @@ public class ProblemPostComment extends BaseEntity {
     @Column(nullable = false)
     private String comment;
 
-    @Lob
+    @Column(columnDefinition = "TEXT")
     private String code;
 
     private Integer likes = 0;

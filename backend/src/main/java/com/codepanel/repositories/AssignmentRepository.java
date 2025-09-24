@@ -40,6 +40,10 @@ public interface AssignmentRepository extends JpaRepository<Assignment, UUID> {
     Page<Assignment> findByInstructorAndIsActiveOrderByCreatedAtDesc(User instructor, Boolean isActive,
             Pageable pageable);
 
+    long countByInstructor(User instructor);
+
+    long countByInstructorAndIsActive(User instructor, Boolean isActive);
+
     /**
      * Count submissions for an assignment
      */

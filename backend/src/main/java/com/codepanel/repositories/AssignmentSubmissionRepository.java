@@ -75,6 +75,8 @@ public interface AssignmentSubmissionRepository extends JpaRepository<Assignment
            "WHERE a.instructor.id = :instructorId " +
            "ORDER BY s.createdAt DESC")
     Page<AssignmentSubmission> findByInstructorId(@Param("instructorId") UUID instructorId, Pageable pageable);
+
+    long countByAssignment_Instructor_Id(@Param("instructorId") UUID instructorId);
     
     /**
      * Find pending review submissions for assignments created by an instructor with eager loading

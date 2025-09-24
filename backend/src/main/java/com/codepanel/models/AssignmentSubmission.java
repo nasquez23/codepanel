@@ -19,7 +19,6 @@ public class AssignmentSubmission extends BaseEntity {
     @JoinColumn(nullable = false)
     private User student;
 
-    @Lob
     @Column(nullable = false, columnDefinition = "TEXT")
     private String code;
 

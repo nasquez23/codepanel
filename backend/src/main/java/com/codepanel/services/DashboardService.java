@@ -52,9 +52,9 @@ public class DashboardService {
 
     public InstructorStatsResponse getInstructorStats(User currentUser) {
         try {
-            long totalAssignments = assignmentRepository.findByInstructorOrderByCreatedAtDesc(currentUser, org.springframework.data.domain.PageRequest.of(0, 1)).getTotalElements();
-            long activeAssignments = assignmentRepository.findByInstructorAndIsActiveOrderByCreatedAtDesc(currentUser, true, org.springframework.data.domain.PageRequest.of(0, 1)).getTotalElements();
-            long totalSubmissions = submissionRepository.findByInstructorId(currentUser.getId(), org.springframework.data.domain.PageRequest.of(0, 1)).getTotalElements();
+            long totalAssignments = assignmentRepository.countByInstructor(currentUser);
+            long activeAssignments = assignmentRepository.countByInstructorAndIsActive(currentUser, true);
+            long totalSubmissions = submissionRepository.countByAssignment_Instructor_Id(currentUser.getId());
             long pendingReviews = submissionRepository.countByInstructorIdAndStatus(currentUser.getId(), SubmissionStatus.PENDING_REVIEW);
 
             return new InstructorStatsResponse(

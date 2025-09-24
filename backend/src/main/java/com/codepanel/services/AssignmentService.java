@@ -221,6 +221,10 @@ public class AssignmentService {
     }
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "assignmentById", key = "#assignmentId"),
+            @CacheEvict(cacheNames = "assignmentsByPage", allEntries = true)
+    })
     public AssignmentSubmissionResponse submitAssignment(UUID assignmentId, CreateSubmissionRequest request,
             User student) {
         Assignment assignment = assignmentRepository.findByIdWithInstructor(assignmentId);
@@ -299,6 +303,7 @@ public class AssignmentService {
     @Transactional
     public AssignmentSubmissionResponse reviewSubmission(UUID submissionId, CreateReviewRequest request,
             User reviewer) {
+        System.out.println("Reviewing submission: " + submissionId);
         AssignmentSubmission submission = submissionRepository.findByIdWithDetails(submissionId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Submission not found"));
 
@@ -321,7 +326,6 @@ public class AssignmentService {
         review.setScore(request.getScore());
 
         try {
-
             reviewRepository.save(review);
             submission.setStatus(SubmissionStatus.REVIEWED);
             submission.setGrade(request.getScore());
