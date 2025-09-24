@@ -24,6 +24,7 @@ public class GamificationEventPublisher {
             case PROBLEM_ANSWER_ACCEPTED -> GamificationRabbitConfig.RK_PROBLEM_ANSWER_ACCEPTED;
             case PROBLEM_ANSWER_UNACCEPTED -> GamificationRabbitConfig.RK_PROBLEM_ANSWER_UNACCEPTED;
             case PROBLEM_POSTED -> GamificationRabbitConfig.RK_PROBLEM_POSTED;
+            case ACHIEVEMENT_AWARDED -> GamificationRabbitConfig.RK_ACHIEVEMENT_AWARDED;
         };
         rabbitTemplate.convertAndSend(GamificationRabbitConfig.EXCHANGE, routingKey, payload);
     }

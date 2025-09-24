@@ -27,7 +27,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
@@ -82,20 +81,29 @@ public class ProblemPostService {
             for (UUID tagId : request.getTagIds()) {
                 Tag tag = tagRepository.findById(tagId)
                         .orElseThrow(
-                                () -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tag not found: " + tagId));
+                                () -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                        "Tag not found: " + tagId));
                 tags.add(tag);
             }
             problemPost.setTags(tags);
         }
 
         ProblemPost savedPost = problemPostRepository.save(problemPost);
+
+        gamificationEventPublisher.publish(
+                ScoreEventType.PROBLEM_POSTED,
+                GamificationEvent.builder()
+                        .eventType(ScoreEventType.PROBLEM_POSTED)
+                        .userId(currentUser.getId())
+                        .difficulty(problemPost.getDifficultyLevel())
+                        .refType("PROBLEM_POSTED")
+                        .refId(savedPost.getId())
+                        .build());
+
         return mapToResponse(savedPost);
     }
 
-    @Cacheable(
-        cacheNames = "problemPostsByPage",
-        key = "T(String).format('%d:%d:%s', #pageable.pageNumber, #pageable.pageSize, #pageable.sort)"
-    )
+    @Cacheable(cacheNames = "problemPostsByPage", key = "T(String).format('%d:%d:%s', #pageable.pageNumber, #pageable.pageSize, #pageable.sort)")
     public ProblemPostsPageSlice getAllProblemPosts(Pageable pageable) {
         Page<ProblemPost> problemPosts = problemPostRepository.findAllWithRelations(pageable);
         List<ProblemPostResponse> content = problemPosts.map(this::mapToResponse).getContent();
@@ -215,8 +223,8 @@ public class ProblemPostService {
 
     @Transactional
     @Caching(evict = {
-        @CacheEvict(cacheNames = "problemPostById", key = "#id"),
-        @CacheEvict(cacheNames = "problemPostsByPage", allEntries = true)
+            @CacheEvict(cacheNames = "problemPostById", key = "#id"),
+            @CacheEvict(cacheNames = "problemPostsByPage", allEntries = true)
     })
     public ProblemPostResponse updateProblemPost(UUID id, UpdateProblemPostRequest request, User currentUser) {
         ProblemPost problemPost = problemPostRepository.findById(id)
@@ -258,8 +266,8 @@ public class ProblemPostService {
 
     @Transactional
     @Caching(evict = {
-        @CacheEvict(cacheNames = "problemPostById", key = "#id"),
-        @CacheEvict(cacheNames = "problemPostsByPage", allEntries = true)
+            @CacheEvict(cacheNames = "problemPostById", key = "#id"),
+            @CacheEvict(cacheNames = "problemPostsByPage", allEntries = true)
     })
     public void deleteProblemPost(UUID id, User currentUser) {
         ProblemPost problemPost = problemPostRepository.findById(id)

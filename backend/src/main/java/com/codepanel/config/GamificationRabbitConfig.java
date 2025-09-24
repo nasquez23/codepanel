@@ -17,6 +17,7 @@ public class GamificationRabbitConfig {
 	public static final String RK_PROBLEM_ANSWER_ACCEPTED = "problem.answer.accepted";
 	public static final String RK_PROBLEM_ANSWER_UNACCEPTED = "problem.answer.unaccepted";
 	public static final String RK_PROBLEM_POSTED = "problem.posted";
+	public static final String RK_ACHIEVEMENT_AWARDED = "achievement.awarded";
 
 	@Bean
 	public TopicExchange domainEventsExchange() {
@@ -66,6 +67,11 @@ public class GamificationRabbitConfig {
 	@Bean
 	public Binding bindProblemPosted(Queue gamificationQueue, TopicExchange domainEventsExchange) {
 		return BindingBuilder.bind(gamificationQueue).to(domainEventsExchange).with(RK_PROBLEM_POSTED);
+	}
+
+	@Bean
+	public Binding bindAchievementAwarded(Queue gamificationQueue, TopicExchange domainEventsExchange) {
+		return BindingBuilder.bind(gamificationQueue).to(domainEventsExchange).with(RK_ACHIEVEMENT_AWARDED);
 	}
 
 	@Bean

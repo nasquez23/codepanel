@@ -1,19 +1,25 @@
 package com.codepanel.services;
 
+import java.time.DayOfWeek;
+
 import com.codepanel.models.Achievement;
 import com.codepanel.models.User;
 import com.codepanel.models.UserAchievement;
 import com.codepanel.models.UserAchievementProgress;
 import com.codepanel.models.enums.MetricType;
 import com.codepanel.repositories.AchievementRepository;
+import com.codepanel.repositories.ScoreEventRepository;
 import com.codepanel.repositories.UserAchievementProgressRepository;
+import com.codepanel.repositories.UserScoreRepository;
 import com.codepanel.repositories.UserAchievementRepository;
 import com.codepanel.repositories.UserRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +27,10 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import com.codepanel.models.ScoreEvent;
+import com.codepanel.models.UserScore;
+import com.codepanel.models.enums.ScoreEventType;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +41,8 @@ public class AchievementService {
     private final UserAchievementRepository userAchievementRepository;
     private final UserAchievementProgressRepository progressRepository;
     private final UserRepository userRepository;
+    private final UserScoreRepository userScoreRepository;
+    private final ScoreEventRepository scoreEventRepository;
     private final ObjectMapper objectMapper;
 
     public void updateProgress(UUID userId, MetricType metricType, Integer newValue) {
@@ -117,9 +129,12 @@ public class AchievementService {
         }
     }
 
+    @Transactional
     private void checkAndAwardAchievements(User user, MetricType metricType, Integer currentValue) {
+        System.out.println("Checking and awarding achievements for user: " + user.getEmail() + " with metric type: " + metricType + " and current value: " + currentValue);
         List<Achievement> eligibleAchievements = achievementRepository
                 .findEligibleAchievements(metricType, currentValue);
+        System.out.println("Eligible achievements: " + eligibleAchievements.size());
 
         for (Achievement achievement : eligibleAchievements) {
             // Check if user already has this achievement
@@ -134,6 +149,25 @@ public class AchievementService {
 
                 // TODO: Send notification about new achievement
                 // TODO: Award points if applicable
+                LocalDate weekStart = LocalDate.now().with(DayOfWeek.MONDAY);
+                UserScore score = userScoreRepository.findByUserAndWeekStart(user, weekStart);
+                if (score == null) {
+                    score = new UserScore();
+                    score.setUser(user);
+                    score.setWeekStart(weekStart);
+                    score.setPoints(0);
+                }
+                score.setPoints(score.getPoints() + achievement.getPointsReward());
+
+                userScoreRepository.save(score);
+
+                ScoreEvent scoreEvent = new ScoreEvent();
+                scoreEvent.setUser(user);
+                scoreEvent.setEventType(ScoreEventType.ACHIEVEMENT_AWARDED);
+                scoreEvent.setPoints(achievement.getPointsReward());
+                scoreEvent.setRefType("ACHIEVEMENT_AWARDED");
+                scoreEvent.setRefId(achievement.getId());
+                scoreEventRepository.save(scoreEvent);
             }
         }
     }
