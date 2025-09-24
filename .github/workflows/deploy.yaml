@@ -47,12 +47,19 @@ jobs:
           script: |
             set -euo pipefail
             cd ~/codepanel || exit 1
+
             # Ensure Docker Hub login for pulls
             echo '${{ secrets.DOCKER_TOKEN }}' | docker login -u '${{ secrets.DOCKER_USERNAME }}' --password-stdin
+
             # Optional: pull repo to refresh compose and env if you keep it in git
             if [ -d .git ]; then git pull --rebase || true; fi
+
+            # Stop old containers & networks
+            docker compose down -v || true
+
             # Pull latest images and restart
-            timeout 15m docker-compose pull --quiet || exit 1
+            timeout 15m docker-compose pull || exit 1
             timeout 10m docker-compose up -d --no-build --remove-orphans || exit 1
+            
             # Cleanup dangling images
             docker image prune -f
