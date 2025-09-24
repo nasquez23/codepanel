@@ -27,7 +27,7 @@ export default function StudentDashboardView() {
   }
 
   const { data: submissionsData } = useMySubmissions(0, 5);
-  const { data: stats } = useMyStudentStats();
+  const { data: stats } = useMyStudentStats(user.id);
 
   const [activeTab, setActiveTab] = useState<
     "overview" | "submissions" | "my-problems"

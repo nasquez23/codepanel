@@ -20,7 +20,6 @@ import DashboardInstructorPendingReviews from "../dashboard-instructor-pending-r
 
 export default function InstructorDashboardView() {
   const { user } = useAuth();
-  const { data: stats } = useMyInstructorStats();
 
   const [activeTab, setActiveTab] = useState<
     "overview" | "assignments" | "reviews"
@@ -36,6 +35,8 @@ export default function InstructorDashboardView() {
       </div>
     );
   }
+
+  const { data: stats } = useMyInstructorStats(user.id);
 
   const totalAssignments = stats?.totalAssignments ?? 0;
   const activeAssignments = stats?.activeAssignments ?? 0;
