@@ -1,5 +1,13 @@
-import ProfilePageTabs from "@/components/profile/profile-page-tabs";
+import { ProfileView } from "@/sections/profile/view";
+import { Metadata } from "next";
 
 export default function Profile() {
-  return <ProfilePageTabs />;
+  return <ProfileView />;
+}
+
+export function generateMetadata(): Metadata {
+  return {
+    title: "Profile | CodePanel",
+    description: "View your profile on CodePanel.",
+  };
 }

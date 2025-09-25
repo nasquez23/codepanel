@@ -25,7 +25,10 @@ export default function ProfilePicture({
     </Avatar>
   ) : (
     <User
-      className={cn("rounded-full border border-gray-800 bg-white", className)}
+      className={cn(
+        "rounded-full border-2 text-gray-400 p-2 border-gray-300 bg-white",
+        className
+      )}
     />
   );
 }

@@ -5,6 +5,7 @@ import { Camera, Trash2, Upload, User, Check, X } from "lucide-react";
 import { Button } from "./ui/button";
 import { useUploadProfilePicture, useRemoveProfilePicture } from "@/hooks";
 import { toast } from "sonner";
+import ProfilePicture from "./profile-picture";
 
 interface AvatarUploadProps {
   currentImageUrl?: string;
@@ -94,15 +95,12 @@ export default function AvatarUpload({
           } ${isLoading ? "opacity-50" : ""}`}
           onClick={() => !isLoading && fileInputRef.current?.click()}
         >
-          {displayImage ? (
-            <img
-              src={displayImage}
-              alt="Profile"
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <User className="w-16 h-16 text-gray-400" />
-          )}
+          <ProfilePicture
+            profilePictureUrl={displayImage}
+            firstName={""}
+            lastName={""}
+            className="w-full h-full"
+          />
         </div>
 
         {isLoading && (
