@@ -12,7 +12,7 @@ import org.thymeleaf.context.Context;
 
 import java.util.Map;
 
-@Service
+// @Service
 @Slf4j
 public class EmailService {
 

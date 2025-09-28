@@ -13,16 +13,16 @@ public class NotificationEventConsumer {
 
     private final NotificationService notificationService;
     private final NotificationEventPublisher notificationEventPublisher;
-    private final EmailService emailService;
+    // private final EmailService emailService;
     private final WebSocketNotificationService webSocketService;
 
     public NotificationEventConsumer(NotificationService notificationService,
             NotificationEventPublisher notificationEventPublisher,
-            EmailService emailService,
+            // EmailService emailService,
             WebSocketNotificationService webSocketService) {
         this.notificationService = notificationService;
         this.notificationEventPublisher = notificationEventPublisher;
-        this.emailService = emailService;
+        // this.emailService = emailService;
         this.webSocketService = webSocketService;
     }
 
@@ -80,22 +80,22 @@ public class NotificationEventConsumer {
         }
     }
 
-    @RabbitListener(queues = NotificationRabbitConfig.EMAIL_NOTIFICATION_QUEUE)
-    public void handleEmailNotificationEvent(EmailNotificationEvent event) {
-        try {
-            System.out.println("Processing email notification event for: " + event.getRecipientEmail());
+    // @RabbitListener(queues = NotificationRabbitConfig.EMAIL_NOTIFICATION_QUEUE)
+    // public void handleEmailNotificationEvent(EmailNotificationEvent event) {
+    //     try {
+    //         System.out.println("Processing email notification event for: " + event.getRecipientEmail());
 
-            emailService.sendTemplatedEmail(
-                    event.getRecipientEmail(),
-                    event.getSubject(),
-                    event.getTemplateName(),
-                    event.getTemplateVariables());
+    //         emailService.sendTemplatedEmail(
+    //                 event.getRecipientEmail(),
+    //                 event.getSubject(),
+    //                 event.getTemplateName(),
+    //                 event.getTemplateVariables());
 
-            System.out.println("Successfully sent email to: " + event.getRecipientEmail());
+    //         System.out.println("Successfully sent email to: " + event.getRecipientEmail());
 
-        } catch (Exception e) {
-            System.out.println("Failed to send email notification: " + event + ", error: " + e.getMessage());
-            throw e;
-        }
-    }
+    //     } catch (Exception e) {
+    //         System.out.println("Failed to send email notification: " + event + ", error: " + e.getMessage());
+    //         throw e;
+    //     }
+    // }
 }
