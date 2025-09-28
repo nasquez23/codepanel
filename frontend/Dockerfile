@@ -21,4 +21,4 @@ COPY --from=builder /app/.next/static ./.next/static
 
 EXPOSE 3000
 ENV HOST=0.0.0.0
-CMD ["node", "server.js"]
+CMD ["node", "server.js", "-H", "0.0.0.0"]
