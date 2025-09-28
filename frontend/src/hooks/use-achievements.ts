@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { achievementApi } from "@/services/achievement-api";
-import { Achievement, UserAchievementProgress } from "@/types/achievement";
+import { Achievement, AchievementWithProgress, UserAchievementProgress } from "@/types/achievement";
 
 export const achievementKeys = {
   all: ["achievements"] as const,
@@ -13,6 +13,7 @@ export const achievementKeys = {
   userProgressList: (userId: string) =>
     [...achievementKeys.userProgress(), userId] as const,
   myProgress: () => [...achievementKeys.all, "progress", "me"] as const,
+  myWithProgress: () => [...achievementKeys.all, "with-progress", "me"] as const,
 };
 
 export function useAllAchievements() {
@@ -49,5 +50,12 @@ export function useMyProgress() {
   return useQuery<UserAchievementProgress[]>({
     queryKey: achievementKeys.myProgress(),
     queryFn: achievementApi.getMyProgress,
+  });
+}
+
+export function useMyAchievementsWithProgress() {
+  return useQuery<AchievementWithProgress[]>({
+    queryKey: achievementKeys.myWithProgress(),
+    queryFn: achievementApi.getMyAchievementsWithProgress,
   });
 }

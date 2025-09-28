@@ -17,7 +17,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
@@ -25,15 +24,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import com.codepanel.models.ScoreEvent;
 import com.codepanel.models.UserScore;
 import com.codepanel.models.enums.ScoreEventType;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 @Transactional
 public class AchievementService {
@@ -44,6 +44,22 @@ public class AchievementService {
     private final UserScoreRepository userScoreRepository;
     private final ScoreEventRepository scoreEventRepository;
     private final ObjectMapper objectMapper;
+
+    public AchievementService(AchievementRepository achievementRepository,
+                             UserAchievementRepository userAchievementRepository,
+                             UserAchievementProgressRepository progressRepository,
+                             UserRepository userRepository,
+                             UserScoreRepository userScoreRepository,
+                             ScoreEventRepository scoreEventRepository,
+                             ObjectMapper objectMapper) {
+        this.achievementRepository = achievementRepository;
+        this.userAchievementRepository = userAchievementRepository;
+        this.progressRepository = progressRepository;
+        this.userRepository = userRepository;
+        this.userScoreRepository = userScoreRepository;
+        this.scoreEventRepository = scoreEventRepository;
+        this.objectMapper = objectMapper;
+    }
 
     public void updateProgress(UUID userId, MetricType metricType, Integer newValue) {
         User user = userRepository.findById(userId)
@@ -148,7 +164,7 @@ public class AchievementService {
                 System.out.println("Achievement awarded: " + achievement.getName() + " to user " + user.getUsername());
 
                 // TODO: Send notification about new achievement
-                // TODO: Award points if applicable
+                
                 LocalDate weekStart = LocalDate.now().with(DayOfWeek.MONDAY);
                 UserScore score = userScoreRepository.findByUserAndWeekStart(user, weekStart);
                 if (score == null) {
@@ -208,5 +224,72 @@ public class AchievementService {
             return null;
         }
         return LocalDate.parse(streakData.get("lastActionDate").asText());
+    }
+
+    /**
+     * Get all achievements with user's progress and earned status
+     * This combines all achievements with the user's progress and earned achievements
+     */
+    public List<AchievementWithProgress> getAllAchievementsWithUserProgress(UUID userId) {
+        // Get all achievements
+        List<Achievement> allAchievements = achievementRepository.findAll();
+        
+        // Get user's earned achievements
+        List<UserAchievement> userAchievements = userAchievementRepository.findByUserIdWithAchievement(userId);
+        
+        // Get user's progress
+        List<UserAchievementProgress> userProgress = progressRepository.findByUserId(userId);
+        
+        // Create maps for quick lookup
+        Map<UUID, UserAchievement> earnedMap = userAchievements.stream()
+                .collect(Collectors.toMap(
+                        ua -> ua.getAchievement().getId(),
+                        ua -> ua));
+        
+        Map<MetricType, UserAchievementProgress> progressMap = userProgress.stream()
+                .collect(Collectors.toMap(
+                        UserAchievementProgress::getMetricType,
+                        progress -> progress));
+        
+        // Combine all achievements with user data
+        return allAchievements.stream()
+                .map(achievement -> {
+                    AchievementWithProgress result = new AchievementWithProgress();
+                    result.setAchievement(achievement);
+                    
+                    // Check if user has earned this achievement
+                    UserAchievement earned = earnedMap.get(achievement.getId());
+                    if (earned != null) {
+                        result.setEarnedAt(earned.getCreatedAt().toString());
+                    }
+                    
+                    // Get user's progress for this achievement's metric type
+                    UserAchievementProgress progress = progressMap.get(achievement.getMetricType());
+                    if (progress != null) {
+                        result.setCurrentProgress(progress.getCurrentValue());
+                    } else {
+                        result.setCurrentProgress(0);
+                    }
+                    
+                    return result;
+                })
+                .collect(Collectors.toList());
+    }
+
+    // Inner class to hold achievement with progress data
+    public static class AchievementWithProgress {
+        private Achievement achievement;
+        private String earnedAt;
+        private Integer currentProgress;
+
+        // Getters and setters
+        public Achievement getAchievement() { return achievement; }
+        public void setAchievement(Achievement achievement) { this.achievement = achievement; }
+        
+        public String getEarnedAt() { return earnedAt; }
+        public void setEarnedAt(String earnedAt) { this.earnedAt = earnedAt; }
+        
+        public Integer getCurrentProgress() { return currentProgress; }
+        public void setCurrentProgress(Integer currentProgress) { this.currentProgress = currentProgress; }
     }
 }

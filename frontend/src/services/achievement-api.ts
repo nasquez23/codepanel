@@ -1,5 +1,9 @@
 import { fetcher } from "./api";
-import { Achievement, UserAchievementProgress } from "@/types/achievement";
+import {
+  Achievement,
+  AchievementWithProgress,
+  UserAchievementProgress,
+} from "@/types/achievement";
 
 export const achievementApi = {
   async getAllAchievements(): Promise<Achievement[]> {
@@ -20,5 +24,9 @@ export const achievementApi = {
 
   async getMyProgress(): Promise<UserAchievementProgress[]> {
     return fetcher("/api/achievements/progress/me");
+  },
+
+  async getMyAchievementsWithProgress(): Promise<AchievementWithProgress[]> {
+    return fetcher("/api/achievements/with-progress/me");
   },
 };

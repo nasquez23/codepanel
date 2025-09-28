@@ -67,6 +67,7 @@ export {
   useMyAchievements,
   useUserProgress,
   useMyProgress,
+  useMyAchievementsWithProgress,
 } from "./use-achievements";
 
 export {

@@ -5,11 +5,11 @@ import com.codepanel.models.User;
 import com.codepanel.models.UserAchievement;
 import com.codepanel.models.UserAchievementProgress;
 import com.codepanel.models.dto.AchievementResponse;
+import com.codepanel.models.dto.AchievementWithProgressResponse;
 import com.codepanel.models.dto.UserAchievementProgressResponse;
 import com.codepanel.models.enums.MetricType;
 import com.codepanel.services.AchievementService;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,11 +31,16 @@ public class AchievementController {
 
     @GetMapping
     public ResponseEntity<List<AchievementResponse>> getAllAchievements() {
+        try {
         List<Achievement> achievements = achievementService.getAllAchievements();
         List<AchievementResponse> response = achievements.stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            System.out.println("Error getting all achievements: " + e.getMessage());
+            return ResponseEntity.status(500).body(null);
+        }
     }
 
     @GetMapping("/user/{userId}")
@@ -91,6 +96,19 @@ public class AchievementController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/with-progress/me")
+    public ResponseEntity<List<AchievementWithProgressResponse>> getMyAchievementsWithProgress(
+            @AuthenticationPrincipal User currentUser) {
+        List<AchievementService.AchievementWithProgress> achievementsWithProgress = 
+                achievementService.getAllAchievementsWithUserProgress(currentUser.getId());
+        
+        List<AchievementWithProgressResponse> response = achievementsWithProgress.stream()
+                .map(this::mapToAchievementWithProgressResponse)
+                .collect(Collectors.toList());
+        
+        return ResponseEntity.ok(response);
+    }
+
     private AchievementResponse mapToResponse(Achievement achievement) {
         AchievementResponse response = new AchievementResponse();
         response.setId(achievement.getId());
@@ -123,6 +141,25 @@ public class AchievementController {
                 progress.getCurrentValue(),
                 progress.getLastUpdated(),
                 getDisplayName(progress.getMetricType()));
+    }
+
+    private AchievementWithProgressResponse mapToAchievementWithProgressResponse(
+            AchievementService.AchievementWithProgress achievementWithProgress) {
+        Achievement achievement = achievementWithProgress.getAchievement();
+        
+        AchievementWithProgressResponse response = new AchievementWithProgressResponse();
+        response.setId(achievement.getId());
+        response.setName(achievement.getName());
+        response.setDescription(achievement.getDescription());
+        response.setIcon(achievement.getIcon());
+        response.setCategory(achievement.getCategory());
+        response.setMetricType(achievement.getMetricType());
+        response.setTargetValue(achievement.getTargetValue());
+        response.setPointsReward(achievement.getPointsReward());
+        response.setEarnedAt(achievementWithProgress.getEarnedAt());
+        response.setCurrentProgress(achievementWithProgress.getCurrentProgress());
+        
+        return response;
     }
 
     private String getDisplayName(MetricType metricType) {

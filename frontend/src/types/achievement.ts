@@ -8,6 +8,11 @@ export interface Achievement {
   targetValue: number;
   pointsReward: number;
   earnedAt?: string;
+  currentProgress?: number;
+}
+
+export interface AchievementWithProgress extends Achievement {
+  currentProgress: number;
 }
 
 export interface UserAchievementProgress {

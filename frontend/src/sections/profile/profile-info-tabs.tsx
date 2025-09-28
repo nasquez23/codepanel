@@ -1,18 +1,18 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ProfileAchievements } from "./profile-achievements";
-import { useMyAchievements } from "@/hooks";
+import { useMyAchievementsWithProgress } from "@/hooks";
 import { useState } from "react";
 import { ProfileDetails } from "./profile-details";
 import { Card } from "@/components/ui/card";
 
 export function ProfileInfoTabs() {
-  const { data: achievements } = useMyAchievements();
+  const { data: achievements } = useMyAchievementsWithProgress();
   const [activeTab, setActiveTab] = useState<"details" | "achievements">(
     "details"
   );
 
-  const earnedCount = achievements?.filter((a) => a.earnedAt).length || 0;
+  const earnedCount = achievements?.filter((a: any) => a.earnedAt).length || 0;
 
   return (
     <Card className="px-3 py-4">
@@ -42,7 +42,7 @@ export function ProfileInfoTabs() {
         </TabsContent>
 
         <TabsContent value="achievements" className="mt-6">
-          <ProfileAchievements achievements={achievements || []} />
+          <ProfileAchievements />
         </TabsContent>
       </Tabs>
     </Card>
