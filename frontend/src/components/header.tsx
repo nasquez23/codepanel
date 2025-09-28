@@ -13,11 +13,16 @@ export default function Header() {
   const pathname = usePathname();
 
   const navLinks = [
-    { href: "/problems", label: "Problems" },
-    { href: "/assignments", label: "Assignments" },
-    { href: "/dashboard", label: "Dashboard" },
-    { href: "/leaderboard", label: "Leaderboard" },
+    { href: "/problems", label: "Problems", requiresAuth: false },
+    { href: "/assignments", label: "Assignments", requiresAuth: false },
+    { href: "/dashboard", label: "Dashboard", requiresAuth: true },
+    { href: "/leaderboard", label: "Leaderboard", requiresAuth: false },
+    { href: "/profile", label: "Profile", requiresAuth: true },
   ];
+
+  const visibleNavLinks = navLinks.filter(
+    (link) => !link.requiresAuth || isAuthenticated
+  );
 
   const linkBaseStyles = "transition-colors cursor-pointer whitespace-nowrap";
   const desktopLinkClass = (href: string) =>
@@ -43,7 +48,7 @@ export default function Header() {
           </Link>
 
           <nav className="hidden md:flex items-center space-x-8">
-            {navLinks.map((l) => (
+            {visibleNavLinks.map((l) => (
               <Link
                 key={l.href}
                 href={l.href}
@@ -52,11 +57,6 @@ export default function Header() {
                 {l.label}
               </Link>
             ))}
-            {isAuthenticated && (
-              <Link href="/profile" className={desktopLinkClass("/profile")}>
-                Profile
-              </Link>
-            )}
           </nav>
 
           {isLoading ? (
@@ -115,7 +115,7 @@ export default function Header() {
                   </div>
 
                   <nav className="flex flex-col space-y-4">
-                    {navLinks.map((l) => (
+                    {visibleNavLinks.map((l) => (
                       <DrawerClose asChild key={l.href}>
                         <Link
                           href={l.href}
@@ -129,20 +129,6 @@ export default function Header() {
                         </Link>
                       </DrawerClose>
                     ))}
-                    {isAuthenticated && (
-                      <DrawerClose asChild>
-                        <Link
-                          href="/profile"
-                          className={
-                            pathname === "/profile"
-                              ? "text-blue-600"
-                              : "text-gray-700 hover:text-blue-600 transition-colors"
-                          }
-                        >
-                          Profile
-                        </Link>
-                      </DrawerClose>
-                    )}
                   </nav>
 
                   <div className="flex flex-col space-y-2 pt-6">
