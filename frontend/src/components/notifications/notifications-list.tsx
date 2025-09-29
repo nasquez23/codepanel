@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { Bell, Check, Loader2, RefreshCw } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Bell, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NotificationItem } from "./notification-item";
-import { useNotifications, useMarkAllAsRead } from "@/hooks/use-notifications";
+import { useNotifications } from "@/hooks/use-notifications";
+import { Notification as NotificationType } from "@/types/notifications";
 
 interface NotificationsListProps {
   onNotificationClick?: () => void;
@@ -16,7 +17,7 @@ export const NotificationsList = ({
   maxHeight = "max-h-96",
 }: NotificationsListProps) => {
   const [page, setPage] = useState(0);
-  const size = 10;
+  const size = 5;
 
   const {
     data: notificationsData,
@@ -26,11 +27,37 @@ export const NotificationsList = ({
     isFetching,
   } = useNotifications(page, size);
 
-  const markAllAsReadMutation = useMarkAllAsRead();
+  const [allNotifications, setAllNotifications] = useState<NotificationType[]>(
+    []
+  );
+  const seenIdsRef = useRef<Set<string>>(new Set());
 
-  const handleMarkAllAsRead = () => {
-    markAllAsReadMutation.mutate();
-  };
+  useEffect(() => {
+    const currentPage = notificationsData?.number ?? 0;
+    const content: NotificationType[] = notificationsData?.content ?? [];
+
+    if (!notificationsData) return;
+
+    if (currentPage === 0) {
+      // Reset when first page loads
+      const newSet = new Set<string>();
+      content.forEach((n) => newSet.add(n.id));
+      seenIdsRef.current = newSet;
+      setAllNotifications(content);
+    } else if (content.length > 0) {
+      // Append only new items
+      const appended: NotificationType[] = [];
+      for (const n of content) {
+        if (!seenIdsRef.current.has(n.id)) {
+          seenIdsRef.current.add(n.id);
+          appended.push(n);
+        }
+      }
+      if (appended.length > 0) {
+        setAllNotifications((prev) => [...prev, ...appended]);
+      }
+    }
+  }, [notificationsData]);
 
   const handleLoadMore = () => {
     if (notificationsData && !notificationsData.last) {
@@ -38,7 +65,7 @@ export const NotificationsList = ({
     }
   };
 
-  if (isLoading) {
+  if (isLoading && page === 0) {
     return (
       <div className={`${maxHeight} overflow-hidden`}>
         <div className="flex items-center justify-center py-8">
@@ -73,35 +100,19 @@ export const NotificationsList = ({
     );
   }
 
-  const notifications = notificationsData?.content || [];
-  const hasUnread = notifications.some((n) => !n.isRead);
+  const notifications = allNotifications;
 
   return (
     <div className="w-full">
       <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-gray-900">
-            Notifications
-            {notificationsData && (
-              <span className="ml-2 text-xs text-gray-500">
-                ({notificationsData.totalElements})
-              </span>
-            )}
-          </h3>
-
-          {hasUnread && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleMarkAllAsRead}
-              disabled={markAllAsReadMutation.isPending}
-              className="text-xs"
-            >
-              <Check className="h-3 w-3 mr-1" />
-              {markAllAsReadMutation.isPending ? "Marking..." : "Mark all read"}
-            </Button>
+        <h3 className="text-sm font-semibold text-gray-900">
+          Notifications
+          {notificationsData && (
+            <span className="ml-2 text-xs text-gray-500">
+              ({notificationsData.totalElements})
+            </span>
           )}
-        </div>
+        </h3>
       </div>
 
       <div className={`${maxHeight} overflow-y-auto`}>

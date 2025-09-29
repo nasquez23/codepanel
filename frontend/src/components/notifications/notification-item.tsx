@@ -9,6 +9,8 @@ import {
   Heart,
   AlertCircle,
   ExternalLink,
+  Trophy,
+  FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Notification, NotificationType } from "@/types/notifications";
@@ -30,35 +32,19 @@ const getNotificationIcon = (type: NotificationType) => {
       return <BookOpen className="h-4 w-4 text-green-500" />;
     case "ASSIGNMENT_GRADED":
       return <GraduationCap className="h-4 w-4 text-purple-500" />;
+    case "ASSIGNMENT_SUBMITTED":
+      return <FileText className="h-4 w-4 text-blue-600" />;
     case "ASSIGNMENT_DUE":
       return <AlertCircle className="h-4 w-4 text-orange-500" />;
     case "LIKE":
     case "PROBLEM_POST_LIKED":
       return <Heart className="h-4 w-4 text-red-500" />;
+    case "ACHIEVEMENT_AWARDED":
+      return <Trophy className="h-4 w-4 text-yellow-500" />;
     case "SYSTEM":
       return <Bell className="h-4 w-4 text-gray-500" />;
     default:
       return <Bell className="h-4 w-4 text-gray-500" />;
-  }
-};
-
-const getNotificationColor = (type: NotificationType) => {
-  switch (type) {
-    case "COMMENT":
-      return "bg-blue-50 border-blue-200";
-    case "ASSIGNMENT_CREATED":
-      return "bg-green-50 border-green-200";
-    case "ASSIGNMENT_GRADED":
-      return "bg-purple-50 border-purple-200";
-    case "ASSIGNMENT_DUE":
-      return "bg-orange-50 border-orange-200";
-    case "LIKE":
-    case "PROBLEM_POST_LIKED":
-      return "bg-red-50 border-red-200";
-    case "SYSTEM":
-      return "bg-gray-50 border-gray-200";
-    default:
-      return "bg-gray-50 border-gray-200";
   }
 };
 
@@ -67,14 +53,9 @@ export const NotificationItem = ({
   onClick,
   showActions = true,
 }: NotificationItemProps) => {
-  const markAsReadMutation = useMarkAsRead();
   const router = useRouter();
 
   const handleClick = () => {
-    if (!notification.isRead) {
-      markAsReadMutation.mutate(notification.id);
-    }
-
     if (notification.actionUrl) {
       router.push(notification.actionUrl);
     }
@@ -82,19 +63,12 @@ export const NotificationItem = ({
     onClick?.();
   };
 
-  const handleMarkAsRead = (e: MouseEvent) => {
-    e.stopPropagation();
-    markAsReadMutation.mutate(notification.id);
-  };
-
   return (
     <div
       className={cn(
-        "p-4 border-l-4 transition-all duration-200 cursor-pointer hover:shadow-md",
-        notification.isRead
-          ? "bg-white border-gray-200 opacity-75"
-          : getNotificationColor(notification.type),
-        "hover:bg-opacity-80"
+        "p-4 border-l-4 transition-all duration-200 hover:shadow-md",
+        "bg-white border-gray-200 opacity-75 hover:bg-opacity-80",
+        notification.actionUrl && "cursor-pointer"
       )}
       onClick={handleClick}
     >
@@ -145,16 +119,6 @@ export const NotificationItem = ({
                   >
                     <span>View</span>
                     <ExternalLink className="h-3 w-3" />
-                  </button>
-                )}
-
-                {!notification.isRead && (
-                  <button
-                    onClick={handleMarkAsRead}
-                    disabled={markAsReadMutation.isPending}
-                    className="text-xs text-gray-600 hover:text-gray-800 disabled:opacity-50"
-                  >
-                    {markAsReadMutation.isPending ? "Marking..." : "Mark read"}
                   </button>
                 )}
               </div>

@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { NotificationsList } from "./notifications-list";
-import { useUnreadCount } from "@/hooks/use-notifications";
+import { useUnreadCount, useMarkAllAsRead } from "@/hooks/use-notifications";
 
 interface NotificationDropdownProps {
   className?: string;
@@ -21,6 +21,7 @@ export const NotificationsDropdown = ({
 }: NotificationDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const { data: unreadCountData } = useUnreadCount();
+  const markAllAsReadMutation = useMarkAllAsRead();
 
   const unreadCount = unreadCountData?.count || 0;
   const hasUnread = unreadCount > 0;
@@ -29,8 +30,16 @@ export const NotificationsDropdown = ({
     setIsOpen(false);
   };
 
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+
+    if (open && hasUnread) {
+      markAllAsReadMutation.mutate();
+    }
+  };
+
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+    <DropdownMenu open={isOpen} onOpenChange={handleOpenChange}>
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"

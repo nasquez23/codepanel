@@ -1,13 +1,14 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ProfileAchievements } from "./profile-achievements";
-import { useMyAchievementsWithProgress } from "@/hooks";
+import { useAuth, useMyAchievementsWithProgress } from "@/hooks";
 import { useState } from "react";
 import { ProfileDetails } from "./profile-details";
 import { Card } from "@/components/ui/card";
 
 export function ProfileInfoTabs() {
-  const { data: achievements } = useMyAchievementsWithProgress();
+  const { user } = useAuth();
+  const { data: achievements } = useMyAchievementsWithProgress(!!user);
   const [activeTab, setActiveTab] = useState<"details" | "achievements">(
     "details"
   );

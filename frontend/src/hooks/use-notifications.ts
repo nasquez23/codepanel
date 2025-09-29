@@ -3,6 +3,8 @@ import { notificationsApi } from "@/services/notifications-api";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
+import { achievementKeys } from "@/hooks/use-achievements";
+import { Notification } from "@/types/notifications";
 
 export const notificationKeys = {
   all: ["notifications"] as const,
@@ -62,8 +64,6 @@ export const useMarkAsRead = () => {
           }
           return old;
         });
-
-        console.log("Notification marked as read:", notificationId);
       }
     },
     onError: (error) => {
@@ -82,10 +82,6 @@ export const useMarkAllAsRead = () => {
       queryClient.invalidateQueries({ queryKey: notificationKeys.all });
 
       queryClient.setQueryData(notificationKeys.unreadCount(), { count: 0 });
-
-      if (data.markedCount > 0) {
-        toast.success(`Marked ${data.markedCount} notifications as read`);
-      }
     },
     onError: (error) => {
       console.error("Failed to mark all notifications as read:", error);
@@ -111,15 +107,18 @@ export const useAddNotification = () => {
   const queryClient = useQueryClient();
   const router = useRouter();
 
-  return (notification: any) => {
+  return (notification: Notification) => {
     queryClient.invalidateQueries({ queryKey: notificationKeys.all });
+    if (notification.type === "ACHIEVEMENT_AWARDED") {
+      queryClient.invalidateQueries({ queryKey: achievementKeys.all });
+    }
 
     toast.info(notification.title, {
       description: notification.message,
       action: notification.actionUrl
         ? {
             label: "View",
-            onClick: () => router.push(notification.actionUrl),
+            onClick: () => router.push(notification.actionUrl || ""),
           }
         : undefined,
     });

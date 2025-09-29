@@ -63,5 +63,6 @@ export function useMyAchievementsWithProgress(enabled: boolean = false) {
     queryKey: achievementKeys.myWithProgress(),
     queryFn: achievementApi.getMyAchievementsWithProgress,
     enabled: enabled,
+    staleTime: 30000,
   });
 }
