@@ -40,22 +40,22 @@ export default function Footer() {
             <h4 className="font-semibold text-gray-900 mb-4">Product</h4>
             <div className="space-y-3">
               <Link
-                href="/features"
+                href="/problems"
                 className="block text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
               >
-                Features
+                Problems
               </Link>
               <Link
-                href="/pricing"
+                href="/assignments"
                 className="block text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
               >
-                Pricing
+                Assignments
               </Link>
               <Link
-                href="/reviews"
+                href="/leaderboard"
                 className="block text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
               >
-                Reviews
+                Leaderboard
               </Link>
               <Link
                 href="/dashboard"
@@ -69,29 +69,29 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold text-gray-900 mb-4">Resources</h4>
             <div className="space-y-3">
-              <Link
-                href="/docs"
+              <a
+                href="#"
                 className="block text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
               >
                 Documentation
-              </Link>
-              <Link
-                href="/guides"
+              </a>
+              <a
+                href="#"
                 className="block text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
               >
                 Guides
-              </Link>
-              <Link
-                href="/blog"
+              </a>
+              <a
+                href="#"
                 className="block text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
               >
                 Blog
-              </Link>
+              </a>
               <Link
-                href="/community"
+                href="/profile"
                 className="block text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
               >
-                Community
+                Profile
               </Link>
             </div>
           </div>
@@ -99,30 +99,30 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold text-gray-900 mb-4">Support</h4>
             <div className="space-y-3">
-              <Link
-                href="/help"
+              <a
+                href="#"
                 className="block text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
               >
                 Help Center
-              </Link>
-              <Link
-                href="/contact"
+              </a>
+              <a
+                href="#"
                 className="block text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
               >
                 Contact Us
-              </Link>
-              <Link
-                href="/privacy"
+              </a>
+              <a
+                href="#"
                 className="block text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
               >
                 Privacy Policy
-              </Link>
-              <Link
-                href="/terms"
+              </a>
+              <a
+                href="#"
                 className="block text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
               >
                 Terms of Service
-              </Link>
+              </a>
             </div>
           </div>
         </div>
