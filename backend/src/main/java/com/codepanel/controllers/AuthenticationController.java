@@ -23,64 +23,64 @@ public class AuthenticationController {
     @PostMapping("/register")
     public ResponseEntity<TokenResponse> register(
             @Valid @RequestBody RegisterRequest registerRequest,
+            HttpServletRequest request,
             HttpServletResponse response) {
         TokenResponse tokenResponse = authenticationService.registerAndAuthenticate(registerRequest);
 
-        setRefreshTokenCookie(response, tokenResponse.getRefreshToken());
-        
+        setRefreshTokenCookie(request, response, tokenResponse.getRefreshToken());
+
         return ResponseEntity.ok(tokenResponse);
     }
 
     @PostMapping("/login")
     public ResponseEntity<TokenResponse> login(
             @Valid @RequestBody LoginRequest loginRequest,
+            HttpServletRequest request,
             HttpServletResponse response) {
         TokenResponse tokenResponse = authenticationService.authenticate(loginRequest);
 
-        setRefreshTokenCookie(response, tokenResponse.getRefreshToken());
-        
+        setRefreshTokenCookie(request, response, tokenResponse.getRefreshToken());
+
         return ResponseEntity.ok(tokenResponse);
     }
 
     @PostMapping("/refresh")
     public ResponseEntity<TokenResponse> refreshToken(HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = getRefreshTokenFromCookie(request);
-        
+
         if (refreshToken == null) {
             return ResponseEntity.badRequest().build();
         }
-        
+
         TokenResponse tokenResponse = authenticationService.refreshToken(refreshToken);
 
-        setRefreshTokenCookie(response, tokenResponse.getRefreshToken());
-        
+        setRefreshTokenCookie(request, response, tokenResponse.getRefreshToken());
+
         return ResponseEntity.ok(tokenResponse);
     }
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
         removeRefreshTokenCookie(response);
-        
+
         return ResponseEntity.ok().build();
     }
 
-    private void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
-        Cookie cookie = new Cookie("refresh_token", refreshToken);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(30 * 24 * 60 * 60);
-        response.addCookie(cookie);
+    private void setRefreshTokenCookie(HttpServletRequest request, HttpServletResponse response, String refreshToken) {
+        boolean secure = request.isSecure();
+        String cookie = String.format(
+            "refresh_token=%s; Path=/api; HttpOnly; Max-Age=%d; SameSite=Lax%s",
+            refreshToken,
+            30 * 24 * 60 * 60,
+            secure ? "; Secure" : ""
+        );
+        response.addHeader("Set-Cookie", cookie);
     }
-
+    
     private void removeRefreshTokenCookie(HttpServletResponse response) {
-        Cookie cookie = new Cookie("refresh_token", "");
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(0);
-        response.addCookie(cookie);
-    }
+        String cookie = "refresh_token=; Path=/api; HttpOnly; Max-Age=0; SameSite=Lax";
+        response.addHeader("Set-Cookie", cookie);
+    }    
 
     private String getRefreshTokenFromCookie(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
