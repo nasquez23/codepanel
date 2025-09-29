@@ -26,13 +26,6 @@ export function ProfileDetails() {
           <label className="text-sm font-medium text-gray-500">Role</label>
           <p className="text-gray-900">{roleNameDisplay[profile.role]}</p>
         </div>
-
-        {profile.bio && (
-          <div>
-            <label className="text-sm font-medium text-gray-500">Bio</label>
-            <p className="text-gray-900">{profile.bio}</p>
-          </div>
-        )}
       </div>
 
       <div className="space-y-4">

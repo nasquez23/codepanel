@@ -49,7 +49,7 @@ export function ProfileHeader({ onEditClick }: ProfileHeaderProps) {
             </h1>
 
             {profile.bio && (
-              <p className="text-gray-600 mt-4 max-w-2xl">{profile.bio}</p>
+              <p className="text-gray-600 mt-2 max-w-2xl">{profile.bio}</p>
             )}
           </div>
         </div>

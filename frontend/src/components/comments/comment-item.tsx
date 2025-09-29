@@ -20,6 +20,7 @@ import {
   useLikeComment,
   useDislikeComment,
   useDeleteComment,
+  commentKeys,
 } from "@/hooks/use-comments";
 import CodeBlock from "@/components/code-block";
 import { ProgrammingLanguage } from "@/types/problem-post";
@@ -35,6 +36,7 @@ import { acceptAnswer, unacceptAnswer } from "@/services/problem-post-api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import ProfilePicture from "../profile-picture";
+import { problemPostKeys } from "@/hooks/use-problem-posts";
 
 interface CommentItemProps {
   comment: Comment;
@@ -64,14 +66,44 @@ export default function CommentItem({
       postId: string;
       commentId: string;
     }) => acceptAnswer(postId, commentId),
+    onMutate: async ({ commentId }) => {
+      await queryClient.cancelQueries({
+        queryKey: commentKeys.list(problemPostId),
+      });
+
+      const previousComments = queryClient.getQueryData(
+        commentKeys.list(problemPostId)
+      );
+
+      queryClient.setQueryData(commentKeys.list(problemPostId), (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          content: old.content.map((c: Comment) => ({
+            ...c,
+            isAccepted: c.id === commentId,
+          })),
+        };
+      });
+
+      return { previousComments };
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["problem-post", problemPostId],
+        queryKey: problemPostKeys.detail(problemPostId),
       });
-      queryClient.invalidateQueries({ queryKey: ["comments", problemPostId] });
+      queryClient.invalidateQueries({
+        queryKey: commentKeys.list(problemPostId),
+      });
       toast.success("Answer accepted!");
     },
-    onError: (error) => {
+    onError: (error, variables, context) => {
+      if (context?.previousComments) {
+        queryClient.setQueryData(
+          commentKeys.list(problemPostId),
+          context.previousComments
+        );
+      }
       toast.error("Failed to accept answer");
       console.error("Error accepting answer:", error);
     },
@@ -79,14 +111,44 @@ export default function CommentItem({
 
   const unacceptMutation = useMutation({
     mutationFn: (postId: string) => unacceptAnswer(postId),
+    onMutate: async () => {
+      await queryClient.cancelQueries({
+        queryKey: commentKeys.list(problemPostId),
+      });
+
+      const previousComments = queryClient.getQueryData(
+        commentKeys.list(problemPostId)
+      );
+
+      queryClient.setQueryData(commentKeys.list(problemPostId), (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          content: old.content.map((c: Comment) => ({
+            ...c,
+            isAccepted: false,
+          })),
+        };
+      });
+
+      return { previousComments };
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["problem-post", problemPostId],
+        queryKey: problemPostKeys.detail(problemPostId),
       });
-      queryClient.invalidateQueries({ queryKey: ["comments", problemPostId] });
+      queryClient.invalidateQueries({
+        queryKey: commentKeys.list(problemPostId),
+      });
       toast.success("Answer unaccepted!");
     },
-    onError: (error) => {
+    onError: (error, variables, context) => {
+      if (context?.previousComments) {
+        queryClient.setQueryData(
+          commentKeys.list(problemPostId),
+          context.previousComments
+        );
+      }
       toast.error("Failed to unaccept answer");
       console.error("Error unaccepting answer:", error);
     },
@@ -151,7 +213,9 @@ export default function CommentItem({
       {comment.isAccepted && (
         <div className="flex items-center gap-2 px-2 rounded-2xl -mt-2 mb-3 bg-inherit">
           <CircleCheck className="size-5 rounded-full bg-green-500 text-white" />
-          <span className="text-green-500 font-semibold">Accepted Solution</span>
+          <span className="text-green-500 font-semibold">
+            Accepted Solution
+          </span>
         </div>
       )}
       <div className="flex gap-3">
@@ -260,29 +324,29 @@ export default function CommentItem({
           <Reply className="h-4 w-4" />
           Reply
         </Button> */}
+            {isOwner && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setShowDeleteDialog(true)}
+                    className="text-red-600"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
-          {isOwner && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setIsEditing(true)}>
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setShowDeleteDialog(true)}
-                  className="text-red-600"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
         </div>
 
         <DeleteConfirmationDialog

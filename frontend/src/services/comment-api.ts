@@ -1,4 +1,4 @@
-import { fetcher, poster, patcher, deleter } from "./api";
+import { fetcher, poster, patcher, deleter, putter } from "./api";
 import {
   Comment,
   CommentResponse,
@@ -49,7 +49,7 @@ export const updateComment = async (
   problemPostId: string,
   data: UpdateCommentRequest
 ): Promise<Comment> => {
-  const response = await patcher<UpdateCommentRequest, Comment>(
+  const response = await putter<UpdateCommentRequest, Comment>(
     `/api/problem-posts/${problemPostId}/comments/${commentId}`,
     data
   );

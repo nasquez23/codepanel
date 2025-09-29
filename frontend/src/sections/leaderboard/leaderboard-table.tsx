@@ -72,23 +72,23 @@ export default function LeaderboardTable({
       <div className="space-y-0">
         <div className="grid grid-cols-5 gap-4 px-6 py-4 bg-gray-50 border-b text-xs font-semibold text-gray-600 uppercase tracking-wider">
           <div>RANK</div>
-          <div>STUDENT</div>
+          <div className="col-span-3">STUDENT</div>
           <div className="text-right">POINTS</div>
-          <div className="text-right">STREAK</div>
-          <div>BADGE</div>
+          {/* <div className="text-right">STREAK</div>
+          <div>BADGE</div> */}
         </div>
 
         {Array.from({ length: 10 }).map((_, i) => (
           <div key={i} className="animate-pulse">
             <div className="grid grid-cols-5 gap-4 px-6 py-4 border-b">
               <div className="h-4 bg-gray-300 rounded w-8"></div>
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-3 col-span-3">
                 <div className="h-8 w-8 bg-gray-300 rounded-full"></div>
                 <div className="h-4 bg-gray-300 rounded w-24"></div>
               </div>
               <div className="h-4 bg-gray-300 rounded w-12 ml-auto"></div>
-              <div className="h-4 bg-gray-300 rounded w-8 ml-auto"></div>
-              <div className="h-4 bg-gray-300 rounded w-16"></div>
+              {/* <div className="h-4 bg-gray-300 rounded w-8 ml-auto"></div>
+              <div className="h-4 bg-gray-300 rounded w-16"></div> */}
             </div>
           </div>
         ))}

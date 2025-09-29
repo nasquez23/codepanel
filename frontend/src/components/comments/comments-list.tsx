@@ -77,7 +77,7 @@ export default function CommentsList({
             onClick={() => setShowCommentForm(!showCommentForm)}
             className={
               showCommentForm
-                ? "bg-primary text-white hover:bg-primary/90"
+                ? "bg-white text-black hover:bg-gray-100"
                 : "bg-blue-500 text-white hover:bg-blue-700"
             }
           >

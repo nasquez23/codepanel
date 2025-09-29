@@ -1,13 +1,16 @@
-import { useProblemPost, usePrefetchProblemPost, useProblemPosts } from "./use-problem-posts";
+import {
+  useProblemPost,
+  usePrefetchProblemPost,
+  useProblemPosts,
+} from "./use-problem-posts";
 
-// Hook specifically for problem post detail pages
 export const useProblemPostDetails = (id: string) => {
   const {
     data: problemPost,
     isLoading,
     isError,
     error,
-    refetch
+    refetch,
   } = useProblemPost(id);
 
   const prefetchProblemPost = usePrefetchProblemPost();
