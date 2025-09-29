@@ -135,7 +135,7 @@ public class NotificationService {
                         event.getPointsReward()))
                 .relatedEntityId(event.getAchievementId())
                 .relatedEntityType("ACHIEVEMENT")
-                .actionUrl("/achievements")
+                .actionUrl(null)
                 .isRead(false)
                 .build();
 
