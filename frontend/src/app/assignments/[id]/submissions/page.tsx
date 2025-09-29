@@ -13,7 +13,7 @@ export default async function SubmissionsPage({
   const { id } = await params;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-blue-200/20">
       <SubmissionsList assignmentId={id} />
     </div>
   );

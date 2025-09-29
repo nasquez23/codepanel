@@ -186,20 +186,23 @@ export default function ProblemPostDetails({ id }: ProblemPostDetailsProps) {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="font-medium text-lg">
-              Related Topics
-            </CardHeader>
-            <CardContent>
-              <ProblemPostAttributes
-                problemPost={problemPost}
-                includeTags={true}
-                includeCategory={true}
-                includeDifficulty={false}
-                includeLanguage={false}
-              />
-            </CardContent>
-          </Card>
+          {(problemPost.category ||
+            (problemPost.tags && problemPost.tags.length > 0)) && (
+            <Card>
+              <CardHeader className="font-medium text-lg">
+                Related Topics
+              </CardHeader>
+              <CardContent>
+                <ProblemPostAttributes
+                  problemPost={problemPost}
+                  includeTags={true}
+                  includeCategory={true}
+                  includeDifficulty={false}
+                  includeLanguage={false}
+                />
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>
