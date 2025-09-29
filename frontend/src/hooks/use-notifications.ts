@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { notificationsApi } from "@/services/notifications-api";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/use-auth";
 
 export const notificationKeys = {
   all: ["notifications"] as const,
@@ -32,13 +33,16 @@ export const useUnreadNotifications = (page = 0, size = 20) => {
   });
 };
 
-export const useUnreadCount = () => {
+export const useUnreadCount = (enabled = true) => {
+  const { isAuthenticated } = useAuth();
+
   return useQuery({
     queryKey: notificationKeys.unreadCount(),
     queryFn: notificationsApi.getUnreadCount,
     staleTime: 1000 * 30,
     gcTime: 1000 * 60 * 2,
     refetchInterval: 1000 * 60,
+    enabled: enabled && isAuthenticated,
   });
 };
 

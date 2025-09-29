@@ -1,6 +1,7 @@
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
 import { Notification, ConnectionStatus } from "@/types/notifications";
+import { APIURL } from "@/config";
 
 export class WebSocketService {
   private stompClient: Client | null = null;
@@ -32,7 +33,7 @@ export class WebSocketService {
 
       try {
         this.stompClient = new Client({
-          webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
+          webSocketFactory: () => new SockJS(`${APIURL}/ws`),
           connectHeaders: {
             Authorization: `Bearer ${token}`,
           },
