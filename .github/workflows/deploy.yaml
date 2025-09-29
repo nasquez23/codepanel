@@ -31,7 +31,7 @@ jobs:
 
       - name: Build & push frontend image
         run: |
-          docker build --build-arg NEXT_PUBLIC_API_URL="/api" -t "$REPO:frontend-$SHORT_SHA" -t "$REPO:frontend-latest" ./frontend
+          docker build --build-arg NEXT_PUBLIC_API_URL="" -t "$REPO:frontend-$SHORT_SHA" -t "$REPO:frontend-latest" ./frontend
           docker push "$REPO:frontend-$SHORT_SHA"
           docker push "$REPO:frontend-latest"
 
