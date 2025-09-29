@@ -17,6 +17,7 @@ import ProblemPostUserInfo from "./problem-post-user-info";
 import ProblemPostAttributes from "./problem-post-attributes";
 import { DifficultyBadge } from "@/components/ui/difficulty-badge";
 import { ProgrammingLanguageBadge } from "@/components/ui/programming-language-badge";
+import { Role } from "@/types/auth";
 
 interface ProblemPostDetailsProps {
   id: string;
@@ -70,8 +71,8 @@ export default function ProblemPostDetails({ id }: ProblemPostDetailsProps) {
   const canDelete =
     user &&
     (user.id === problemPost.author.id ||
-      user.role === "ADMIN" ||
-      user.role === "INSTRUCTOR");
+      user.role === Role.ADMIN ||
+      user.role === Role.INSTRUCTOR);
 
   return (
     <div className="max-w-7xl mx-auto px-6">

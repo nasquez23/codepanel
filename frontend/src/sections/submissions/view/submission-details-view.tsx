@@ -18,6 +18,7 @@ import ProfilePicture from "@/components/profile-picture";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SubmissionDetailsCodeTab from "../submission-details-code-tab";
 import SubmissionDetailsGrading from "../submission-details-grading";
+import { Role } from "@/types/auth";
 
 interface SubmissionDetailsViewProps {
   id: string;
@@ -33,7 +34,8 @@ export default function SubmissionDetailsView({
   const [isDescriptionExpanded, setIsDescriptionExpanded] =
     useState<boolean>(false);
 
-  const isInstructor = user?.role === "INSTRUCTOR" || user?.role === "ADMIN";
+  const isInstructor =
+    user?.role === Role.INSTRUCTOR || user?.role === Role.ADMIN;
   const isSubmissionOwner = user?.id === submission?.student.id;
 
   if (isLoading) {

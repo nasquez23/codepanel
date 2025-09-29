@@ -1,9 +1,9 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useProfile, useMyStudentStats } from "@/hooks";
 import { Github, Linkedin } from "lucide-react";
+import { roleNameDisplay } from "@/lib/utils";
 
 export function ProfileDetails() {
   const { data: profile } = useProfile();
@@ -23,7 +23,7 @@ export function ProfileDetails() {
 
         <div>
           <label className="text-sm font-medium text-gray-500">Role</label>
-          <p className="text-gray-900">{profile.role}</p>
+          <p className="text-gray-900">{roleNameDisplay[profile.role]}</p>
         </div>
 
         {profile.bio && (

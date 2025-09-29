@@ -11,6 +11,7 @@ import Link from "next/link";
 import SearchInput from "@/components/search/search-input";
 import SearchFilters from "@/components/search/search-filters";
 import { Category, DifficultyLevel, Tag } from "@/types/tags-categories";
+import { Role } from "@/types/auth";
 
 interface AssignmentsListProps {
   showCreateButton?: boolean;
@@ -156,7 +157,7 @@ export default function AssignmentsList({
 
         {showCreateButton &&
           user &&
-          (user.role === "INSTRUCTOR" || user.role === "ADMIN") && (
+          (user.role === Role.INSTRUCTOR || user.role === Role.ADMIN) && (
             <Link href="/assignments/create">
               <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
                 <Plus className="w-4 h-4 mr-2" />
@@ -216,15 +217,15 @@ export default function AssignmentsList({
                 No assignments available
               </h3>
               <p className="text-gray-500 mb-6">
-                {user && (user.role === "INSTRUCTOR" || user.role === "ADMIN")
+                {user && (user.role === Role.INSTRUCTOR || user.role === Role.ADMIN)
                   ? "Create your first assignment to get started."
                   : "Check back later for new assignments from your instructors."}
               </p>
               {showCreateButton &&
                 user &&
-                (user.role === "INSTRUCTOR" || user.role === "ADMIN") && (
+                (user.role === Role.INSTRUCTOR || user.role === Role.ADMIN) && (
                   <Link href="/assignments/create">
-                    <Button>
+                    <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
                       <Plus className="h-4 w-4 mr-2" />
                       Create Assignment
                     </Button>

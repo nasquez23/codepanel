@@ -110,10 +110,10 @@ export default function LeaderboardTable({
     <div className="space-y-0">
       <div className="grid grid-cols-5 gap-4 px-6 py-4 bg-gray-50 border-b text-xs font-semibold text-gray-600 uppercase tracking-wider">
         <div>RANK</div>
-        <div>STUDENT</div>
+        <div className="col-span-3">STUDENT</div>
         <div className="text-right">POINTS</div>
-        <div className="text-right">STREAK</div>
-        <div>BADGE</div>
+        {/* <div className="text-right">STREAK</div>
+        <div>BADGE</div> */}
       </div>
 
       {data.map((entry, index) => (
@@ -125,7 +125,7 @@ export default function LeaderboardTable({
         >
           <div className="flex items-center">{getRankIcon(entry.rank)}</div>
 
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-3 col-span-3">
             <ProfilePicture
               profilePictureUrl={entry.user.profilePictureUrl}
               firstName={entry.user.firstName}
@@ -141,7 +141,7 @@ export default function LeaderboardTable({
             {entry.points.toLocaleString()}
           </div>
 
-          <div className="text-right flex items-center justify-end space-x-1">
+          {/* <div className="text-right flex items-center justify-end space-x-1">
             <Flame className="h-4 w-4 text-orange-500" />
             <span className="text-gray-600">{entry.streak}</span>
           </div>
@@ -156,7 +156,7 @@ export default function LeaderboardTable({
                 ? "Advanced"
                 : "Intermediate"}
             </Badge>
-          </div>
+          </div> */}
         </div>
       ))}
     </div>

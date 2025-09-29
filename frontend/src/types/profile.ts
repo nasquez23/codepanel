@@ -1,9 +1,11 @@
+import { Role } from "./auth";
+
 export interface Profile {
   id: string;
   firstName: string;
   lastName: string;
   email: string;
-  role: "STUDENT" | "INSTRUCTOR" | "ADMIN";
+  role: Role;
   profilePictureUrl?: string;
   bio?: string;
   socialLinks?: {

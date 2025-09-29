@@ -1,9 +1,15 @@
+export enum Role {
+  STUDENT = "STUDENT",
+  INSTRUCTOR = "INSTRUCTOR",
+  ADMIN = "ADMIN",
+}
+
 export interface User {
   id: string;
   email: string;
   firstName: string;
   lastName: string;
-  role: string;
+  role: Role;
   profilePictureUrl?: string;
 }
 
@@ -16,7 +22,7 @@ export interface AuthTokens {
   email: string;
   firstName: string;
   lastName: string;
-  role: string;
+  role: Role;
 }
 
 export interface AccessTokenData {
@@ -35,7 +41,7 @@ export interface RegisterCredentials {
   password: string;
   firstName: string;
   lastName: string;
-  role: string;
+  role: Role;
 }
 
 export interface AuthContextType {

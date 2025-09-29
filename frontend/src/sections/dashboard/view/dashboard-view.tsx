@@ -8,6 +8,7 @@ import {
   InstructorDashboardView,
   StudentDashboardView,
 } from "@/sections/dashboard/view";
+import { Role } from "@/types/auth";
 
 export default function DashboardView() {
   const { user, isLoading } = useAuth();
@@ -33,7 +34,7 @@ export default function DashboardView() {
   return (
     <div className="bg-blue-200/20 min-h-screen">
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        {user.role === "INSTRUCTOR" || user.role === "ADMIN" ? (
+        {user.role === Role.INSTRUCTOR || user.role === Role.ADMIN ? (
           <InstructorDashboardView />
         ) : (
           <StudentDashboardView />

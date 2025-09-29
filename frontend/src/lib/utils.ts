@@ -16,3 +16,9 @@ export const languageMap: Record<ProgrammingLanguage, string> = {
   [ProgrammingLanguage.CSHARP]: "csharp",
   [ProgrammingLanguage.PHP]: "php",
 };
+
+export const roleNameDisplay: Record<string, string> = {
+  STUDENT: "Student",
+  INSTRUCTOR: "Instructor",
+  ADMIN: "Administrator",
+};

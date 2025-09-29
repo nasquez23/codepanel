@@ -17,6 +17,7 @@ import { FormEvent, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import SubmissionDetailsReview from "./submission-details-review";
+import { Role } from "@/types/auth";
 
 export default function SubmissionDetailsGrading({
   submission,
@@ -58,7 +59,7 @@ export default function SubmissionDetailsGrading({
     );
   };
 
-  const isInstructor = user?.role === "INSTRUCTOR" || user?.role === "ADMIN";
+  const isInstructor = user?.role === Role.INSTRUCTOR || user?.role === Role.ADMIN;
   const isSubmissionOwner = user?.id === submission?.student.id;
   const canReview =
     isInstructor &&
@@ -70,7 +71,7 @@ export default function SubmissionDetailsGrading({
       <h1 className="text-xl font-medium mb-8">Grade Submission</h1>
       {submission.review && <SubmissionDetailsReview submission={submission} />}
 
-      {canReview && (
+      {canReview ? (
         <div className="p-3 mt-2">
           <form onSubmit={handleReviewSubmit} className="space-y-4">
             <div className="flex items-center gap-2">
@@ -138,6 +139,13 @@ export default function SubmissionDetailsGrading({
               </Button>
             </div>
           </form>
+        </div>
+      ) : (
+        <div className="p-3 mt-2">
+          <p className="text-lg font-medium">
+            Not graded yet, please wait for the instructor to grade your
+            submission.
+          </p>
         </div>
       )}
     </div>

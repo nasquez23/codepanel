@@ -30,6 +30,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { useQueryClient } from "@tanstack/react-query";
+import { Role } from "@/types/auth";
 
 interface AssignmentDetailsProps {
   id: string;
@@ -106,10 +107,10 @@ export default function AssignmentDetails({ id }: AssignmentDetailsProps) {
   }
 
   const isOwner = user?.id === assignment.instructor.id;
-  const canEdit = user && (user.role === "ADMIN" || isOwner);
+  const canEdit = user && (user.role === Role.ADMIN || isOwner);
   const canSubmit =
     user &&
-    user.role === "STUDENT" &&
+    user.role === Role.STUDENT &&
     !assignment.hasSubmitted &&
     assignment.isActive;
   const isOverdue =

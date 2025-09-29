@@ -11,6 +11,7 @@ import EditProblemPostDialog from "./edit-problem-post-dialog";
 import DeleteConfirmationDialog from "@/components/delete-confirmation-dialog";
 import ProblemPostUserInfo from "./problem-post-user-info";
 import ProblemPostAttributes from "./problem-post-attributes";
+import { Role } from "@/types/auth";
 
 interface ProblemPostCardProps {
   problemPost: ProblemPost;
@@ -37,8 +38,8 @@ export default function ProblemPostCard({ problemPost }: ProblemPostCardProps) {
   const canDelete =
     user &&
     (user.id === problemPost.author.id ||
-      user.role === "ADMIN" ||
-      user.role === "INSTRUCTOR");
+      user.role === Role.ADMIN ||
+      user.role === Role.INSTRUCTOR);
 
   return (
     <div className="bg-white rounded-lg shadow-md border border-gray-200 px-6 py-4 hover:shadow-lg transition-shadow">

@@ -10,15 +10,10 @@ import { NotepadText } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useDeleteAssignment } from "@/hooks/use-assignments";
 import Link from "next/link";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import DeleteConfirmationDialog from "@/components/delete-confirmation-dialog";
 import ProfilePicture from "../profile-picture";
 import { cn } from "@/lib/utils";
+import { Role } from "@/types/auth";
 
 interface AssignmentCardProps {
   assignment: Assignment;
@@ -34,8 +29,8 @@ export default function AssignmentCard({
   const deleteMutation = useDeleteAssignment();
 
   const isOwner = user?.id === assignment.instructor.id;
-  const canEdit = user && (user.role === "ADMIN" || isOwner);
-  const canDelete = user && (user.role === "ADMIN" || isOwner);
+  const canEdit = user && (user.role === Role.ADMIN || isOwner);
+  const canDelete = user && (user.role === Role.ADMIN || isOwner);
 
   const isOverdue =
     assignment.dueDate && new Date(assignment.dueDate) < new Date();

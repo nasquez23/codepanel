@@ -46,16 +46,9 @@ export function ProfileHeader({ onEditClick }: ProfileHeaderProps) {
             <h1 className="text-3xl font-bold text-gray-900">
               {profile.firstName} {profile.lastName}
             </h1>
-            <p className="text-gray-600 text-lg">
-              {profile.role === "STUDENT" && "Student"}
-              {profile.role === "INSTRUCTOR" && "Instructor"}
-              {profile.role === "ADMIN" && "Administrator"}
-            </p>
 
             {profile.bio && (
-              <p className="text-gray-600 mt-4 max-w-2xl">
-                {profile.bio}
-              </p>
+              <p className="text-gray-600 mt-4 max-w-2xl">{profile.bio}</p>
             )}
           </div>
         </div>
