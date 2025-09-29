@@ -2,7 +2,9 @@ package com.codepanel.services;
 
 import com.codepanel.config.NotificationRabbitConfig;
 import com.codepanel.models.Notification;
+import com.codepanel.models.events.AchievementAwardedEvent;
 import com.codepanel.models.events.AssignmentGradedEvent;
+import com.codepanel.models.events.AssignmentSubmittedEvent;
 import com.codepanel.models.events.CommentCreatedEvent;
 import com.codepanel.models.events.EmailNotificationEvent;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -80,22 +82,82 @@ public class NotificationEventConsumer {
         }
     }
 
+    @RabbitListener(queues = NotificationRabbitConfig.ASSIGNMENT_NOTIFICATION_QUEUE)
+    public void handleAssignmentSubmittedEvent(AssignmentSubmittedEvent event) {
+        try {
+            System.out.println("Processing assignment submitted event: " + event);
+
+            Notification notification = notificationService.createAssignmentSubmittedNotification(event);
+
+            if (notification != null) {
+                System.out
+                        .println("Successfully created notification for submitted assignment: "
+                                + event.getSubmissionId());
+
+                // Send real-time WebSocket notification
+                webSocketService.sendNotificationToUser(event.getInstructorId(), notification);
+
+                // Update unread count
+                Long unreadCount = notificationService.getUnreadCount(notification.getRecipient());
+                System.out.println("Unread count: " + unreadCount);
+                webSocketService.sendUnreadCountToUser(event.getInstructorId(), unreadCount);
+            } else {
+                System.out.println("No notification created for submitted assignment event: " + event);
+            }
+
+        } catch (Exception e) {
+            System.out.println("Failed to process assignment submitted event: " + event + ", error: " + e.getMessage());
+            throw e;
+        }
+    }
+
+    @RabbitListener(queues = NotificationRabbitConfig.ACHIEVEMENT_NOTIFICATION_QUEUE)
+    public void handleAchievementAwardedEvent(AchievementAwardedEvent event) {
+        try {
+            System.out.println("Processing achievement awarded event: " + event);
+
+            Notification notification = notificationService.createAchievementAwardedNotification(event);
+
+            if (notification != null) {
+                System.out
+                        .println("Successfully created notification for achievement awarded: "
+                                + event.getAchievementId());
+
+                // Send real-time WebSocket notification
+                webSocketService.sendNotificationToUser(event.getUserId(), notification);
+
+                // Update unread count
+                Long unreadCount = notificationService.getUnreadCount(notification.getRecipient());
+                webSocketService.sendUnreadCountToUser(event.getUserId(), unreadCount);
+            } else {
+                System.out.println("No notification created for achievement awarded event: " + event);
+            }
+
+        } catch (Exception e) {
+            System.out.println("Failed to process achievement awarded event: " + event + ", error: " + e.getMessage());
+            throw e;
+        }
+    }
+
     // @RabbitListener(queues = NotificationRabbitConfig.EMAIL_NOTIFICATION_QUEUE)
     // public void handleEmailNotificationEvent(EmailNotificationEvent event) {
-    //     try {
-    //         System.out.println("Processing email notification event for: " + event.getRecipientEmail());
+    // try {
+    // System.out.println("Processing email notification event for: " +
+    // event.getRecipientEmail());
 
-    //         emailService.sendTemplatedEmail(
-    //                 event.getRecipientEmail(),
-    //                 event.getSubject(),
-    //                 event.getTemplateName(),
-    //                 event.getTemplateVariables());
+    // emailService.sendTemplatedEmail(
+    // event.getRecipientEmail(),
+    // event.getSubject(),
+    // event.getTemplateName(),
+    // event.getTemplateVariables());
 
-    //         System.out.println("Successfully sent email to: " + event.getRecipientEmail());
+    // System.out.println("Successfully sent email to: " +
+    // event.getRecipientEmail());
 
-    //     } catch (Exception e) {
-    //         System.out.println("Failed to send email notification: " + event + ", error: " + e.getMessage());
-    //         throw e;
-    //     }
+    // } catch (Exception e) {
+    // System.out.println("Failed to send email notification: " + event + ", error:
+    // " + e.getMessage());
+    // throw e;
+    // }
     // }
 }

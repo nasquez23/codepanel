@@ -18,6 +18,8 @@ public class NotificationRabbitConfig {
     public static final String COMMENT_NOTIFICATION_DLQ = "notifications.comments.dlq";
     public static final String ASSIGNMENT_NOTIFICATION_QUEUE = "notifications.assignments";
     public static final String ASSIGNMENT_NOTIFICATION_DLQ = "notifications.assignments.dlq";
+    public static final String ACHIEVEMENT_NOTIFICATION_QUEUE = "notifications.achievements";
+    public static final String ACHIEVEMENT_NOTIFICATION_DLQ = "notifications.achievements.dlq";
     public static final String EMAIL_NOTIFICATION_QUEUE = "notifications.email";
     public static final String EMAIL_NOTIFICATION_DLQ = "notifications.email.dlq";
 
@@ -25,6 +27,8 @@ public class NotificationRabbitConfig {
     public static final String ASSIGNMENT_CREATED_ROUTING_KEY = "assignment.created";
     public static final String ASSIGNMENT_DUE_ROUTING_KEY = "assignment.due";
     public static final String ASSIGNMENT_GRADED_ROUTING_KEY = "assignment.graded";
+    public static final String ASSIGNMENT_SUBMITTED_ROUTING_KEY = "assignment.submitted";
+    public static final String ACHIEVEMENT_AWARDED_ROUTING_KEY = "achievement.awarded";
     public static final String EMAIL_NOTIFICATION_ROUTING_KEY = "email.send";
 
     @Bean
@@ -68,6 +72,21 @@ public class NotificationRabbitConfig {
     }
 
     @Bean
+    public Queue achievementNotificationQueue() {
+        return QueueBuilder
+                .durable(ACHIEVEMENT_NOTIFICATION_QUEUE)
+                .withArgument("x-dead-letter-exchange", NOTIFICATIONS_DLX)
+                .withArgument("x-dead-letter-routing-key", ACHIEVEMENT_NOTIFICATION_DLQ)
+                .withArgument("x-message-ttl", 3600000)
+                .build();
+    }
+
+    @Bean
+    public Queue achievementNotificationDeadLetterQueue() {
+        return QueueBuilder.durable(ACHIEVEMENT_NOTIFICATION_DLQ).build();
+    }
+
+    @Bean
     public Queue emailNotificationQueue() {
         return QueueBuilder
                 .durable(EMAIL_NOTIFICATION_QUEUE)
@@ -99,6 +118,14 @@ public class NotificationRabbitConfig {
     }
 
     @Bean
+    public Binding achievementNotificationBinding() {
+        return BindingBuilder
+                .bind(achievementNotificationQueue())
+                .to(notificationsExchange())
+                .with("achievement.*");
+    }
+
+    @Bean
     public Binding emailNotificationBinding() {
         return BindingBuilder
                 .bind(emailNotificationQueue())
@@ -120,6 +147,14 @@ public class NotificationRabbitConfig {
                 .bind(assignmentNotificationDeadLetterQueue())
                 .to(notificationsDeadLetterExchange())
                 .with(ASSIGNMENT_NOTIFICATION_DLQ);
+    }
+
+    @Bean
+    public Binding achievementNotificationDeadLetterBinding() {
+        return BindingBuilder
+                .bind(achievementNotificationDeadLetterQueue())
+                .to(notificationsDeadLetterExchange())
+                .with(ACHIEVEMENT_NOTIFICATION_DLQ);
     }
 
     @Bean

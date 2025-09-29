@@ -3,11 +3,15 @@ package com.codepanel.services;
 import com.codepanel.models.Notification;
 import com.codepanel.models.User;
 import com.codepanel.models.enums.NotificationType;
+import com.codepanel.models.events.AchievementAwardedEvent;
 import com.codepanel.models.events.AssignmentGradedEvent;
+import com.codepanel.models.events.AssignmentSubmittedEvent;
 import com.codepanel.models.events.CommentCreatedEvent;
 import com.codepanel.repositories.NotificationRepository;
 import com.codepanel.repositories.UserRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -28,6 +32,7 @@ public class NotificationService {
     }
 
     @Transactional
+    @CacheEvict(cacheNames = {"notifUnreadCount"}, key = "#event.postAuthorId")
     public Notification createCommentNotification(CommentCreatedEvent event) {
         System.out.println("Creating comment notification for event: " + event);
         
@@ -60,6 +65,7 @@ public class NotificationService {
     }
 
     @Transactional
+    @CacheEvict(cacheNames = {"notifUnreadCount"}, key = "#event.studentId")
     public Notification createAssignmentGradedNotification(AssignmentGradedEvent event) {
         System.out.println("Creating assignment graded notification for event: " + event);
         
@@ -85,6 +91,60 @@ public class NotificationService {
         return savedNotification;
     }
 
+    @Transactional
+    @CacheEvict(cacheNames = {"notifUnreadCount"}, key = "#event.instructorId")
+    public Notification createAssignmentSubmittedNotification(AssignmentSubmittedEvent event) {
+        System.out.println("Creating assignment submitted notification for event: " + event);
+        
+        User recipient = userRepository.findById(event.getInstructorId())
+                .orElseThrow(() -> new RuntimeException("Instructor not found: " + event.getInstructorId()));
+
+        Notification notification = Notification.builder()
+                .recipient(recipient)
+                .type(NotificationType.ASSIGNMENT_SUBMITTED)
+                .title("New assignment submission")
+                .message(String.format("%s submitted their solution for assignment \"%s\"", 
+                        event.getStudentName(),
+                        event.getAssignmentTitle()))
+                .relatedEntityId(event.getSubmissionId())
+                .relatedEntityType("ASSIGNMENT_SUBMISSION")
+                .actionUrl("/submissions/" + event.getSubmissionId())
+                .isRead(false)
+                .build();
+
+        Notification savedNotification = notificationRepository.save(notification);
+        System.out.println("Created assignment submitted notification with ID: " + savedNotification.getId());
+        
+        return savedNotification;
+    }
+
+    @Transactional
+    @CacheEvict(cacheNames = {"notifUnreadCount"}, key = "#event.userId")
+    public Notification createAchievementAwardedNotification(AchievementAwardedEvent event) {
+        System.out.println("Creating achievement awarded notification for event: " + event);
+        
+        User recipient = userRepository.findById(event.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found: " + event.getUserId()));
+
+        Notification notification = Notification.builder()
+                .recipient(recipient)
+                .type(NotificationType.ACHIEVEMENT_AWARDED)
+                .title("Achievement unlocked!")
+                .message(String.format("Congratulations! You've earned the \"%s\" achievement and gained %d points!", 
+                        event.getAchievementName(),
+                        event.getPointsReward()))
+                .relatedEntityId(event.getAchievementId())
+                .relatedEntityType("ACHIEVEMENT")
+                .actionUrl("/achievements")
+                .isRead(false)
+                .build();
+
+        Notification savedNotification = notificationRepository.save(notification);
+        System.out.println("Created achievement awarded notification with ID: " + savedNotification.getId());
+        
+        return savedNotification;
+    }
+
     @Transactional(readOnly = true)
     public Page<Notification> getUserNotifications(User user, Pageable pageable) {
         return notificationRepository.findByRecipientOrderByCreatedAtDesc(user, pageable);
@@ -96,17 +156,20 @@ public class NotificationService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = "notifUnreadCount", key = "#user.id")
     public Long getUnreadCount(User user) {
         return notificationRepository.countUnreadByRecipient(user);
     }
 
     @Transactional
+    @CacheEvict(cacheNames = {"notifUnreadCount"}, key = "#user.id")
     public boolean markAsRead(UUID notificationId, User user) {
         int updated = notificationRepository.markAsReadById(notificationId, user);
         return updated > 0;
     }
 
     @Transactional
+    @CacheEvict(cacheNames = {"notifUnreadCount"}, key = "#user.id")
     public int markAllAsRead(User user) {
         return notificationRepository.markAllAsReadByRecipient(user);
     }

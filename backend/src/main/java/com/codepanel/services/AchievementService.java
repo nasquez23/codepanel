@@ -7,6 +7,7 @@ import com.codepanel.models.User;
 import com.codepanel.models.UserAchievement;
 import com.codepanel.models.UserAchievementProgress;
 import com.codepanel.models.enums.MetricType;
+import com.codepanel.models.events.AchievementAwardedEvent;
 import com.codepanel.repositories.AchievementRepository;
 import com.codepanel.repositories.ScoreEventRepository;
 import com.codepanel.repositories.UserAchievementProgressRepository;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -43,6 +45,7 @@ public class AchievementService {
     private final UserRepository userRepository;
     private final UserScoreRepository userScoreRepository;
     private final ScoreEventRepository scoreEventRepository;
+    private final NotificationEventPublisher notificationEventPublisher;
     private final ObjectMapper objectMapper;
 
     public AchievementService(AchievementRepository achievementRepository,
@@ -51,6 +54,7 @@ public class AchievementService {
                              UserRepository userRepository,
                              UserScoreRepository userScoreRepository,
                              ScoreEventRepository scoreEventRepository,
+                             NotificationEventPublisher notificationEventPublisher,
                              ObjectMapper objectMapper) {
         this.achievementRepository = achievementRepository;
         this.userAchievementRepository = userAchievementRepository;
@@ -58,6 +62,7 @@ public class AchievementService {
         this.userRepository = userRepository;
         this.userScoreRepository = userScoreRepository;
         this.scoreEventRepository = scoreEventRepository;
+        this.notificationEventPublisher = notificationEventPublisher;
         this.objectMapper = objectMapper;
     }
 
@@ -163,7 +168,28 @@ public class AchievementService {
 
                 System.out.println("Achievement awarded: " + achievement.getName() + " to user " + user.getUsername());
 
-                // TODO: Send notification about new achievement
+                // Send notification about new achievement
+                try {
+                    System.out.println("Publishing achievement awarded event for achievement: " + achievement.getName());
+                    System.out.println("NotificationEventPublisher is null: " + (notificationEventPublisher == null));
+                    
+                    AchievementAwardedEvent event = AchievementAwardedEvent.builder()
+                            .achievementId(achievement.getId())
+                            .achievementName(achievement.getName())
+                            .achievementDescription(achievement.getDescription())
+                            .userId(user.getId())
+                            .userName(user.getFirstName() + " " + user.getLastName())
+                            .pointsReward(achievement.getPointsReward())
+                            .awardedAt(LocalDateTime.now())
+                            .build();
+
+                    System.out.println("Built event: " + event);
+                    notificationEventPublisher.publishAchievementAwarded(event);
+                    System.out.println("Successfully published achievement awarded event for user: " + user.getEmail());
+                } catch (Exception e) {
+                    System.out.println("Failed to publish achievement awarded event: " + e.getMessage());
+                    e.printStackTrace();
+                }
                 
                 LocalDate weekStart = LocalDate.now().with(DayOfWeek.MONDAY);
                 UserScore score = userScoreRepository.findByUserAndWeekStart(user, weekStart);

@@ -20,6 +20,7 @@ import com.codepanel.models.enums.ProgrammingLanguage;
 import com.codepanel.models.enums.Role;
 import com.codepanel.models.enums.SubmissionStatus;
 import com.codepanel.models.events.AssignmentGradedEvent;
+import com.codepanel.models.events.AssignmentSubmittedEvent;
 import com.codepanel.models.dto.GamificationEvent;
 import com.codepanel.repositories.AssignmentRepository;
 import com.codepanel.repositories.AssignmentSubmissionRepository;
@@ -254,6 +255,25 @@ public class AssignmentService {
         submission.setStatus(SubmissionStatus.PENDING_REVIEW);
 
         AssignmentSubmission savedSubmission = submissionRepository.save(submission);
+
+        // Publish assignment submitted event for notifications
+        try {
+            AssignmentSubmittedEvent event = AssignmentSubmittedEvent.builder()
+                    .submissionId(savedSubmission.getId())
+                    .assignmentId(assignment.getId())
+                    .assignmentTitle(assignment.getTitle())
+                    .studentId(student.getId())
+                    .studentName(student.getFirstName() + " " + student.getLastName())
+                    .instructorId(assignment.getInstructor().getId())
+                    .instructorName(assignment.getInstructor().getFirstName() + " " + assignment.getInstructor().getLastName())
+                    .submittedAt(savedSubmission.getCreatedAt())
+                    .build();
+
+            notificationEventPublisher.publishAssignmentSubmitted(event);
+        } catch (Exception e) {
+            System.out.println("Failed to publish assignment submitted event: " + e.getMessage());
+        }
+
         return mapToSubmissionResponse(savedSubmission);
     }
 
