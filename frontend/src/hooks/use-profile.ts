@@ -10,13 +10,14 @@ import { toast } from "sonner";
 
 export const profileKeys = {
   all: ["profile"] as const,
-  profile: () => [...profileKeys.all] as const,
+  profile: (id: string) => [...profileKeys.all, id] as const,
 };
 
-export const useProfile = () => {
+export const useProfile = (id: string, enabled: boolean = false) => {
   return useQuery({
-    queryKey: profileKeys.profile(),
+    queryKey: profileKeys.profile(id),
     queryFn: getProfile,
+    enabled: enabled,
   });
 };
 
@@ -26,7 +27,10 @@ export const useUpdateProfile = () => {
   return useMutation({
     mutationFn: (data: UpdateProfileRequest) => updateProfile(data),
     onSuccess: (updatedProfile) => {
-      queryClient.setQueryData(profileKeys.profile(), updatedProfile);
+      queryClient.setQueryData(
+        profileKeys.profile(updatedProfile.id),
+        updatedProfile
+      );
       toast.success("Profile updated successfully!");
     },
     onError: (error: any) => {
@@ -42,7 +46,10 @@ export const useUploadProfilePicture = () => {
   return useMutation({
     mutationFn: (file: File) => uploadProfilePicture(file),
     onSuccess: (updatedProfile) => {
-      queryClient.setQueryData(profileKeys.profile(), updatedProfile);
+      queryClient.setQueryData(
+        profileKeys.profile(updatedProfile.id),
+        updatedProfile
+      );
       toast.success("Profile picture uploaded successfully!");
     },
     onError: (error: any) => {
@@ -58,7 +65,10 @@ export const useRemoveProfilePicture = () => {
   return useMutation({
     mutationFn: removeProfilePicture,
     onSuccess: (updatedProfile) => {
-      queryClient.setQueryData(profileKeys.profile(), updatedProfile);
+      queryClient.setQueryData(
+        profileKeys.profile(updatedProfile.id),
+        updatedProfile
+      );
       toast.success("Profile picture removed successfully!");
     },
     onError: (error: any) => {

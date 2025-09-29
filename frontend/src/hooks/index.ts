@@ -75,3 +75,10 @@ export {
   useMyInstructorStats,
   dashboardKeys,
 } from "./use-dashboard";
+
+export {
+  useSkills,
+  useInterests,
+  useSkillsSearch,
+  useInterestsSearch,
+} from "./use-skills-interests";

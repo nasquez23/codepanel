@@ -25,8 +25,13 @@ public class ProfileController {
 
     @GetMapping
     public ResponseEntity<ProfileResponse> getProfile(@AuthenticationPrincipal User user) {
-        ProfileResponse profile = profileService.getProfile(user);
-        return ResponseEntity.ok(profile);
+        try {
+            ProfileResponse profile = profileService.getProfile(user);
+            return ResponseEntity.ok(profile);
+        } catch (Exception e) {
+            System.out.println("Error getting profile" + e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     @PutMapping
@@ -59,5 +64,17 @@ public class ProfileController {
     public ResponseEntity<ProfileResponse> removeProfilePicture(@AuthenticationPrincipal User user) {
         ProfileResponse updatedProfile = profileService.removeProfilePicture(user);
         return ResponseEntity.ok(updatedProfile);
+    }
+
+    @GetMapping("/test")
+    public ResponseEntity<String> testEndpoint(@AuthenticationPrincipal User user) {
+        try {
+            System.out.println("Test endpoint - User: " + user.getEmail());
+            return ResponseEntity.ok("User: " + user.getEmail() + ", ID: " + user.getId());
+        } catch (Exception e) {
+            System.err.println("Test endpoint error: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Error: " + e.getMessage());
+        }
     }
 }

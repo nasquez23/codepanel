@@ -1,8 +1,12 @@
 import { Card, CardContent } from "@/components/ui/card";
+import { useAuth } from "@/hooks";
 import { useMyAchievementsWithProgress } from "@/hooks/use-achievements";
 
 export function ProfileAchievements() {
-  const { data: achievements, isLoading } = useMyAchievementsWithProgress();
+  const { user } = useAuth();
+  const { data: achievements, isLoading } = useMyAchievementsWithProgress(
+    !!user
+  );
 
   const formatEarnedDate = (earnedAt: string) => {
     const date = new Date(earnedAt);

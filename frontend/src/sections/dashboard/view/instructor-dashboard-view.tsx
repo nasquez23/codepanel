@@ -36,7 +36,7 @@ export default function InstructorDashboardView() {
     );
   }
 
-  const { data: stats } = useMyInstructorStats(user.id);
+  const { data: stats } = useMyInstructorStats(user.id, !!user);
 
   const totalAssignments = stats?.totalAssignments ?? 0;
   const activeAssignments = stats?.activeAssignments ?? 0;

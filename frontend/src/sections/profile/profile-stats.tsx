@@ -1,11 +1,15 @@
 "use client";
 
-import { useProfile, useMyStudentStats } from "@/hooks";
+import { useProfile, useMyStudentStats, useAuth } from "@/hooks";
 import { Card, CardContent } from "@/components/ui/card";
 
 export function ProfileStats() {
-  const { data: profile } = useProfile();
-  const { data: stats, isLoading } = useMyStudentStats(profile?.id || "");
+  const { user } = useAuth();
+  const { data: profile } = useProfile(user?.id || "", !!user);
+  const { data: stats, isLoading } = useMyStudentStats(
+    profile?.id || "",
+    !!user
+  );
 
   if (isLoading) {
     return (
@@ -58,9 +62,7 @@ export function ProfileStats() {
             <div className={`text-2xl font-bold ${stat.color}`}>
               {stat.value}
             </div>
-            <div className="text-sm text-gray-600 mt-1">
-              {stat.label}
-            </div>
+            <div className="text-sm text-gray-600 mt-1">{stat.label}</div>
           </CardContent>
         </Card>
       ))}

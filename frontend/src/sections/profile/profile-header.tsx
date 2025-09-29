@@ -2,14 +2,15 @@
 
 import ProfilePicture from "@/components/profile-picture";
 import { Button } from "@/components/ui/button";
-import { useProfile } from "@/hooks";
+import { useAuth, useProfile } from "@/hooks";
 
 interface ProfileHeaderProps {
   onEditClick: () => void;
 }
 
 export function ProfileHeader({ onEditClick }: ProfileHeaderProps) {
-  const { data: profile, isLoading } = useProfile();
+  const { user } = useAuth();
+  const { data: profile, isLoading } = useProfile(user?.id || "", !!user);
 
   if (isLoading) {
     return (

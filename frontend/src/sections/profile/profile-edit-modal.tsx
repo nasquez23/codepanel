@@ -14,7 +14,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import AvatarUpload from "@/components/avatar-upload";
-import { useProfile, useUpdateProfile } from "@/hooks";
+import { AutocompleteTags } from "@/components/ui/autocomplete-tags";
+import {
+  useAuth,
+  useProfile,
+  useUpdateProfile,
+  useSkills,
+  useInterests,
+} from "@/hooks";
 import { UpdateProfileRequest } from "@/types/profile";
 
 interface ProfileEditModalProps {
@@ -23,8 +30,15 @@ interface ProfileEditModalProps {
 }
 
 export function ProfileEditModal({ isOpen, onClose }: ProfileEditModalProps) {
-  const { data: profile, isLoading, error } = useProfile();
+  const { user } = useAuth();
+  const {
+    data: profile,
+    isLoading,
+    error,
+  } = useProfile(user?.id || "", !!user);
   const updateMutation = useUpdateProfile();
+  const { data: predefinedSkills = [] } = useSkills();
+  const { data: predefinedInterests = [] } = useInterests();
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -148,56 +162,62 @@ export function ProfileEditModal({ isOpen, onClose }: ProfileEditModalProps) {
         </DialogHeader>
 
         <div className="space-y-6 mt-6">
-          {/* <Card>
-            <CardHeader> */}
-          {/* <CardTitle className="flex items-center space-x-2"> */}
-          <div className="flex items-center space-x-2">
-            <User className="w-5 h-5" />
-            <span>Profile Picture</span>
-          </div>
-          {/* </CardTitle>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <User className="w-5 h-5" />
+                <span>Profile Picture</span>
+              </CardTitle>
             </CardHeader>
-            <CardContent> */}
-          <AvatarUpload currentImageUrl={profile.profilePictureUrl} />
-          {/* </CardContent>
-          </Card> */}
+            <CardContent>
+              <AvatarUpload currentImageUrl={profile.profilePictureUrl} />
+            </CardContent>
+          </Card>
 
-          {/* <Card>
+          <Card>
             <CardHeader>
               <CardTitle>Basic Information</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4"> */}
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                First Name
-              </label>
-              <Input
-                value={formData.firstName}
-                onChange={(e) => handleInputChange("firstName", e.target.value)}
-                className={errors.firstName ? "border-red-500" : ""}
-              />
-              {errors.firstName && (
-                <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>
-              )}
-            </div>
+            <CardContent className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    First Name
+                  </label>
+                  <Input
+                    value={formData.firstName}
+                    onChange={(e) =>
+                      handleInputChange("firstName", e.target.value)
+                    }
+                    className={errors.firstName ? "border-red-500" : ""}
+                  />
+                  {errors.firstName && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.firstName}
+                    </p>
+                  )}
+                </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Last Name
-              </label>
-              <Input
-                value={formData.lastName}
-                onChange={(e) => handleInputChange("lastName", e.target.value)}
-                className={errors.lastName ? "border-red-500" : ""}
-              />
-              {errors.lastName && (
-                <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>
-              )}
-            </div>
-          </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Last Name
+                  </label>
+                  <Input
+                    value={formData.lastName}
+                    onChange={(e) =>
+                      handleInputChange("lastName", e.target.value)
+                    }
+                    className={errors.lastName ? "border-red-500" : ""}
+                  />
+                  {errors.lastName && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.lastName}
+                    </p>
+                  )}
+                </div>
+              </div>
 
-          {/* <div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Bio
                 </label>
@@ -209,32 +229,34 @@ export function ProfileEditModal({ isOpen, onClose }: ProfileEditModalProps) {
                   placeholder="Tell us about yourself..."
                   rows={3}
                 />
-              </div> */}
+              </div>
 
-          <div>
-            <label className="flex items-center space-x-2 text-sm font-medium text-gray-700 mb-1">
-              <Mail className="w-4 h-4" />
-              <span>Email</span>
-            </label>
-            <p className="text-gray-900 bg-gray-50 p-2 rounded">
-              {profile.email}
-            </p>
-            <p className="text-sm text-gray-500 mt-1">
-              Email cannot be changed
-            </p>
-          </div>
+              <div>
+                <label className="flex items-center space-x-2 text-sm font-medium text-gray-700 mb-1">
+                  <Mail className="w-4 h-4" />
+                  <span>Email</span>
+                </label>
+                <p className="text-gray-900 bg-gray-50 p-2 rounded">
+                  {profile.email}
+                </p>
+                <p className="text-sm text-gray-500 mt-1">
+                  Email cannot be changed
+                </p>
+              </div>
 
-          <div>
-            <label className="flex items-center space-x-2 text-sm font-medium text-gray-700 mb-1">
-              <Shield className="w-4 h-4" />
-              <span>Role</span>
-            </label>
-            <Badge className={getRoleColor(profile.role)}>{profile.role}</Badge>
-          </div>
-          {/* </CardContent>
-          </Card> */}
+              <div>
+                <label className="flex items-center space-x-2 text-sm font-medium text-gray-700 mb-1">
+                  <Shield className="w-4 h-4" />
+                  <span>Role</span>
+                </label>
+                <Badge className={getRoleColor(profile.role)}>
+                  {profile.role}
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
 
-          {/* <Card>
+          <Card>
             <CardHeader>
               <CardTitle>Social Links</CardTitle>
             </CardHeader>
@@ -325,46 +347,16 @@ export function ProfileEditModal({ isOpen, onClose }: ProfileEditModalProps) {
                 <CardTitle>Skills</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  <Input
-                    placeholder="Add a skill and press Enter"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && e.currentTarget.value.trim()) {
-                        const skill = e.currentTarget.value.trim();
-                        if (!formData.skills.includes(skill)) {
-                          setFormData((prev) => ({
-                            ...prev,
-                            skills: [...prev.skills, skill],
-                          }));
-                        }
-                        e.currentTarget.value = "";
-                      }
-                    }}
-                  />
-                  <div className="flex flex-wrap gap-2">
-                    {formData.skills.map((skill, index) => (
-                      <Badge
-                        key={index}
-                        variant="outline"
-                        className="bg-blue-50 text-blue-700 border-blue-200"
-                      >
-                        {skill}
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              skills: prev.skills.filter((_, i) => i !== index),
-                            }))
-                          }
-                          className="ml-1 text-blue-500 hover:text-blue-700"
-                        >
-                          ×
-                        </button>
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
+                <AutocompleteTags
+                  value={formData.skills}
+                  onChange={(skills) =>
+                    setFormData((prev) => ({ ...prev, skills }))
+                  }
+                  suggestions={predefinedSkills}
+                  placeholder="Type to search skills or add custom ones..."
+                  variant="skills"
+                  maxTags={20}
+                />
               </CardContent>
             </Card>
 
@@ -373,51 +365,19 @@ export function ProfileEditModal({ isOpen, onClose }: ProfileEditModalProps) {
                 <CardTitle>Interests</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  <Input
-                    placeholder="Add an interest and press Enter"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && e.currentTarget.value.trim()) {
-                        const interest = e.currentTarget.value.trim();
-                        if (!formData.interests.includes(interest)) {
-                          setFormData((prev) => ({
-                            ...prev,
-                            interests: [...prev.interests, interest],
-                          }));
-                        }
-                        e.currentTarget.value = "";
-                      }
-                    }}
-                  />
-                  <div className="flex flex-wrap gap-2">
-                    {formData.interests.map((interest, index) => (
-                      <Badge
-                        key={index}
-                        variant="outline"
-                        className="bg-purple-50 text-purple-700 border-purple-200"
-                      >
-                        {interest}
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              interests: prev.interests.filter(
-                                (_, i) => i !== index
-                              ),
-                            }))
-                          }
-                          className="ml-1 text-purple-500 hover:text-purple-700"
-                        >
-                          ×
-                        </button>
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
+                <AutocompleteTags
+                  value={formData.interests}
+                  onChange={(interests) =>
+                    setFormData((prev) => ({ ...prev, interests }))
+                  }
+                  suggestions={predefinedInterests}
+                  placeholder="Type to search interests or add custom ones..."
+                  variant="interests"
+                  maxTags={15}
+                />
               </CardContent>
             </Card>
-          </div> */}
+          </div>
         </div>
 
         <div className="flex justify-end space-x-3 mt-6 pt-6 border-t">

@@ -1,13 +1,14 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import { useProfile, useMyStudentStats } from "@/hooks";
+import { useProfile, useMyStudentStats, useAuth } from "@/hooks";
 import { Github, Linkedin } from "lucide-react";
 import { roleNameDisplay } from "@/lib/utils";
 
 export function ProfileDetails() {
-  const { data: profile } = useProfile();
-  const { data: stats } = useMyStudentStats(profile?.id || "");
+  const { user } = useAuth();
+  const { data: profile } = useProfile(user?.id || "", !!user);
+  const { data: stats } = useMyStudentStats(profile?.id || "", !!user);
 
   if (!profile) return null;
 
@@ -157,7 +158,7 @@ export function ProfileDetails() {
         </div>
       </div>
 
-      <div className="md:col-span-2">
+      <div className="md:col-span-2 space-y-4">
         <h1 className="text-2xl font-medium">Social Links</h1>
 
         <div className="flex flex-wrap gap-6">
