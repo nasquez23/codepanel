@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.UUID;
 
-@Service
+// @Service - DISABLED: Achievement processing moved to GamificationEventListener to avoid queue competition
 public class AchievementEventListener {
     private final AchievementService achievementService;
 
@@ -28,6 +28,8 @@ public class AchievementEventListener {
     }
 
     private void handleAchievementProgress(GamificationEvent event) {
+        System.out.println("=== HANDLING ACHIEVEMENT PROGRESS ===");
+        System.out.println("Event details: " + event.getEventType() + " " + event.getUserId() + " " + event.getDifficulty() + " " + event.getRefType() + " " + event.getRefId());
         UUID userId = event.getUserId();
         ScoreEventType eventType = event.getEventType();
         LocalDate today = LocalDate.now();
@@ -61,10 +63,11 @@ public class AchievementEventListener {
                 achievementService.updateStreakProgress(userId, MetricType.ACTIVITY_STREAK, today);
                 break;
 
-            case COMMENT_LIKED:
-                // Milestone: increment total likes received (for the comment author)
-                // Note: We would need to add targetUserId to GamificationEvent for this
-                // For now, we'll skip this feature
+            case COMMENT_CREATED:
+                // Milestone: increment comments posted
+                achievementService.incrementProgress(userId, MetricType.COMMENTS_POSTED);
+                // Activity streak
+                achievementService.updateStreakProgress(userId, MetricType.ACTIVITY_STREAK, today);
                 break;
 
             default:

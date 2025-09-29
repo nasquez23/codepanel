@@ -16,16 +16,20 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class GamificationService {
     private final ScoreEventRepository scoreEventRepository;
     private final UserScoreRepository userScoreRepository;
+    private final LeaderboardCacheService leaderboardCacheService;
 
     public GamificationService(ScoreEventRepository scoreEventRepository,
-            UserScoreRepository userScoreRepository) {
+            UserScoreRepository userScoreRepository,
+            LeaderboardCacheService leaderboardCacheService) {
         this.scoreEventRepository = scoreEventRepository;
         this.userScoreRepository = userScoreRepository;
+        this.leaderboardCacheService = leaderboardCacheService;
     }
 
     private int difficultyMultiplier(DifficultyLevel difficulty) {
@@ -45,6 +49,7 @@ public class GamificationService {
             int basePoints, String refType, java.util.UUID refId) {
         // idempotency: avoid duplicates per (user,type,refId)
         if (refId != null && scoreEventRepository.existsByUserAndEventTypeAndRefId(user, type, refId)) {
+            System.out.println("Event already recorded: " + user.getEmail() + " " + type + " " + difficulty + " " + refId);
             return;
         }
 
@@ -61,6 +66,7 @@ public class GamificationService {
         event.setRefType(refType);
         event.setRefId(refId);
         scoreEventRepository.save(event);
+        System.out.println("Score event saved: " + event.getId());
 
         LocalDate weekStart = LocalDate.now().with(DayOfWeek.MONDAY);
         UserScore score = userScoreRepository.findByUserAndWeekStart(user, weekStart);
@@ -72,6 +78,16 @@ public class GamificationService {
         }
         score.setPoints(score.getPoints() + points);
         userScoreRepository.save(score);
+        System.out.println("User Score saved: " + score.getId());
+
+        // Update Redis leaderboards
+        UUID userId = user.getId();
+        leaderboardCacheService.incrementWeekly(userId.toString(), points,
+                weekStart);
+        leaderboardCacheService.incrementMonthly(userId.toString(), points,
+                YearMonth.now());
+        leaderboardCacheService.incrementAllTime(userId.toString(), points);
+        System.out.println("Leaderboard updated");
     }
 
     @Transactional(readOnly = true)

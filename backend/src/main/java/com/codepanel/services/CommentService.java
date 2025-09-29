@@ -61,18 +61,37 @@ public class CommentService {
         ProblemPostComment savedComment = commentRepository.save(comment);
 
         // Publish comment created event for notifications
-        CommentCreatedEvent event = CommentCreatedEvent.builder()
-                .commentId(savedComment.getId())
-                .problemPostId(problemPost.getId())
-                .problemPostTitle(problemPost.getTitle())
-                .commentAuthorId(currentUser.getId())
-                .commentAuthorName(currentUser.getFirstName() + " " + currentUser.getLastName())
-                .postAuthorId(problemPost.getUser().getId())
-                .commentContent(savedComment.getComment())
-                .createdAt(savedComment.getCreatedAt())
-                .build();
+        try {
+            CommentCreatedEvent event = CommentCreatedEvent.builder()
+                    .commentId(savedComment.getId())
+                    .problemPostId(problemPost.getId())
+                    .problemPostTitle(problemPost.getTitle())
+                    .commentAuthorId(currentUser.getId())
+                    .commentAuthorName(currentUser.getFirstName() + " " + currentUser.getLastName())
+                    .postAuthorId(problemPost.getUser().getId())
+                    .commentContent(savedComment.getComment())
+                    .createdAt(savedComment.getCreatedAt())
+                    .build();
 
-        notificationEventPublisher.publishCommentCreated(event);
+            notificationEventPublisher.publishCommentCreated(event);
+        } catch (Exception e) {
+            System.out.println("Error publishing comment created event: " + e.getMessage());
+        }
+
+        try {
+            gamificationEventPublisher.publish(
+                    ScoreEventType.COMMENT_CREATED,
+                    GamificationEvent.builder()
+                            .eventType(ScoreEventType.COMMENT_CREATED)
+                            .userId(currentUser.getId())
+                            .difficulty(null)
+                            .refType("COMMENT")
+                            .refId(savedComment.getId())
+                            .build());
+            System.out.println("Gamification event for comment created published");
+        } catch (Exception e) {
+            System.out.println("Error publishing gamification event for comment created: " + e.getMessage());
+        }
 
         return mapToResponse(savedComment, currentUser);
     }

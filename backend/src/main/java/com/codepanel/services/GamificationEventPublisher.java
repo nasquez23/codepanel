@@ -19,6 +19,7 @@ public class GamificationEventPublisher {
             case SUBMISSION_ACCEPTED -> GamificationRabbitConfig.RK_SUBMISSION_ACCEPTED;
             case REVIEW_APPROVED -> GamificationRabbitConfig.RK_REVIEW_APPROVED;
             case PROBLEM_ACCEPTED -> GamificationRabbitConfig.RK_PROBLEM_ACCEPTED;
+            case COMMENT_CREATED -> GamificationRabbitConfig.RK_COMMENT_CREATED;
             case COMMENT_LIKED -> GamificationRabbitConfig.RK_COMMENT_LIKED;
             case COMMENT_DISLIKED -> GamificationRabbitConfig.RK_COMMENT_DISLIKED;
             case PROBLEM_ANSWER_ACCEPTED -> GamificationRabbitConfig.RK_PROBLEM_ANSWER_ACCEPTED;
@@ -26,6 +27,14 @@ public class GamificationEventPublisher {
             case PROBLEM_POSTED -> GamificationRabbitConfig.RK_PROBLEM_POSTED;
             case ACHIEVEMENT_AWARDED -> GamificationRabbitConfig.RK_ACHIEVEMENT_AWARDED;
         };
-        rabbitTemplate.convertAndSend(GamificationRabbitConfig.EXCHANGE, routingKey, payload);
+
+        System.out.println("Event payload: " + payload);
+
+        try {
+            rabbitTemplate.convertAndSend(GamificationRabbitConfig.EXCHANGE, routingKey, payload);
+        } catch (Exception e) {
+            System.out.println("Error publishing gamification event: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }
