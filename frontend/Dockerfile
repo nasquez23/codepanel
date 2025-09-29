@@ -15,12 +15,23 @@ ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 RUN npm run build
 
-FROM base AS runner
-WORKDIR /app
-ENV NODE_ENV=production
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
+FROM nginx:alpine AS runner
+RUN rm -rf /usr/share/nginx/html/*
+COPY --from=builder /app/.next /usr/share/nginx/html/.next
+COPY --from=builder /app/public /usr/share/nginx/html
 
-EXPOSE 3000
-ENV HOSTNAME=0.0.0.0
-CMD ["node", "server.js", "-H", "0.0.0.0"]
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
+
+# FROM base AS runner
+# WORKDIR /app
+# ENV NODE_ENV=production
+# COPY --from=builder /app/.next/standalone ./
+# COPY --from=builder /app/.next/static ./.next/static
+
+# EXPOSE 3000
+# ENV HOSTNAME=0.0.0.0
+# CMD ["node", "server.js", "-H", "0.0.0.0"]
