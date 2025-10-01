@@ -60,18 +60,18 @@ export default function SubmissionDetailsGrading({
   };
 
   const isInstructor = user?.role === Role.INSTRUCTOR || user?.role === Role.ADMIN;
-  const isSubmissionOwner = user?.id === submission?.student.id;
   const canReview =
     isInstructor &&
     submission?.status === "PENDING_REVIEW" &&
     user?.id === submission?.assignment.instructor.id;
 
-  return (
+return (
     <div className="p-3 mt-2">
       <h1 className="text-xl font-medium mb-8">Grade Submission</h1>
-      {submission.review && <SubmissionDetailsReview submission={submission} />}
 
-      {canReview ? (
+      {submission.review ? (
+        <SubmissionDetailsReview submission={submission} />
+      ) : canReview ? (
         <div className="p-3 mt-2">
           <form onSubmit={handleReviewSubmit} className="space-y-4">
             <div className="flex items-center gap-2">
