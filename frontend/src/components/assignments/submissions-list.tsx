@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import ProfilePicture from "@/components/profile-picture";
+import { useAuth } from "@/hooks";
 
 interface SubmissionsListProps {
   assignmentId: string;
@@ -32,6 +33,24 @@ export default function SubmissionsList({
 }: SubmissionsListProps) {
   const [page, setPage] = useState(0);
   const { data: assignment } = useAssignment(assignmentId);
+  const { user } = useAuth();
+
+  if (user?.id !== assignment?.instructor?.id) {
+    return (
+      <div className="max-w-4xl mx-auto py-8 px-6">
+        <div className="bg-red-50 border border-red-200 rounded-md p-6 text-center">
+          <p className="text-red-600 mb-4">
+            You are not authorized to view submissions for this assignment.
+          </p>
+          <Link href="/assignments">
+            <Button className="bg-blue-500 text-white hover:bg-blue-700">
+              Back to Assignments
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const {
     data: submissionsData,

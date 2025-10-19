@@ -1,3 +1,4 @@
+import { ProtectedRoute } from "@/components/protected-route";
 import EditAssignmentView from "@/sections/assignments/view/edit-assignment-view";
 import { Metadata } from "next";
 
@@ -13,9 +14,11 @@ export default async function EditAssignmentPage({
   const { id } = await params;
 
   return (
-    <div className="min-h-screen bg-blue-200/20">
-      <EditAssignmentView assignmentId={id} />
-    </div>
+    <ProtectedRoute>
+      <div className="min-h-screen bg-blue-200/20">
+        <EditAssignmentView assignmentId={id} />
+      </div>
+    </ProtectedRoute>
   );
 }
 

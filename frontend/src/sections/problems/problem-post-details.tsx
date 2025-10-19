@@ -163,7 +163,7 @@ export default function ProblemPostDetails({ id }: ProblemPostDetailsProps) {
         </div>
 
         <div className="w-1/3 h-full flex flex-col gap-5">
-          <Card>
+          <Card className="shadow-lg">
             <CardHeader className="font-medium text-lg">
               Problem Stats
             </CardHeader>

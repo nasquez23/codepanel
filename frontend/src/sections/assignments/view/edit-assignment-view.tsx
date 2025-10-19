@@ -21,6 +21,7 @@ import {
 import { Loader2, Save, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { DifficultyLevel } from "@/types/tags-categories";
+import { useAuth } from "@/hooks";
 
 export default function EditAssignmentView({
   assignmentId,
@@ -31,6 +32,24 @@ export default function EditAssignmentView({
   const { data: assignment, isLoading: assignmentLoading } =
     useAssignment(assignmentId);
   const updateMutation = useUpdateAssignment();
+  const { user } = useAuth();
+
+  if (user?.id !== assignment?.instructor?.id) {
+    return (
+      <div className="max-w-4xl mx-auto py-8 px-6">
+        <div className="bg-red-50 border border-red-200 rounded-md p-6 text-center">
+          <p className="text-red-600 mb-4">
+            You are not authorized to edit this assignment.
+          </p>
+          <Link href="/assignments">
+            <Button className="bg-blue-500 text-white hover:bg-blue-700">
+              Back to Assignments
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const [formData, setFormData] = useState<UpdateAssignmentRequest>({
     title: "",

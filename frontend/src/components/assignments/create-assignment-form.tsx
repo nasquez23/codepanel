@@ -24,10 +24,30 @@ import {
 } from "@/components/ui/select";
 import { Loader2, Save } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@/hooks";
+import { Role } from "@/types/auth";
 
 export default function CreateAssignmentForm() {
   const router = useRouter();
   const createMutation = useCreateAssignment();
+  const { user } = useAuth();
+
+  if (user?.role !== Role.INSTRUCTOR && user?.role !== Role.ADMIN) {
+    return (
+      <div className="max-w-4xl mx-auto py-8 px-6">
+        <div className="bg-red-50 border border-red-200 rounded-md p-6 text-center">
+          <p className="text-red-600 mb-4">
+            You are not authorized to create assignments.
+          </p>
+          <Link href="/assignments">
+            <Button className="bg-blue-500 text-white hover:bg-blue-700">
+              Back to Assignments
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const [formData, setFormData] = useState<CreateAssignmentRequest>({
     title: "",

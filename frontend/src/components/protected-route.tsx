@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -10,38 +10,35 @@ interface ProtectedRouteProps {
   requireAuth?: boolean;
 }
 
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900" />
+  </div>
+);
+
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   redirectTo = "/login",
   requireAuth = true,
 }) => {
   const { isAuthenticated, isLoading } = useAuth();
-  const router = useRouter();
+  const { replace } = useRouter();
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   useEffect(() => {
-    if (!isLoading) {
-      if (requireAuth && !isAuthenticated) {
-        router.push(redirectTo);
-      } else if (!requireAuth && isAuthenticated) {
-        router.push("/dashboard");
-      }
+    if (isLoading) return;
+
+    if (requireAuth && !isAuthenticated) {
+      setIsRedirecting(true);
+      replace(redirectTo);
+    } else if (!requireAuth && isAuthenticated) {
+      setIsRedirecting(true);
+      replace(redirectTo);
     }
-  }, [isAuthenticated, isLoading, requireAuth, redirectTo, router]);
+  }, [isAuthenticated, isLoading, requireAuth, redirectTo, replace]);
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
-      </div>
-    );
-  }
-
-  if (requireAuth && !isAuthenticated) {
-    return null;
-  }
-
-  if (!requireAuth && isAuthenticated) {
-    return null;
+  if (isLoading || isRedirecting) {
+    return <LoadingSpinner />;
   }
 
   return <>{children}</>;

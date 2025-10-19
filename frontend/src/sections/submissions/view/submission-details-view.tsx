@@ -18,7 +18,7 @@ import ProfilePicture from "@/components/profile-picture";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SubmissionDetailsCodeTab from "../submission-details-code-tab";
 import SubmissionDetailsGrading from "../submission-details-grading";
-import { Role } from "@/types/auth";
+import Link from "next/link";
 
 interface SubmissionDetailsViewProps {
   id: string;
@@ -34,8 +34,8 @@ export default function SubmissionDetailsView({
   const [isDescriptionExpanded, setIsDescriptionExpanded] =
     useState<boolean>(false);
 
-  const isInstructor =
-    user?.role === Role.INSTRUCTOR || user?.role === Role.ADMIN;
+  const isSubmissionInstructor =
+    user?.id === submission?.assignment.instructor.id;
   const isSubmissionOwner = user?.id === submission?.student.id;
 
   if (isLoading) {
@@ -67,19 +67,19 @@ export default function SubmissionDetailsView({
     );
   }
 
-  if (!isSubmissionOwner && !isInstructor) {
+  if (!isSubmissionOwner && !isSubmissionInstructor) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <p className="text-red-600 mb-4">
-                You don't have permission to view this submission
-              </p>
-              <Button onClick={() => router.back()}>Go Back</Button>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="max-w-4xl mx-auto py-8 px-6">
+        <div className="bg-red-50 border border-red-200 rounded-md p-6 text-center">
+          <p className="text-red-600 mb-4">
+            You are not authorized to view this submission.
+          </p>
+          <Link href="/assignments">
+            <Button className="bg-blue-500 text-white hover:bg-blue-700">
+              Back to Assignments
+            </Button>
+          </Link>
+        </div>
       </div>
     );
   }

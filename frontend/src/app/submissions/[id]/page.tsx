@@ -1,4 +1,5 @@
 import { SubmissionDetailsView } from "@/sections/submissions/view";
+import { ProtectedRoute } from "@/components/protected-route";
 import { Metadata } from "next";
 
 interface SubmissionPageProps {
@@ -11,9 +12,11 @@ export default async function SubmissionPage({ params }: SubmissionPageProps) {
   const { id } = await params;
 
   return (
-    <div className="min-h-screen bg-blue-200/20">
-      <SubmissionDetailsView id={id} />
-    </div>
+    <ProtectedRoute>
+      <div className="min-h-screen bg-blue-200/20">
+        <SubmissionDetailsView id={id} />
+      </div>
+    </ProtectedRoute>
   );
 }
 

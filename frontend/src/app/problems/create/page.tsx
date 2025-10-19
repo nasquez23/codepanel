@@ -1,8 +1,13 @@
 import { Metadata } from "next";
 import { ProblemsCreateView } from "@/sections/problems/view";
+import { ProtectedRoute } from "@/components/protected-route";
 
 export default function CreateProblemPage() {
-  return <ProblemsCreateView />;
+  return (
+    <ProtectedRoute>
+      <ProblemsCreateView />
+    </ProtectedRoute>
+  );
 }
 
 export function generateMetadata(): Metadata {
