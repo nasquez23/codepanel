@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
+import { Role } from "@/types/auth";
 
 export default function RegisterView() {
   const [formData, setFormData] = useState({
@@ -13,7 +14,7 @@ export default function RegisterView() {
     email: "",
     password: "",
     confirmPassword: "",
-    role: "STUDENT",
+    role: Role.STUDENT,
   });
   const [error, setError] = useState<string>("");
   const { register, isLoading } = useAuth();

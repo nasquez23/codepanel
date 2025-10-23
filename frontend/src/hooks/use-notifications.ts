@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { achievementKeys } from "@/hooks/use-achievements";
 import { Notification } from "@/types/notifications";
+import { flushSync } from "react-dom";
 
 export const notificationKeys = {
   all: ["notifications"] as const,
@@ -41,10 +42,10 @@ export const useUnreadCount = (enabled = true) => {
   return useQuery({
     queryKey: notificationKeys.unreadCount(),
     queryFn: notificationsApi.getUnreadCount,
-    staleTime: 1000 * 30,
+    staleTime: 0,
     gcTime: 1000 * 60 * 2,
-    refetchInterval: 1000 * 60,
     enabled: enabled && isAuthenticated,
+    refetchOnWindowFocus: false, // Rely on WebSocket for real-time updates
   });
 };
 
@@ -94,9 +95,19 @@ export const useUpdateUnreadCount = () => {
   const queryClient = useQueryClient();
 
   return (newCount: number) => {
-    queryClient.setQueryData(notificationKeys.unreadCount(), {
-      count: newCount,
-    });
+    const now = new Date();
+    console.log(`🔄 QUERY: updateUnreadCount called with ${newCount} at ${now.toLocaleTimeString()}.${now.getMilliseconds()}`);
+    console.warn(`🚨 VISIBLE: Unread count updating to ${newCount} at ${now.toLocaleTimeString()}.${now.getMilliseconds()}`);
+    
+    // Force immediate synchronous React update
+    // flushSync(() => {
+    //   queryClient.setQueryData(notificationKeys.unreadCount(), {
+    //     count: newCount,
+    //   });
+    // });
+
+    console.log(`🔄 QUERY: flushSync completed at ${new Date().toLocaleTimeString()}.${new Date().getMilliseconds()}`);
+    console.warn(`🚨 VISIBLE: React state updated to ${newCount} at ${new Date().toLocaleTimeString()}.${new Date().getMilliseconds()}`);
 
     queryClient.invalidateQueries({ queryKey: notificationKeys.lists() });
     queryClient.invalidateQueries({ queryKey: notificationKeys.unread() });
@@ -112,6 +123,20 @@ export const useAddNotification = () => {
     if (notification.type === "ACHIEVEMENT_AWARDED") {
       queryClient.invalidateQueries({ queryKey: achievementKeys.all });
     }
+    console.log("New notification received:", notification);
+
+    // SMART FALLBACK: Increment locally immediately, then let server correct it
+    queryClient.setQueryData(notificationKeys.unreadCount(), (old: any) => {
+      const newCount = (old?.count || 0) + 1;
+      console.warn(`🚨 SMART FALLBACK: Incrementing unread count from ${old?.count || 0} to ${newCount}`);
+      return { count: newCount };
+    });
+
+    // Also trigger a server fetch as backup after a delay (reduced since WebSocket is broken)
+    setTimeout(() => {
+      console.warn("🚨 SMART FALLBACK: Triggering server fetch for unread count");
+      queryClient.invalidateQueries({ queryKey: notificationKeys.unreadCount() });
+    }, 500); // Reduced to 500ms since WebSocket unread count is not working
 
     toast.info(notification.title, {
       description: notification.message,

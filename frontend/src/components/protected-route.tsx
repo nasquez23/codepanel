@@ -11,8 +11,8 @@ interface ProtectedRouteProps {
 }
 
 const LoadingSpinner = () => (
-  <div className="flex items-center justify-center min-h-screen">
-    <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900" />
+  <div className="flex items-center justify-center min-h-[calc(100vh-100px)]">
+    <div className="animate-spin rounded-full size-20 border-4 border-blue-500 border-t-transparent" />
   </div>
 );
 
