@@ -27,5 +27,6 @@ export function useAllTimeLeaderboard(params?: { limit?: number }) {
   return useQuery({
     queryKey: ["leaderboard", "all-time", params],
     queryFn: () => leaderboardApi.getAllTimeLeaderboard(params),
+    refetchOnWindowFocus: true
   });
 }
