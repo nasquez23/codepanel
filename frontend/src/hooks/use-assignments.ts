@@ -21,13 +21,14 @@ import {
   CreateReviewRequest,
 } from "@/types/assignment";
 import { DifficultyLevel, Category, Tag } from "@/types/tags-categories";
+import { useAuth } from "./use-auth";
 
 export const assignmentKeys = {
   all: ["assignments"] as const,
   lists: () => [...assignmentKeys.all, "list"] as const,
   list: (filters: string) => [...assignmentKeys.lists(), filters] as const,
   details: () => [...assignmentKeys.all, "detail"] as const,
-  detail: (id: string) => [...assignmentKeys.details(), id] as const,
+  detail: (assignmentId: string, userId: string | undefined) => [...assignmentKeys.details(), assignmentId, userId] as const,
   myAssignments: () => [...assignmentKeys.all, "my-assignments"] as const,
   submissions: () => [...assignmentKeys.all, "submissions"] as const,
   submissionsList: (assignmentId: string) =>
@@ -82,9 +83,32 @@ export const useAssignments = (
   });
 };
 
-export const useAssignment = (id: string) => {
+export const useCreateAssignment = () => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: CreateAssignmentRequest) => createAssignment(data),
+    onSuccess: (newAssignment) => {
+      queryClient.invalidateQueries({ queryKey: assignmentKeys.lists() });
+      queryClient.invalidateQueries({
+        queryKey: assignmentKeys.myAssignments(),
+      });
+      queryClient.setQueryData(
+        assignmentKeys.detail(newAssignment.id, user?.id),
+        newAssignment
+      );
+    },
+    onError: (error) => {
+      console.error("Error creating assignment:", error);
+    },
+  });
+};
+
+export const useAssignment = (id: string, userId: string | undefined) => {
+  console.log("useAssignment called with id:", id, "and userId:", userId);
   return useQuery({
-    queryKey: assignmentKeys.detail(id),
+    queryKey: assignmentKeys.detail(id, userId),
     queryFn: () => getAssignment(id),
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 10,
@@ -100,29 +124,9 @@ export const useMyAssignments = (page: number = 0, size: number = 10) => {
   });
 };
 
-export const useCreateAssignment = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (data: CreateAssignmentRequest) => createAssignment(data),
-    onSuccess: (newAssignment) => {
-      queryClient.invalidateQueries({ queryKey: assignmentKeys.lists() });
-      queryClient.invalidateQueries({
-        queryKey: assignmentKeys.myAssignments(),
-      });
-      queryClient.setQueryData(
-        assignmentKeys.detail(newAssignment.id),
-        newAssignment
-      );
-    },
-    onError: (error) => {
-      console.error("Error creating assignment:", error);
-    },
-  });
-};
-
 export const useUpdateAssignment = () => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateAssignmentRequest }) =>
@@ -133,7 +137,7 @@ export const useUpdateAssignment = () => {
         queryKey: assignmentKeys.myAssignments(),
       });
       queryClient.setQueryData(
-        assignmentKeys.detail(updatedAssignment.id),
+        assignmentKeys.detail(updatedAssignment.id, user?.id),
         updatedAssignment
       );
     },
@@ -145,7 +149,7 @@ export const useUpdateAssignment = () => {
 
 export const useDeleteAssignment = () => {
   const queryClient = useQueryClient();
-
+  const { user } = useAuth();
   return useMutation({
     mutationFn: (id: string) => deleteAssignment(id),
     onSuccess: (_, id) => {
@@ -153,7 +157,7 @@ export const useDeleteAssignment = () => {
       queryClient.invalidateQueries({
         queryKey: assignmentKeys.myAssignments(),
       });
-      queryClient.removeQueries({ queryKey: assignmentKeys.detail(id) });
+      queryClient.removeQueries({ queryKey: assignmentKeys.detail(id, user?.id) });
     },
     onError: (error) => {
       console.error("Error deleting assignment:", error);
@@ -164,7 +168,7 @@ export const useDeleteAssignment = () => {
 // Submission hooks
 export const useSubmitAssignment = () => {
   const queryClient = useQueryClient();
-
+  const { user } = useAuth();
   return useMutation({
     mutationFn: ({
       assignmentId,
@@ -176,7 +180,7 @@ export const useSubmitAssignment = () => {
     onSuccess: (newSubmission) => {
       queryClient.invalidateQueries({ queryKey: assignmentKeys.lists() });
       queryClient.invalidateQueries({
-        queryKey: assignmentKeys.detail(newSubmission.assignment.id),
+        queryKey: assignmentKeys.detail(newSubmission.assignment.id, user?.id),
       });
       queryClient.invalidateQueries({
         queryKey: assignmentKeys.mySubmissions(),

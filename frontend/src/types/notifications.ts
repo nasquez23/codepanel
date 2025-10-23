@@ -4,8 +4,10 @@ export type NotificationType =
   | "ASSIGNMENT_CREATED"
   | "ASSIGNMENT_DUE"
   | "ASSIGNMENT_GRADED"
+  | "ASSIGNMENT_SUBMITTED"
   | "PROBLEM_POST_LIKED"
-  | "SYSTEM";
+  | "SYSTEM"
+  | "ACHIEVEMENT_AWARDED";
 
 export interface Notification {
   id: string;
@@ -18,6 +20,7 @@ export interface Notification {
   actionUrl?: string;
   createdAt: string;
   readAt?: string;
+  recipientUserId?: string;
 }
 
 export interface NotificationResponse {

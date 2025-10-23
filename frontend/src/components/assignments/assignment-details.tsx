@@ -38,7 +38,13 @@ interface AssignmentDetailsProps {
 
 export default function AssignmentDetails({ id }: AssignmentDetailsProps) {
   const { user } = useAuth();
-  const { data: assignment, isLoading, isError, error } = useAssignment(id);
+  const {
+    data: assignment,
+    isLoading,
+    isError,
+    error,
+  } = useAssignment(id, user?.id);
+  console.log("assignment:", assignment);
   const submitMutation = useSubmitAssignment();
   const queryClient = useQueryClient();
 
@@ -70,7 +76,7 @@ export default function AssignmentDetails({ id }: AssignmentDetailsProps) {
             setSubmissionCode("");
             setIsSubmitOpen(false);
             queryClient.invalidateQueries({
-              queryKey: assignmentKeys.detail(id),
+              queryKey: assignmentKeys.detail(id, user?.id),
             });
           },
         }
@@ -111,8 +117,8 @@ export default function AssignmentDetails({ id }: AssignmentDetailsProps) {
   const canSubmit =
     user &&
     user.role === Role.STUDENT &&
-    !assignment.hasSubmitted &&
-    assignment.isActive;
+    assignment.isActive &&
+    user?.id !== assignment.mySubmission?.student.id;
   const isOverdue =
     assignment.dueDate && new Date(assignment.dueDate) < new Date();
   const isDueSoon =
@@ -269,13 +275,16 @@ export default function AssignmentDetails({ id }: AssignmentDetailsProps) {
                 {assignment.instructor.email}
               </span>
             </div>
-            {assignment.hasSubmitted && assignment.mySubmission && (
-              <Link href={`/submissions/${assignment.mySubmission.id}`}>
-                <Button className="w-full mt-5 bg-blue-500 text-white hover:bg-blue-700">
-                  View Submission
-                </Button>
-              </Link>
-            )}
+            {assignment.hasSubmitted &&
+              assignment.mySubmission &&
+              (user?.id === assignment.instructor.id ||
+                user?.id === assignment.mySubmission.student.id) && (
+                <Link href={`/submissions/${assignment.mySubmission.id}`}>
+                  <Button className="w-full mt-5 bg-blue-500 text-white hover:bg-blue-700">
+                    View Submission
+                  </Button>
+                </Link>
+              )}
             {canSubmit && !isOverdue && (
               <Button
                 className="w-full mt-5 bg-blue-500 text-white hover:bg-blue-700"

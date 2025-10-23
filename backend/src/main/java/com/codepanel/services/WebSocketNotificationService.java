@@ -2,19 +2,16 @@ package com.codepanel.services;
 
 import com.codepanel.models.Notification;
 import com.codepanel.models.dto.NotificationResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class WebSocketNotificationService {
-
     private final SimpMessagingTemplate messagingTemplate;
-
-    public WebSocketNotificationService(SimpMessagingTemplate messagingTemplate) {
-        this.messagingTemplate = messagingTemplate;
-    }
 
     public void sendNotificationToUser(UUID userId, Notification notification) {
         try {
@@ -24,46 +21,22 @@ public class WebSocketNotificationService {
                     userId.toString(),
                     "/queue/notifications",
                     response);
-
-            System.out.println("Sent WebSocket notification to user: " + userId +
-                    ", notification ID: " + notification.getId());
-
         } catch (Exception e) {
-            System.err.println("Failed to send WebSocket notification to user: " + userId +
+            System.err.println("❌ Failed to send WebSocket notification to user: " + userId +
                     ", error: " + e.getMessage());
         }
     }
 
     public void sendUnreadCountToUser(UUID userId, Long unreadCount) {
+        System.out.println("Sending unread count to user: " + userId + " with count: " + unreadCount);
         try {
             messagingTemplate.convertAndSendToUser(
                     userId.toString(),
                     "/queue/unread-count",
                     unreadCount);
-
-            System.out.println("Sent unread count update to user: " + userId +
-                    ", count: " + unreadCount);
-
+            System.out.println("Unread count sent to user: " + userId + " with count: " + unreadCount);
         } catch (Exception e) {
-            System.err.println("Failed to send unread count to user: " + userId +
-                    ", error: " + e.getMessage());
-        }
-    }
-
-    public void broadcastNotification(String message) {
-        try {
-            messagingTemplate.convertAndSend("/topic/announcements", message);
-            System.out.println("Broadcasted system notification: " + message);
-        } catch (Exception e) {
-            System.err.println("Failed to broadcast notification, error: " + e.getMessage());
-        }
-    }
-
-    public void sendRealTimeUpdate(String destination, Object payload) {
-        try {
-            messagingTemplate.convertAndSend(destination, payload);
-        } catch (Exception e) {
-            System.err.println("Failed to send real-time update to " + destination +
+            System.err.println("❌ Failed to send unread count to user: " + userId +
                     ", error: " + e.getMessage());
         }
     }
@@ -80,6 +53,7 @@ public class WebSocketNotificationService {
                 .actionUrl(notification.getActionUrl())
                 .createdAt(notification.getCreatedAt())
                 .readAt(notification.getReadAt())
+                .recipientUserId(notification.getRecipient().getId())
                 .build();
     }
 }

@@ -20,8 +20,7 @@ export const useMyStudentStats = (userId: string, enabled: boolean = false) => {
   return useQuery<StudentStatsResponse>({
     queryKey: dashboardKeys.meStudent(userId),
     queryFn: getMyStudentStats,
-    staleTime: 2 * 60 * 1000,
-    gcTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: true,
     enabled: enabled,
   });
 };

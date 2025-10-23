@@ -22,6 +22,7 @@ public class NotificationResponse {
     private UUID relatedEntityId;
     private String relatedEntityType;
     private String actionUrl;
+    private UUID recipientUserId;
     private LocalDateTime createdAt;
     private LocalDateTime readAt;
 }
